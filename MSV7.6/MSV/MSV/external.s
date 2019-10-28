@@ -666,237 +666,238 @@ define void @"\01?ex@@YAXXZ"() #0 {
   %78 = call double @tan(double 1.000000e+00) #5
   %79 = call double @atan(double 1.000000e+00) #5
   %80 = call double @atan2(double 1.000000e+00, double 1.000000e+00) #5
-  %81 = call double @cos(double 1.000000e+00) #5
-  %82 = call double @acos(double 1.000000e+00) #5
-  %83 = call i32 @abs(i32 1) #12
-  %84 = call double @fabs(double 1.000000e+00) #12
-  %85 = call double @fmod(double 1.000000e+00, double 1.000000e+00) #5
-  %86 = call double @log(double 1.000000e+00) #5
-  %87 = call double @log10(double 1.000000e+00) #5
-  %88 = call noalias i8* @calloc(i32 1, i32 1)
-  %89 = call i32 @clock()
-  %90 = call i64 @"\01?time@@YA_JPA_J@Z"(i64* null)
+  %81 = call double @tanh(double 1.000000e+00) #5
+  %82 = call double @cos(double 1.000000e+00) #5
+  %83 = call double @acos(double 1.000000e+00) #5
+  %84 = call i32 @abs(i32 1) #12
+  %85 = call double @fabs(double 1.000000e+00) #12
+  %86 = call double @fmod(double 1.000000e+00, double 1.000000e+00) #5
+  %87 = call double @log(double 1.000000e+00) #5
+  %88 = call double @log10(double 1.000000e+00) #5
+  %89 = call noalias i8* @calloc(i32 1, i32 1)
+  %90 = call i32 @clock()
+  %91 = call i64 @"\01?time@@YA_JPA_J@Z"(i64* null)
   call void @srand(i32 0)
-  %91 = call i32 @rand()
-  %92 = getelementptr inbounds [10 x i8], [10 x i8]* %c, i32 0, i32 0
-  %93 = call i8* @getenv(i8* %92)
-  %94 = call %struct._iobuf* @fopen(i8* getelementptr inbounds ([6 x i8], [6 x i8]* @"\01??_C@_05KAGKJOA@1?4txt?$AA@", i32 0, i32 0), i8* getelementptr inbounds ([2 x i8], [2 x i8]* @"\01??_C@_01KDCPPGHE@r?$AA@", i32 0, i32 0))
-  store %struct._iobuf* %94, %struct._iobuf** %fp, align 4
-  %95 = load %struct._iobuf*, %struct._iobuf** %fp, align 4
-  %96 = getelementptr inbounds [10 x i8], [10 x i8]* %c, i32 0, i32 0
-  %97 = call i32 @fread(i8* %96, i32 1, i32 1, %struct._iobuf* %95)
-  %98 = load i32, i32* %x, align 4
-  %99 = load %struct._iobuf*, %struct._iobuf** %fp, align 4
-  %100 = call i32 (%struct._iobuf*, i8*, ...)* @fprintf(%struct._iobuf* %99, i8* getelementptr inbounds ([3 x i8], [3 x i8]* @"\01??_C@_02DPKJAMEF@?$CFd?$AA@", i32 0, i32 0), i32 %98)
-  %101 = load i32, i32* %x, align 4
-  %102 = call %struct._iobuf* @__iob_func()
-  %103 = getelementptr inbounds %struct._iobuf, %struct._iobuf* %102, i32 0
-  %104 = call i32 (%struct._iobuf*, i8*, ...)* @fprintf(%struct._iobuf* %103, i8* getelementptr inbounds ([3 x i8], [3 x i8]* @"\01??_C@_02DPKJAMEF@?$CFd?$AA@", i32 0, i32 0), i32 %101)
-  %105 = load i32, i32* %x, align 4
-  %106 = call %struct._iobuf* @__iob_func()
-  %107 = getelementptr inbounds %struct._iobuf, %struct._iobuf* %106, i32 1
-  %108 = call i32 (%struct._iobuf*, i8*, ...)* @fprintf(%struct._iobuf* %107, i8* getelementptr inbounds ([3 x i8], [3 x i8]* @"\01??_C@_02DPKJAMEF@?$CFd?$AA@", i32 0, i32 0), i32 %105)
-  %109 = load i32, i32* %x, align 4
-  %110 = call %struct._iobuf* @__iob_func()
-  %111 = getelementptr inbounds %struct._iobuf, %struct._iobuf* %110, i32 2
-  %112 = call i32 (%struct._iobuf*, i8*, ...)* @fprintf(%struct._iobuf* %111, i8* getelementptr inbounds ([3 x i8], [3 x i8]* @"\01??_C@_02DPKJAMEF@?$CFd?$AA@", i32 0, i32 0), i32 %109)
-  %113 = load %struct._iobuf*, %struct._iobuf** %fp, align 4
-  %114 = call i32 @fileno(%struct._iobuf* %113)
-  %115 = load %struct._iobuf*, %struct._iobuf** %fp, align 4
-  %116 = call i32 (%struct._iobuf*, i8*, ...)* @fscanf(%struct._iobuf* %115, i8* getelementptr inbounds ([3 x i8], [3 x i8]* @"\01??_C@_02DPKJAMEF@?$CFd?$AA@", i32 0, i32 0), i32* %x)
-  %117 = getelementptr inbounds [10 x i8], [10 x i8]* %c, i32 0, i32 0
+  %92 = call i32 @rand()
+  %93 = getelementptr inbounds [10 x i8], [10 x i8]* %c, i32 0, i32 0
+  %94 = call i8* @getenv(i8* %93)
+  %95 = call %struct._iobuf* @fopen(i8* getelementptr inbounds ([6 x i8], [6 x i8]* @"\01??_C@_05KAGKJOA@1?4txt?$AA@", i32 0, i32 0), i8* getelementptr inbounds ([2 x i8], [2 x i8]* @"\01??_C@_01KDCPPGHE@r?$AA@", i32 0, i32 0))
+  store %struct._iobuf* %95, %struct._iobuf** %fp, align 4
+  %96 = load %struct._iobuf*, %struct._iobuf** %fp, align 4
+  %97 = getelementptr inbounds [10 x i8], [10 x i8]* %c, i32 0, i32 0
+  %98 = call i32 @fread(i8* %97, i32 1, i32 1, %struct._iobuf* %96)
+  %99 = load i32, i32* %x, align 4
+  %100 = load %struct._iobuf*, %struct._iobuf** %fp, align 4
+  %101 = call i32 (%struct._iobuf*, i8*, ...)* @fprintf(%struct._iobuf* %100, i8* getelementptr inbounds ([3 x i8], [3 x i8]* @"\01??_C@_02DPKJAMEF@?$CFd?$AA@", i32 0, i32 0), i32 %99)
+  %102 = load i32, i32* %x, align 4
+  %103 = call %struct._iobuf* @__iob_func()
+  %104 = getelementptr inbounds %struct._iobuf, %struct._iobuf* %103, i32 0
+  %105 = call i32 (%struct._iobuf*, i8*, ...)* @fprintf(%struct._iobuf* %104, i8* getelementptr inbounds ([3 x i8], [3 x i8]* @"\01??_C@_02DPKJAMEF@?$CFd?$AA@", i32 0, i32 0), i32 %102)
+  %106 = load i32, i32* %x, align 4
+  %107 = call %struct._iobuf* @__iob_func()
+  %108 = getelementptr inbounds %struct._iobuf, %struct._iobuf* %107, i32 1
+  %109 = call i32 (%struct._iobuf*, i8*, ...)* @fprintf(%struct._iobuf* %108, i8* getelementptr inbounds ([3 x i8], [3 x i8]* @"\01??_C@_02DPKJAMEF@?$CFd?$AA@", i32 0, i32 0), i32 %106)
+  %110 = load i32, i32* %x, align 4
+  %111 = call %struct._iobuf* @__iob_func()
+  %112 = getelementptr inbounds %struct._iobuf, %struct._iobuf* %111, i32 2
+  %113 = call i32 (%struct._iobuf*, i8*, ...)* @fprintf(%struct._iobuf* %112, i8* getelementptr inbounds ([3 x i8], [3 x i8]* @"\01??_C@_02DPKJAMEF@?$CFd?$AA@", i32 0, i32 0), i32 %110)
+  %114 = load %struct._iobuf*, %struct._iobuf** %fp, align 4
+  %115 = call i32 @fileno(%struct._iobuf* %114)
+  %116 = load %struct._iobuf*, %struct._iobuf** %fp, align 4
+  %117 = call i32 (%struct._iobuf*, i8*, ...)* @fscanf(%struct._iobuf* %116, i8* getelementptr inbounds ([3 x i8], [3 x i8]* @"\01??_C@_02DPKJAMEF@?$CFd?$AA@", i32 0, i32 0), i32* %x)
   %118 = getelementptr inbounds [10 x i8], [10 x i8]* %c, i32 0, i32 0
-  %119 = call i32 (i8*, i8*, ...)* @sscanf(i8* %118, i8* getelementptr inbounds ([3 x i8], [3 x i8]* @"\01??_C@_02DKCKIIND@?$CFs?$AA@", i32 0, i32 0), i8* %117)
-  %120 = load %struct._iobuf*, %struct._iobuf** %fp, align 4
-  %121 = getelementptr inbounds [10 x i8], [10 x i8]* %c, i32 0, i32 0
-  %122 = call i32 @fwrite(i8* %121, i32 1, i32 1, %struct._iobuf* %120)
-  %123 = load %struct._iobuf*, %struct._iobuf** %fp, align 4
-  %124 = call i32 @fseek(%struct._iobuf* %123, i32 1, i32 0)
-  %125 = load %struct._iobuf*, %struct._iobuf** %fp, align 4
-  %126 = call i32 @feof(%struct._iobuf* %125)
-  %127 = call i8* @strtok(i8* null, i8* getelementptr inbounds ([5 x i8], [5 x i8]* @"\01??_C@_04HLKDGPAO@sdfs?$AA@", i32 0, i32 0))
-  %128 = getelementptr inbounds [10 x i8], [10 x i8]* %c, i32 0, i32 0
-  %129 = call i8* @itoa(i32 1, i8* %128, i32 10)
-  %130 = load %struct._iobuf*, %struct._iobuf** %fp, align 4
-  call void @rewind(%struct._iobuf* %130)
+  %119 = getelementptr inbounds [10 x i8], [10 x i8]* %c, i32 0, i32 0
+  %120 = call i32 (i8*, i8*, ...)* @sscanf(i8* %119, i8* getelementptr inbounds ([3 x i8], [3 x i8]* @"\01??_C@_02DKCKIIND@?$CFs?$AA@", i32 0, i32 0), i8* %118)
+  %121 = load %struct._iobuf*, %struct._iobuf** %fp, align 4
+  %122 = getelementptr inbounds [10 x i8], [10 x i8]* %c, i32 0, i32 0
+  %123 = call i32 @fwrite(i8* %122, i32 1, i32 1, %struct._iobuf* %121)
+  %124 = load %struct._iobuf*, %struct._iobuf** %fp, align 4
+  %125 = call i32 @fseek(%struct._iobuf* %124, i32 1, i32 0)
+  %126 = load %struct._iobuf*, %struct._iobuf** %fp, align 4
+  %127 = call i32 @feof(%struct._iobuf* %126)
+  %128 = call i8* @strtok(i8* null, i8* getelementptr inbounds ([5 x i8], [5 x i8]* @"\01??_C@_04HLKDGPAO@sdfs?$AA@", i32 0, i32 0))
+  %129 = getelementptr inbounds [10 x i8], [10 x i8]* %c, i32 0, i32 0
+  %130 = call i8* @itoa(i32 1, i8* %129, i32 10)
   %131 = load %struct._iobuf*, %struct._iobuf** %fp, align 4
-  %132 = call i32 @fflush(%struct._iobuf* %131)
-  %133 = getelementptr inbounds [10 x i8], [10 x i8]* %c, i32 0, i32 0
+  call void @rewind(%struct._iobuf* %131)
+  %132 = load %struct._iobuf*, %struct._iobuf** %fp, align 4
+  %133 = call i32 @fflush(%struct._iobuf* %132)
   %134 = getelementptr inbounds [10 x i8], [10 x i8]* %c, i32 0, i32 0
-  %135 = call i32 @rename(i8* %134, i8* %133)
-  %136 = getelementptr inbounds [10 x i8], [10 x i8]* %c, i32 0, i32 0
-  %137 = call i32 @_unlink(i8* %136)
-  %138 = call i32 @read(i32 0, i8* null, i32 0)
-  %139 = call i8* @tmpnam(i8* null)
-  %140 = call i32 @write(i32 0, i8* null, i32 0)
-  %141 = call i32 (i8*, i32, ...)* @_setjmp3(i8* bitcast ([16 x i32]* @"\01?j_buf@@3PAHA" to i8*), i32 0) #1
-  %142 = call i32 @memcmp(i8* null, i8* null, i32 10)
+  %135 = getelementptr inbounds [10 x i8], [10 x i8]* %c, i32 0, i32 0
+  %136 = call i32 @rename(i8* %135, i8* %134)
+  %137 = getelementptr inbounds [10 x i8], [10 x i8]* %c, i32 0, i32 0
+  %138 = call i32 @_unlink(i8* %137)
+  %139 = call i32 @read(i32 0, i8* null, i32 0)
+  %140 = call i8* @tmpnam(i8* null)
+  %141 = call i32 @write(i32 0, i8* null, i32 0)
+  %142 = call i32 (i8*, i32, ...)* @_setjmp3(i8* bitcast ([16 x i32]* @"\01?j_buf@@3PAHA" to i8*), i32 0) #1
+  %143 = call i32 @memcmp(i8* null, i8* null, i32 10)
   call void @"\01?AddEdge@@YAXPBDHH@Z"(i8* getelementptr inbounds ([1 x i8], [1 x i8]* @"\01??_C@_00CNPNBAHC@?$AA@", i32 0, i32 0), i32 0, i32 0)
   call void @"\01?Draw@@YAXXZ"()
   call void @"\01?UpdateCurrentNode@@YAXXZ"()
   call void @"\01?SaveCurrentNode@@YAXXZ"()
-  %143 = getelementptr inbounds [10 x i8], [10 x i8]* %c, i32 0, i32 0
-  %144 = load i8, i8* %143, align 1
-  %145 = sext i8 %144 to i32
-  %146 = icmp ne i32 %145, -1
-  br i1 %146, label %147, label %151
+  %144 = getelementptr inbounds [10 x i8], [10 x i8]* %c, i32 0, i32 0
+  %145 = load i8, i8* %144, align 1
+  %146 = sext i8 %145 to i32
+  %147 = icmp ne i32 %146, -1
+  br i1 %147, label %148, label %152
 
-; <label>:147                                     ; preds = %0
-  %148 = load %struct._iobuf*, %struct._iobuf** %fp, align 4
-  %149 = getelementptr inbounds [10 x i8], [10 x i8]* %c, i32 0, i32 0
-  %150 = call i32 @fputs(i8* %149, %struct._iobuf* %148)
-  br label %151
+; <label>:148                                     ; preds = %0
+  %149 = load %struct._iobuf*, %struct._iobuf** %fp, align 4
+  %150 = getelementptr inbounds [10 x i8], [10 x i8]* %c, i32 0, i32 0
+  %151 = call i32 @fputs(i8* %150, %struct._iobuf* %149)
+  br label %152
 
-; <label>:151                                     ; preds = %147, %0
-  %152 = load %struct._iobuf*, %struct._iobuf** %fp, align 4
-  %153 = getelementptr inbounds [10 x i8], [10 x i8]* %c, i32 0, i32 1
-  %154 = load i8, i8* %153, align 1
-  %155 = sext i8 %154 to i32
-  %156 = call i32 @fputc(i32 %155, %struct._iobuf* %152)
-  %157 = load %struct._iobuf*, %struct._iobuf** %fp, align 4
-  %158 = call i32 @fgetc(%struct._iobuf* %157)
-  %159 = load %struct._iobuf*, %struct._iobuf** %fp, align 4
-  %160 = getelementptr inbounds [10 x i8], [10 x i8]* %c, i32 0, i32 0
-  %161 = call i8* @fgets(i8* %160, i32 10, %struct._iobuf* %159)
-  %162 = call %struct._iobuf* @tmpfile()
-  %163 = call i32 @getchar()
-  %164 = call i32 @putchar(i32 97)
-  %165 = load %struct._iobuf*, %struct._iobuf** %fp, align 4
-  %166 = call i32 @fclose(%struct._iobuf* %165)
-  %167 = getelementptr inbounds [10 x i8], [10 x i8]* %c, i32 0, i32 0
-  %168 = call i32 (i8*, i32, ...)* @open(i8* %167, i32 32768)
-  %169 = call i32 @_close(i32 1)
-  %170 = getelementptr inbounds [10 x i8], [10 x i8]* %c, i32 0, i32 0
-  call void @perror(i8* %170)
-  %171 = call i32* @_errno()
-  %172 = load i32, i32* %171, align 4
-  %173 = call i8* @strerror(i32 %172)
-  %174 = getelementptr inbounds [10 x i8], [10 x i8]* %c, i32 0, i32 0
-  %175 = call i32 @remove(i8* %174)
-  %176 = getelementptr inbounds [10 x i8], [10 x i8]* %c, i32 0, i32 0
-  %177 = call i32 @_read(i32 1, i8* %176, i32 1)
+; <label>:152                                     ; preds = %148, %0
+  %153 = load %struct._iobuf*, %struct._iobuf** %fp, align 4
+  %154 = getelementptr inbounds [10 x i8], [10 x i8]* %c, i32 0, i32 1
+  %155 = load i8, i8* %154, align 1
+  %156 = sext i8 %155 to i32
+  %157 = call i32 @fputc(i32 %156, %struct._iobuf* %153)
+  %158 = load %struct._iobuf*, %struct._iobuf** %fp, align 4
+  %159 = call i32 @fgetc(%struct._iobuf* %158)
+  %160 = load %struct._iobuf*, %struct._iobuf** %fp, align 4
+  %161 = getelementptr inbounds [10 x i8], [10 x i8]* %c, i32 0, i32 0
+  %162 = call i8* @fgets(i8* %161, i32 10, %struct._iobuf* %160)
+  %163 = call %struct._iobuf* @tmpfile()
+  %164 = call i32 @getchar()
+  %165 = call i32 @putchar(i32 97)
+  %166 = load %struct._iobuf*, %struct._iobuf** %fp, align 4
+  %167 = call i32 @fclose(%struct._iobuf* %166)
+  %168 = getelementptr inbounds [10 x i8], [10 x i8]* %c, i32 0, i32 0
+  %169 = call i32 (i8*, i32, ...)* @open(i8* %168, i32 32768)
+  %170 = call i32 @_close(i32 1)
+  %171 = getelementptr inbounds [10 x i8], [10 x i8]* %c, i32 0, i32 0
+  call void @perror(i8* %171)
+  %172 = call i32* @_errno()
+  %173 = load i32, i32* %172, align 4
+  %174 = call i8* @strerror(i32 %173)
+  %175 = getelementptr inbounds [10 x i8], [10 x i8]* %c, i32 0, i32 0
+  %176 = call i32 @remove(i8* %175)
+  %177 = getelementptr inbounds [10 x i8], [10 x i8]* %c, i32 0, i32 0
+  %178 = call i32 @_read(i32 1, i8* %177, i32 1)
   call x86_stdcallcc void @"\01_Sleep@4"(i32 1)
-  %178 = getelementptr inbounds [10 x i8], [10 x i8]* %c, i32 0, i32 0
-  %179 = load %struct._iobuf*, %struct._iobuf** %fp, align 4
-  call void @setbuf(%struct._iobuf* %179, i8* %178)
-  %180 = call %struct.tm* @"\01?localtime@@YAPAUtm@@PB_J@Z"(i64* %timeaaa)
+  %179 = getelementptr inbounds [10 x i8], [10 x i8]* %c, i32 0, i32 0
+  %180 = load %struct._iobuf*, %struct._iobuf** %fp, align 4
+  call void @setbuf(%struct._iobuf* %180, i8* %179)
+  %181 = call %struct.tm* @"\01?localtime@@YAPAUtm@@PB_J@Z"(i64* %timeaaa)
   call x86_stdcallcc void @"\01_DeleteCriticalSection@4"(%struct._RTL_CRITICAL_SECTION* %a)
-  %181 = load i32*, i32** %aaa, align 4
-  %182 = call i32 @"\01?Spe_InterlockedCompareExchange@@YAHPAJJJ@Z"(i32* %181, i32 0, i32 0)
-  %183 = load i8, i8* %xxxx, align 1
-  %184 = zext i8 %183 to i16
-  %185 = call zeroext i16 @_byteswap_ushort(i16 zeroext %184)
+  %182 = load i32*, i32** %aaa, align 4
+  %183 = call i32 @"\01?Spe_InterlockedCompareExchange@@YAHPAJJJ@Z"(i32* %182, i32 0, i32 0)
+  %184 = load i8, i8* %xxxx, align 1
+  %185 = zext i8 %184 to i16
+  %186 = call zeroext i16 @_byteswap_ushort(i16 zeroext %185)
   call void @_ReadWriteBarrier()
-  %186 = load i32, i32* %x1, align 4
-  %187 = call i32 @_byteswap_ulong(i32 %186)
-  %188 = call i32 @_beginthreadex(i8* null, i32 0, i32 (i8*)* null, i8* null, i32 0, i32* null)
+  %187 = load i32, i32* %x1, align 4
+  %188 = call i32 @_byteswap_ulong(i32 %187)
+  %189 = call i32 @_beginthreadex(i8* null, i32 0, i32 (i8*)* null, i8* null, i32 0, i32* null)
   call void @_endthreadex(i32 0)
-  %189 = call i32 @strncmp(i8* getelementptr inbounds ([1 x i8], [1 x i8]* @"\01??_C@_00CNPNBAHC@?$AA@", i32 0, i32 0), i8* getelementptr inbounds ([1 x i8], [1 x i8]* @"\01??_C@_00CNPNBAHC@?$AA@", i32 0, i32 0), i32 1)
-  %190 = call x86_stdcallcc i32 @"\01_AreFileApisANSI@0"()
-  %191 = call x86_stdcallcc i32 @"\01_CloseHandle@4"(i8* null)
-  %192 = call x86_stdcallcc i8* @"\01_CreateFileA@28"(i8* null, i32 0, i32 0, %struct._SECURITY_ATTRIBUTES* null, i32 0, i32 0, i8* null)
-  %193 = call x86_stdcallcc i8* @"\01_CreateFileW@28"(i16* null, i32 0, i32 0, %struct._SECURITY_ATTRIBUTES* null, i32 0, i32 0, i8* null)
-  %194 = call x86_stdcallcc i8* @"\01_CreateFileMappingA@24"(i8* null, %struct._SECURITY_ATTRIBUTES* null, i32 0, i32 0, i32 0, i8* null)
-  %195 = call x86_stdcallcc i8* @"\01_CreateFileMappingW@24"(i8* null, %struct._SECURITY_ATTRIBUTES* null, i32 0, i32 0, i32 0, i16* null)
-  %196 = call x86_stdcallcc i8* @"\01_CreateMutexW@12"(%struct._SECURITY_ATTRIBUTES* null, i32 0, i16* null)
-  %197 = call x86_stdcallcc i32 @"\01_DeleteFileA@4"(i8* null)
-  %198 = call x86_stdcallcc i32 @"\01_DeleteFileW@4"(i16* null)
-  %199 = call x86_stdcallcc i32 @"\01_FlushFileBuffers@4"(i8* null)
-  %200 = call x86_stdcallcc i32 @"\01_FormatMessageA@28"(i32 0, i8* null, i32 0, i32 0, i8* null, i32 0, i8** null)
-  %201 = call x86_stdcallcc i32 @"\01_FormatMessageW@28"(i32 0, i8* null, i32 0, i32 0, i16* null, i32 0, i8** null)
-  %202 = call x86_stdcallcc i32 @"\01_FreeLibrary@4"(%struct.HINSTANCE__* null)
-  %203 = call x86_stdcallcc i32 @"\01_GetCurrentProcessId@0"()
-  %204 = call x86_stdcallcc i32 @"\01_GetDiskFreeSpaceA@20"(i8* null, i32* null, i32* null, i32* null, i32* null)
-  %205 = call x86_stdcallcc i32 @"\01_GetDiskFreeSpaceW@20"(i16* null, i32* null, i32* null, i32* null, i32* null)
-  %206 = call x86_stdcallcc i32 @"\01_GetFileAttributesA@4"(i8* null)
-  %207 = call x86_stdcallcc i32 @"\01_GetFileAttributesW@4"(i16* null)
-  %208 = load i32, i32* %x2, align 4
-  %209 = call x86_stdcallcc i32 @"\01_GetFileAttributesExW@12"(i16* null, i32 %208, i8* null)
-  %210 = call x86_stdcallcc i32 @"\01_GetFileSize@8"(i8* null, i32* null)
-  %211 = call x86_stdcallcc i32 @"\01_GetFullPathNameA@16"(i8* null, i32 0, i8* null, i8** null)
-  %212 = call x86_stdcallcc i32 @"\01_GetFullPathNameW@16"(i16* null, i32 0, i16* null, i16** null)
-  %213 = call x86_stdcallcc i32 @"\01_GetLastError@0"()
-  %214 = call x86_stdcallcc i32 ()* (%struct.HINSTANCE__*, i8*)* @"\01_GetProcAddress@8"(%struct.HINSTANCE__* null, i8* null)
+  %190 = call i32 @strncmp(i8* getelementptr inbounds ([1 x i8], [1 x i8]* @"\01??_C@_00CNPNBAHC@?$AA@", i32 0, i32 0), i8* getelementptr inbounds ([1 x i8], [1 x i8]* @"\01??_C@_00CNPNBAHC@?$AA@", i32 0, i32 0), i32 1)
+  %191 = call x86_stdcallcc i32 @"\01_AreFileApisANSI@0"()
+  %192 = call x86_stdcallcc i32 @"\01_CloseHandle@4"(i8* null)
+  %193 = call x86_stdcallcc i8* @"\01_CreateFileA@28"(i8* null, i32 0, i32 0, %struct._SECURITY_ATTRIBUTES* null, i32 0, i32 0, i8* null)
+  %194 = call x86_stdcallcc i8* @"\01_CreateFileW@28"(i16* null, i32 0, i32 0, %struct._SECURITY_ATTRIBUTES* null, i32 0, i32 0, i8* null)
+  %195 = call x86_stdcallcc i8* @"\01_CreateFileMappingA@24"(i8* null, %struct._SECURITY_ATTRIBUTES* null, i32 0, i32 0, i32 0, i8* null)
+  %196 = call x86_stdcallcc i8* @"\01_CreateFileMappingW@24"(i8* null, %struct._SECURITY_ATTRIBUTES* null, i32 0, i32 0, i32 0, i16* null)
+  %197 = call x86_stdcallcc i8* @"\01_CreateMutexW@12"(%struct._SECURITY_ATTRIBUTES* null, i32 0, i16* null)
+  %198 = call x86_stdcallcc i32 @"\01_DeleteFileA@4"(i8* null)
+  %199 = call x86_stdcallcc i32 @"\01_DeleteFileW@4"(i16* null)
+  %200 = call x86_stdcallcc i32 @"\01_FlushFileBuffers@4"(i8* null)
+  %201 = call x86_stdcallcc i32 @"\01_FormatMessageA@28"(i32 0, i8* null, i32 0, i32 0, i8* null, i32 0, i8** null)
+  %202 = call x86_stdcallcc i32 @"\01_FormatMessageW@28"(i32 0, i8* null, i32 0, i32 0, i16* null, i32 0, i8** null)
+  %203 = call x86_stdcallcc i32 @"\01_FreeLibrary@4"(%struct.HINSTANCE__* null)
+  %204 = call x86_stdcallcc i32 @"\01_GetCurrentProcessId@0"()
+  %205 = call x86_stdcallcc i32 @"\01_GetDiskFreeSpaceA@20"(i8* null, i32* null, i32* null, i32* null, i32* null)
+  %206 = call x86_stdcallcc i32 @"\01_GetDiskFreeSpaceW@20"(i16* null, i32* null, i32* null, i32* null, i32* null)
+  %207 = call x86_stdcallcc i32 @"\01_GetFileAttributesA@4"(i8* null)
+  %208 = call x86_stdcallcc i32 @"\01_GetFileAttributesW@4"(i16* null)
+  %209 = load i32, i32* %x2, align 4
+  %210 = call x86_stdcallcc i32 @"\01_GetFileAttributesExW@12"(i16* null, i32 %209, i8* null)
+  %211 = call x86_stdcallcc i32 @"\01_GetFileSize@8"(i8* null, i32* null)
+  %212 = call x86_stdcallcc i32 @"\01_GetFullPathNameA@16"(i8* null, i32 0, i8* null, i8** null)
+  %213 = call x86_stdcallcc i32 @"\01_GetFullPathNameW@16"(i16* null, i32 0, i16* null, i16** null)
+  %214 = call x86_stdcallcc i32 @"\01_GetLastError@0"()
+  %215 = call x86_stdcallcc i32 ()* (%struct.HINSTANCE__*, i8*)* @"\01_GetProcAddress@8"(%struct.HINSTANCE__* null, i8* null)
   call x86_stdcallcc void @"\01_GetSystemInfo@4"(%struct._SYSTEM_INFO* null)
   call x86_stdcallcc void @"\01_GetSystemTime@4"(%struct._SYSTEMTIME* null)
   call x86_stdcallcc void @"\01_GetSystemTimeAsFileTime@4"(%struct._FILETIME* null)
-  %215 = call x86_stdcallcc i32 @"\01_GetTempPathA@8"(i32 0, i8* null)
-  %216 = call x86_stdcallcc i32 @"\01_GetTempPathW@8"(i32 0, i16* null)
-  %217 = call x86_stdcallcc i32 @"\01_GetTickCount@0"()
-  %218 = call x86_stdcallcc i32 @"\01_GetVersionExA@4"(%struct._OSVERSIONINFOA* null)
-  %219 = call x86_stdcallcc i32 @"\01_GetVersionExW@4"(%struct._OSVERSIONINFOW* null)
-  %220 = call x86_stdcallcc i8* @"\01_HeapAlloc@12"(i8* null, i32 0, i32 0)
-  %221 = call x86_stdcallcc i8* @"\01_HeapCreate@12"(i32 0, i32 0, i32 0)
-  %222 = call x86_stdcallcc i32 @"\01_HeapDestroy@4"(i8* null)
-  %223 = call x86_stdcallcc i32 @"\01_HeapFree@12"(i8* null, i32 0, i8* null)
-  %224 = call x86_stdcallcc i8* @"\01_HeapReAlloc@16"(i8* null, i32 0, i8* null, i32 0)
-  %225 = call x86_stdcallcc i32 @"\01_HeapSize@12"(i8* null, i32 0, i8* null)
-  %226 = call x86_stdcallcc i32 @"\01_HeapValidate@12"(i8* null, i32 0, i8* null)
-  %227 = call x86_stdcallcc i32 @"\01_HeapCompact@8"(i8* null, i32 0)
-  %228 = call x86_stdcallcc %struct.HINSTANCE__* @"\01_LoadLibraryA@4"(i8* null)
-  %229 = call x86_stdcallcc %struct.HINSTANCE__* @"\01_LoadLibraryW@4"(i16* null)
-  %230 = call x86_stdcallcc i8* @"\01_LocalFree@4"(i8* null)
-  %231 = call x86_stdcallcc i32 @"\01_LockFile@20"(i8* null, i32 0, i32 0, i32 0, i32 0)
-  %232 = call x86_stdcallcc i32 @"\01_LockFileEx@24"(i8* null, i32 0, i32 0, i32 0, i32 0, %struct._OVERLAPPED* null)
-  %233 = call x86_stdcallcc i8* @"\01_MapViewOfFile@20"(i8* null, i32 0, i32 0, i32 0, i32 0)
-  %234 = call x86_stdcallcc i32 @"\01_MultiByteToWideChar@24"(i32 0, i32 0, i8* null, i32 0, i16* null, i32 0)
-  %235 = call x86_stdcallcc i32 @"\01_QueryPerformanceCounter@4"(%union._LARGE_INTEGER* null)
-  %236 = call x86_stdcallcc i32 @"\01_ReadFile@20"(i8* null, i8* null, i32 0, i32* null, %struct._OVERLAPPED* null)
-  %237 = call x86_stdcallcc i32 @"\01_SetEndOfFile@4"(i8* null)
-  %238 = call x86_stdcallcc i32 @"\01_SetFilePointer@16"(i8* null, i32 0, i32* null, i32 0)
+  %216 = call x86_stdcallcc i32 @"\01_GetTempPathA@8"(i32 0, i8* null)
+  %217 = call x86_stdcallcc i32 @"\01_GetTempPathW@8"(i32 0, i16* null)
+  %218 = call x86_stdcallcc i32 @"\01_GetTickCount@0"()
+  %219 = call x86_stdcallcc i32 @"\01_GetVersionExA@4"(%struct._OSVERSIONINFOA* null)
+  %220 = call x86_stdcallcc i32 @"\01_GetVersionExW@4"(%struct._OSVERSIONINFOW* null)
+  %221 = call x86_stdcallcc i8* @"\01_HeapAlloc@12"(i8* null, i32 0, i32 0)
+  %222 = call x86_stdcallcc i8* @"\01_HeapCreate@12"(i32 0, i32 0, i32 0)
+  %223 = call x86_stdcallcc i32 @"\01_HeapDestroy@4"(i8* null)
+  %224 = call x86_stdcallcc i32 @"\01_HeapFree@12"(i8* null, i32 0, i8* null)
+  %225 = call x86_stdcallcc i8* @"\01_HeapReAlloc@16"(i8* null, i32 0, i8* null, i32 0)
+  %226 = call x86_stdcallcc i32 @"\01_HeapSize@12"(i8* null, i32 0, i8* null)
+  %227 = call x86_stdcallcc i32 @"\01_HeapValidate@12"(i8* null, i32 0, i8* null)
+  %228 = call x86_stdcallcc i32 @"\01_HeapCompact@8"(i8* null, i32 0)
+  %229 = call x86_stdcallcc %struct.HINSTANCE__* @"\01_LoadLibraryA@4"(i8* null)
+  %230 = call x86_stdcallcc %struct.HINSTANCE__* @"\01_LoadLibraryW@4"(i16* null)
+  %231 = call x86_stdcallcc i8* @"\01_LocalFree@4"(i8* null)
+  %232 = call x86_stdcallcc i32 @"\01_LockFile@20"(i8* null, i32 0, i32 0, i32 0, i32 0)
+  %233 = call x86_stdcallcc i32 @"\01_LockFileEx@24"(i8* null, i32 0, i32 0, i32 0, i32 0, %struct._OVERLAPPED* null)
+  %234 = call x86_stdcallcc i8* @"\01_MapViewOfFile@20"(i8* null, i32 0, i32 0, i32 0, i32 0)
+  %235 = call x86_stdcallcc i32 @"\01_MultiByteToWideChar@24"(i32 0, i32 0, i8* null, i32 0, i16* null, i32 0)
+  %236 = call x86_stdcallcc i32 @"\01_QueryPerformanceCounter@4"(%union._LARGE_INTEGER* null)
+  %237 = call x86_stdcallcc i32 @"\01_ReadFile@20"(i8* null, i8* null, i32 0, i32* null, %struct._OVERLAPPED* null)
+  %238 = call x86_stdcallcc i32 @"\01_SetEndOfFile@4"(i8* null)
+  %239 = call x86_stdcallcc i32 @"\01_SetFilePointer@16"(i8* null, i32 0, i32* null, i32 0)
   call x86_stdcallcc void @"\01_Sleep@4"(i32 0)
-  %239 = call x86_stdcallcc i32 @"\01_SystemTimeToFileTime@8"(%struct._SYSTEMTIME* null, %struct._FILETIME* null)
-  %240 = call x86_stdcallcc i32 @"\01_UnlockFile@20"(i8* null, i32 0, i32 0, i32 0, i32 0)
-  %241 = call x86_stdcallcc i32 @"\01_UnlockFileEx@20"(i8* null, i32 0, i32 0, i32 0, %struct._OVERLAPPED* null)
-  %242 = call x86_stdcallcc i32 @"\01_UnmapViewOfFile@4"(i8* null)
-  %243 = call x86_stdcallcc i32 @"\01_WideCharToMultiByte@32"(i32 0, i32 0, i16* null, i32 0, i8* null, i32 0, i8* null, i32* null)
-  %244 = call x86_stdcallcc i32 @"\01_WriteFile@20"(i8* null, i8* null, i32 0, i32* null, %struct._OVERLAPPED* null)
-  %245 = call x86_stdcallcc i32 @"\01_WaitForSingleObject@8"(i8* null, i32 0)
-  %246 = call x86_stdcallcc i32 @"\01_WaitForSingleObjectEx@12"(i8* null, i32 0, i32 0)
+  %240 = call x86_stdcallcc i32 @"\01_SystemTimeToFileTime@8"(%struct._SYSTEMTIME* null, %struct._FILETIME* null)
+  %241 = call x86_stdcallcc i32 @"\01_UnlockFile@20"(i8* null, i32 0, i32 0, i32 0, i32 0)
+  %242 = call x86_stdcallcc i32 @"\01_UnlockFileEx@20"(i8* null, i32 0, i32 0, i32 0, %struct._OVERLAPPED* null)
+  %243 = call x86_stdcallcc i32 @"\01_UnmapViewOfFile@4"(i8* null)
+  %244 = call x86_stdcallcc i32 @"\01_WideCharToMultiByte@32"(i32 0, i32 0, i16* null, i32 0, i8* null, i32 0, i8* null, i32* null)
+  %245 = call x86_stdcallcc i32 @"\01_WriteFile@20"(i8* null, i8* null, i32 0, i32* null, %struct._OVERLAPPED* null)
+  %246 = call x86_stdcallcc i32 @"\01_WaitForSingleObject@8"(i8* null, i32 0)
+  %247 = call x86_stdcallcc i32 @"\01_WaitForSingleObjectEx@12"(i8* null, i32 0, i32 0)
   call x86_stdcallcc void @"\01_OutputDebugStringA@4"(i8* null)
   call x86_stdcallcc void @"\01_OutputDebugStringW@4"(i16* null)
-  %247 = call x86_stdcallcc i8* @"\01_GetProcessHeap@0"()
-  %248 = call x86_stdcallcc i32 @"\01_FlushViewOfFile@8"(i8* null, i32 0)
+  %248 = call x86_stdcallcc i8* @"\01_GetProcessHeap@0"()
+  %249 = call x86_stdcallcc i32 @"\01_FlushViewOfFile@8"(i8* null, i32 0)
   call x86_stdcallcc void @"\01_EnterCriticalSection@4"(%struct._RTL_CRITICAL_SECTION* %cs)
   call x86_stdcallcc void @"\01_LeaveCriticalSection@4"(%struct._RTL_CRITICAL_SECTION* %cs)
   call x86_stdcallcc void @"\01_InitializeCriticalSection@4"(%struct._RTL_CRITICAL_SECTION* %cs)
-  %249 = load i8*, i8** %OSSemaphore, align 4
-  %250 = call x86_stdcallcc i32 @"\01_WaitForSingleObject@8"(i8* %249, i32 1)
-  %251 = load i8*, i8** %OSSemaphore, align 4
-  %252 = call x86_stdcallcc i32 @"\01_ReleaseSemaphore@12"(i8* %251, i32 1, i32* null)
-  %253 = call x86_stdcallcc i8* @"\01_CreateSemaphoreA@16"(%struct._SECURITY_ATTRIBUTES* null, i32 1, i32 1, i8* null)
-  %254 = load i8*, i8** %Handle, align 4
-  %255 = call x86_stdcallcc i32 @"\01_SetThreadAffinityMask@8"(i8* %254, i32 1)
-  %256 = call x86_stdcallcc i32 @"\01_GetCurrentThreadId@0"()
-  %257 = call x86_stdcallcc i8* @"\01_CreateThread@24"(%struct._SECURITY_ATTRIBUTES* null, i32 0, i32 (i8*)* @"\01?ClientThread@@YGKPAX@Z", i8* null, i32 0, i32* null)
-  %258 = load i8*, i8** %Handle, align 4
-  %259 = call x86_stdcallcc i32 @"\01_SuspendThread@4"(i8* %258)
-  %260 = load i8*, i8** %Handle, align 4
-  %261 = call x86_stdcallcc i32 @"\01_ResumeThread@4"(i8* %260)
-  %262 = load i8*, i8** %Handle, align 4
-  %263 = call x86_stdcallcc i32 @"\01_SetThreadPriority@8"(i8* %262, i32 2)
-  %264 = load i8*, i8** %Handle, align 4
-  %265 = call x86_stdcallcc i32 @"\01_SetThreadPriorityBoost@8"(i8* %264, i32 1)
-  %266 = load i8*, i8** %Handle, align 4
-  %267 = call x86_stdcallcc i32 @"\01_CloseHandle@4"(i8* %266)
-  %268 = call x86_stdcallcc i8* @"\01_CreateEventA@16"(%struct._SECURITY_ATTRIBUTES* null, i32 0, i32 0, i8* null)
-  %269 = load i8*, i8** %Handle, align 4
-  %270 = call x86_stdcallcc i32 @"\01_ResetEvent@4"(i8* %269)
-  %271 = call x86_stdcallcc i32 @"\01_timeSetEvent@20"(i32 10, i32 1, void (i32, i32, i32, i32, i32)* null, i32 1, i32 1)
-  %272 = call x86_stdcallcc i32 @"\01_timeKillEvent@4"(i32 0)
-  %273 = call x86_stdcallcc i32 @"\01_timeEndPeriod@4"(i32 0)
-  %274 = call x86_stdcallcc i32 @"\01_timeGetDevCaps@8"(%struct.timecaps_tag* %Timecaps, i32 0)
-  %275 = call x86_stdcallcc i32 @"\01_timeBeginPeriod@4"(i32 0)
-  %276 = bitcast [10 x i8]* %c to i8*
-  %277 = getelementptr inbounds i8, i8* %276, i32 12
-  store i8* %277, i8** %OS_Printf_marker, align 4
+  %250 = load i8*, i8** %OSSemaphore, align 4
+  %251 = call x86_stdcallcc i32 @"\01_WaitForSingleObject@8"(i8* %250, i32 1)
+  %252 = load i8*, i8** %OSSemaphore, align 4
+  %253 = call x86_stdcallcc i32 @"\01_ReleaseSemaphore@12"(i8* %252, i32 1, i32* null)
+  %254 = call x86_stdcallcc i8* @"\01_CreateSemaphoreA@16"(%struct._SECURITY_ATTRIBUTES* null, i32 1, i32 1, i8* null)
+  %255 = load i8*, i8** %Handle, align 4
+  %256 = call x86_stdcallcc i32 @"\01_SetThreadAffinityMask@8"(i8* %255, i32 1)
+  %257 = call x86_stdcallcc i32 @"\01_GetCurrentThreadId@0"()
+  %258 = call x86_stdcallcc i8* @"\01_CreateThread@24"(%struct._SECURITY_ATTRIBUTES* null, i32 0, i32 (i8*)* @"\01?ClientThread@@YGKPAX@Z", i8* null, i32 0, i32* null)
+  %259 = load i8*, i8** %Handle, align 4
+  %260 = call x86_stdcallcc i32 @"\01_SuspendThread@4"(i8* %259)
+  %261 = load i8*, i8** %Handle, align 4
+  %262 = call x86_stdcallcc i32 @"\01_ResumeThread@4"(i8* %261)
+  %263 = load i8*, i8** %Handle, align 4
+  %264 = call x86_stdcallcc i32 @"\01_SetThreadPriority@8"(i8* %263, i32 2)
+  %265 = load i8*, i8** %Handle, align 4
+  %266 = call x86_stdcallcc i32 @"\01_SetThreadPriorityBoost@8"(i8* %265, i32 1)
+  %267 = load i8*, i8** %Handle, align 4
+  %268 = call x86_stdcallcc i32 @"\01_CloseHandle@4"(i8* %267)
+  %269 = call x86_stdcallcc i8* @"\01_CreateEventA@16"(%struct._SECURITY_ATTRIBUTES* null, i32 0, i32 0, i8* null)
+  %270 = load i8*, i8** %Handle, align 4
+  %271 = call x86_stdcallcc i32 @"\01_ResetEvent@4"(i8* %270)
+  %272 = call x86_stdcallcc i32 @"\01_timeSetEvent@20"(i32 10, i32 1, void (i32, i32, i32, i32, i32)* null, i32 1, i32 1)
+  %273 = call x86_stdcallcc i32 @"\01_timeKillEvent@4"(i32 0)
+  %274 = call x86_stdcallcc i32 @"\01_timeEndPeriod@4"(i32 0)
+  %275 = call x86_stdcallcc i32 @"\01_timeGetDevCaps@8"(%struct.timecaps_tag* %Timecaps, i32 0)
+  %276 = call x86_stdcallcc i32 @"\01_timeBeginPeriod@4"(i32 0)
+  %277 = bitcast [10 x i8]* %c to i8*
+  %278 = getelementptr inbounds i8, i8* %277, i32 12
+  store i8* %278, i8** %OS_Printf_marker, align 4
   store i8* null, i8** %OS_Printf_marker, align 4
-  %278 = load i8*, i8** %Handle, align 4
-  %279 = call x86_stdcallcc i32 @"\01_SetPriorityClass@8"(i8* %278, i32 2)
-  %280 = call x86_stdcallcc i32 @"\01_GetTickCount@0"()
-  %281 = load i8*, i8** %OS_Printf_marker, align 4
-  %282 = getelementptr inbounds [10 x i8], [10 x i8]* %c, i32 0, i32 0
-  %283 = call i32 @vprintf(i8* %282, i8* %281)
+  %279 = load i8*, i8** %Handle, align 4
+  %280 = call x86_stdcallcc i32 @"\01_SetPriorityClass@8"(i8* %279, i32 2)
+  %281 = call x86_stdcallcc i32 @"\01_GetTickCount@0"()
+  %282 = load i8*, i8** %OS_Printf_marker, align 4
+  %283 = getelementptr inbounds [10 x i8], [10 x i8]* %c, i32 0, i32 0
+  %284 = call i32 @vprintf(i8* %283, i8* %282)
   call void @"\01?MyCreateThread@@YAXP6GIPAX@Z0H@Z"(i32 (i8*)* null, i8* null, i32 1)
   call void @"\01?MyPauseThread@@YAXXZ"()
   call void @"\01?MyWaitForObject@@YAXXZ"()
@@ -911,8 +912,8 @@ define void @"\01?ex@@YAXXZ"() #0 {
   call void @"\01?Spe_GetSystemInfo@@YAXPAUSPE_SYSTEM_INFO@@@Z"(%struct.SPE_SYSTEM_INFO* null)
   call void @"\01?Spe_GetVersionExA@@YAXPAU_OSVERSIONINFOA@@@Z"(%struct._OSVERSIONINFOA* null)
   store i8* getelementptr inbounds ([1 x i8], [1 x i8]* @"\01??_C@_00CNPNBAHC@?$AA@", i32 0, i32 0), i8** %tepppppa, align 4
-  %284 = load i8*, i8** %tepppppa, align 4
-  %285 = call double @strtod(i8* %284, i8** null)
+  %285 = load i8*, i8** %tepppppa, align 4
+  %286 = call double @strtod(i8* %285, i8** null)
   call void @exit(i32 0) #11
   unreachable
                                                   ; No predecessors!
@@ -1010,6 +1011,9 @@ declare double @atan(double) #3
 
 ; Function Attrs: nounwind
 declare double @atan2(double, double) #3
+
+; Function Attrs: nounwind
+declare double @tanh(double) #3
 
 ; Function Attrs: nounwind
 declare double @cos(double) #3

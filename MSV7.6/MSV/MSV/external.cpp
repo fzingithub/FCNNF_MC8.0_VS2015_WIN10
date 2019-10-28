@@ -197,7 +197,7 @@ void ex()
 	atoi(c); atof(c);
 	floor(1.0);
 	sqrt(5.0); pow(1.0,1.0); exp(2.0);
-	sin(1.0); asin(1.0); tan(1.0); atan(1.0); atan2(1.0,1.0);
+	sin(1.0); asin(1.0); tan(1.0); atan(1.0); atan2(1.0, 1.0); tanh(1.0);
 	cos(1.0); acos(1.0); abs(1); fabs(1.0); fmod(1.0, 1.0); log(1.0); log10(1.0);
 	calloc(1,1);
 	clock(); time(NULL); srand(0); rand();

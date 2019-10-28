@@ -107,6 +107,27 @@ char* F2S(float f, char* str)
 	}
 	return str;
 }
+/************************************************************************/
+/*                            辅助函数                                  */
+/************************************************************************/
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 /************************************************************************/
@@ -320,6 +341,56 @@ Mat* MatProduct(Mat* src1, Mat* src2, Mat* dst)
 }
 
 
+/* dst = num * src 矩阵数乘运算 */
+Mat* MatNumMul(float num,Mat* src, Mat* dst)
+{
+	int row, col;
+
+#ifdef MAT_LEGAL_CHECKING
+	if (src->row != dst->row || src->col != dst->col) {
+		printf("\t\terr check, unmathed matrix for MatNumMul\t\t\n");
+		printf("\t\tsrcMatShape:\n\t\t\t");
+		MatShape(src);
+		printf("\t\tdstMatShape:\n\t\t\t");
+		MatShape(dst);
+		return NULL;
+	}
+#endif
+
+	for (row = 0; row < src->row; row++) {
+		for (col = 0; col < src->col; col++)
+			(dst->element[row])[col] = num * (src->element[row])[col];
+	}
+
+	return dst;
+}
+
+
+/* dst = num + src 矩阵数加运算 */
+Mat* MatNumAdd(float num, Mat* src, Mat* dst)
+{
+	int row, col;
+
+#ifdef MAT_LEGAL_CHECKING
+	if (src->row != dst->row || src->col != dst->col) {
+		printf("\t\terr check, unmathed matrix for MatNumAdd\t\t\n");
+		printf("\t\tsrcMatShape:\n\t\t\t");
+		MatShape(src);
+		printf("\t\tdstMatShape:\n\t\t\t");
+		MatShape(dst);
+		return NULL;
+	}
+#endif
+
+	for (row = 0; row < src->row; row++) {
+		for (col = 0; col < src->col; col++)
+			(dst->element[row])[col] = num + (src->element[row])[col];
+	}
+
+	return dst;
+}
+
+
 
 /* dst = src^T */
 Mat* MatTrans(Mat* src, Mat* dst)
@@ -345,6 +416,216 @@ Mat* MatTrans(Mat* src, Mat* dst)
 
 	return dst;
 }
+
+/*全0阵*/
+Mat* MatZeros(Mat* mat)
+{
+	int row, col;
+
+	for (row = 0; row < mat->row; row++){
+		for (col = 0; col < mat->col; col++){
+			(mat->element[row])[col] = 0.0f;
+		}
+	}
+
+	return mat;
+}
+
+
+/*全1阵*/
+Mat* MatOnes(Mat* mat)
+{
+	int row, col;
+
+	for (row = 0; row < mat->row; row++){
+		for (col = 0; col < mat->col; col++){
+			(mat->element[row])[col] = 1.0f;
+		}
+	}
+
+	return mat;
+}
+
+
+/*对角1矩阵*/
+Mat* MatEye(Mat* mat)
+{
+	int i;
+
+	MatZeros(mat);
+	for (i = 0; i < min(mat->row, mat->col); i++){
+		(mat->element[i])[i] = 1.0f;
+	}
+
+	return mat;
+}
+
+
+
+
+
+
+
+/*dst = sum(src)  src 矩阵的每一行相加*/
+Mat* MatSum(Mat* src, Mat* dst)
+{
+	int row, col;
+	float temp;
+
+#ifdef MAT_LEGAL_CHECKING
+	if (src->row != dst->row || dst->col != 1) {
+		printf("err check, unmatch matrix for MatSum\n");
+		printf("\t\tsrcMatShape:\n\t\t\t");
+		MatShape(src);
+		printf("\t\tdstMatShape:\n\t\t\t");
+		MatShape(dst);
+		return NULL;
+	}
+#endif
+
+	for (row = 0; row < src->row; row++){
+		temp = 0;
+		for (col = 0; col < src->col; col++){
+			temp += (src->element[row])[col];
+			//printf("%f\t", temp);
+		}
+		(dst->element[row])[0] = temp;
+		//printf("%f\n", temp);
+	}
+
+	return dst;
+}
+
+/*dst = MatMax(src)  src 找出矩阵的每一行最大值*/
+Mat* MatMax(Mat* src, Mat* dst)
+{
+	int row, col;
+	float temp;
+
+#ifdef MAT_LEGAL_CHECKING
+	if (src->row != dst->row || dst->col != 1) {
+		printf("err check, unmatch matrix for MatMax\n");
+		printf("\t\tsrcMatShape:\n\t\t\t");
+		MatShape(src);
+		printf("\t\tdstMatShape:\n\t\t\t");
+		MatShape(dst);
+		return NULL;
+	}
+#endif
+
+	for (row = 0; row < src->row; row++){
+		temp = (src->element[row])[0];
+		for (col = 1; col < src->col; col++){
+			if ((src->element[row])[col] > temp){
+				temp = (src->element[row])[col];
+			}
+		}
+		(dst->element[row])[0] = temp;
+	}
+
+	return dst;
+}
+
+
+
+
+
+/*dst = MatExp(src)  指数作用*/
+Mat* MatExp(Mat* src, Mat* dst)
+{
+	int row, col;
+
+#ifdef MAT_LEGAL_CHECKING
+	if (src->row != dst->row || src->col != dst->col) {
+		printf("err check, unmatch matrix for MatExp\n");
+		printf("\t\tsrcMatShape:\n\t\t\t");
+		MatShape(src);
+		printf("\t\tdstMatShape:\n\t\t\t");
+		MatShape(dst);
+		return NULL;
+	}
+#endif
+
+	for (row = 0; row < src->row; row++){
+		for (col = 0; col < src->col; col++){
+			(dst->element[row])[col] = (exp(float((src->element[row])[col])));
+		}
+	}
+
+	return dst;
+}
+
+
+
+/* dst = src - vector   矩阵减向量 行减*/
+Mat* MatVectorSub(Mat* src, Mat* vector, Mat *dst)
+{
+	int row, col;
+
+#ifdef MAT_LEGAL_CHECKING
+	if (src->row != dst->row || src->col != dst->col || vector->row != src->row || vector->col != 1) {
+		printf("err check, unmatch matrix for MatVectorSub\n");
+		printf("\t\tsrcMatShape:\n\t\t\t");
+		MatShape(src);
+		printf("\t\tvectorShape:\n\t\t\t");
+		MatShape(vector);
+		printf("\t\tdstMatShape:\n\t\t\t");
+		MatShape(dst);
+		return NULL;
+	}
+#endif
+
+
+	for (row = 0; row < src->row; row++){
+		for (col = 0; col < src->col; col++){
+			(dst->element[row])[col] = (src->element[row])[col] - (vector->element[row])[0];
+		}
+	}
+
+	return dst;
+
+}
+
+
+
+/* dst = src / vector   矩阵除向量 行除*/
+Mat* MatVectorDiv(Mat* src, Mat* vector, Mat *dst)
+{
+	int row, col;
+
+#ifdef MAT_LEGAL_CHECKING
+	if (src->row != dst->row || src->col != dst->col || vector->row != src->row || vector->col != 1) {
+		printf("err check, unmatch matrix for MatVectorSub\n");
+		printf("\t\tsrcMatShape:\n\t\t\t");
+		MatShape(src);
+		printf("\t\tvectorShape:\n\t\t\t");
+		MatShape(vector);
+		printf("\t\tdstMatShape:\n\t\t\t");
+		MatShape(dst);
+		return NULL;
+	}
+
+	for (row = 0; row < src->row; row++){
+		if (absolute((vector->element[row])[0]) < 0.000001){
+			printf("err check, Divisor vector has zero.\n");
+			return NULL;
+		}
+	}
+#endif
+
+
+	for (row = 0; row < src->row; row++){
+		for (col = 0; col < src->col; col++){
+			(dst->element[row])[col] = (src->element[row])[col]/(vector->element[row])[0];
+		}
+	}
+
+	return dst;
+
+}
+
+
+
 
 /* dst = src 内存拷贝 */
 void MatCopy(Mat* src, Mat* dst)
@@ -415,6 +696,18 @@ void MatMinus(Mat* src, Mat* dst)
 			(dst->element[row])[col] = (src->element[row])[col + 1];
 	}
 }
+/************************************************************************/
+/*                           二维矩阵操作                               */
+/************************************************************************/
+
+
+
+
+
+
+
+
+
 
 
 
@@ -423,15 +716,81 @@ void MatMinus(Mat* src, Mat* dst)
 
 
 /************************************************************************/
-/*                        二维矩阵测试主函数                            */
+/*                           激活函数操作                               */
 /************************************************************************/
+float sigmoid(float z)
+{
+	return 1 / (1 + exp(-z));
+}
+
+//直接调用 math.h 里函数
+//float tanh(float z){
+//	return (exp(z) - exp(-z)) / (exp(z) + exp(-z));
+//}
+// 
+
+float relu(float z)
+{
+	return z > 0 ? z : 0;
+}
+
+float leakyRelu(float z, float a)
+{
+	return z > 0 ? z : a;
+}
+
+
+
+Mat* MatSoftmax(Mat *src, Mat *dst)
+{
+#ifdef MAT_LEGAL_CHECKING
+	if (src->row != dst->row || src->col != dst->col) {
+		printf("\t\terr check, unmathed matrix for Matsofmax\t\t\n");
+		printf("\t\tsrcMatShape:\n\t\t\t");
+		MatShape(src);
+		printf("\t\tdstMatShape:\n\t\t\t");
+		MatShape(dst);
+		return NULL;
+	}
+#endif
+
+	Mat tempV;
+	MatCreate(&tempV, src->row, 1);   //存临时的最大行值以及求和行值向量
+
+	MatMax(src, &tempV);   //求最大行值向量
+
+	MatVectorSub(src, &tempV, dst);   //矩阵向量相减
+
+	MatExp(dst, dst);   //矩阵求对数
+
+	MatSum(dst, &tempV);   //求行求和向量
+
+	MatVectorDiv(dst, &tempV, dst);   //矩阵向量相除
+
+	return dst;
+}
+/************************************************************************/
+/*                           激活函数操作                               */
+/************************************************************************/
+
+
+
+
+
+
+
+
+
+///************************************************************************/
+///*                        二维矩阵测试主函数                            */
+///************************************************************************/
 //int main(void)
 //{
 //	Mat a;
 //	Mat a1;
 //	float val[] = {
-//		1, 2, 3,
-//		4, 5, 6,
+//		1.45, 3.92, 0.983,
+//		5.4, 7.665, 0.876,
 //	};
 //	Mat b;
 //	Mat b1;
@@ -442,6 +801,7 @@ void MatMinus(Mat* src, Mat* dst)
 //	};
 //	Mat c;
 //	Mat d;
+//	Mat e;
 //	float val3[] = {
 //		3, 2, -3,
 //		10, -3, 2,
@@ -474,7 +834,7 @@ void MatMinus(Mat* src, Mat* dst)
 //	printf("矩阵复制 a1 = a.\n");
 //	MatCopy(&a, &a1);
 //	MatDump(&a1);
-//	
+//
 //
 //	Mat x;
 //	Mat y;
@@ -483,13 +843,47 @@ void MatMinus(Mat* src, Mat* dst)
 //	MatCreate(&y, 2, 4);
 //	MatCreate(&z, 2, 2);
 //	MatDump(MatSetVal(&x, val2));
-//	printf("y = x^+=\n");
+//	printf("y = x^+\n");
 //	MatPlus(&x, &y);
 //	MatDump(&y);
 //
-//	printf("z = x^-=\n");
+//	printf("z = x^-\n");
 //	MatMinus(&x, &z);
 //	MatDump(&z);
+//
+//
+//	MatCreate(&e, 2, 1);
+//	printf("每一行元素求和 e = sum(a)\n");
+//	MatDump(MatSum(&a, &e));
+//
+//	printf("每一行元素求最大值 e = MatMax(a)\n");
+//	MatDump(MatMax(&a, &e));
+//
+//	printf("MatExp a1 = Matexp(a)\n");
+//	MatDump(MatExp(&a, &a1));
+//
+//
+//	printf("a1 = 2.0*a\n");
+//	MatDump(MatNumMul(2.0, &a, &a1));
+//
+//	printf("a1 = 3.0+a\n");
+//	MatDump(MatNumAdd(3.0, &a, &a1));
+//
+//
+//	printf("MatOnes, MatZeros, MatEye\n");
+//	MatDump(MatOnes(&x));
+//	MatDump(MatZeros(&x));
+//	MatDump(MatEye(&x));
+//
+//	Mat f;
+//	float valf[] = {7, 8, 9};
+//	MatCreate(&f, 3, 1);
+//	MatSetVal(&f, valf);
+//	printf("MatVectorSub \n");
+//	MatDump(&d);
+//	MatDump(MatVectorSub(&d, &f, &d));
+//	MatDump(&d);
+//
 //
 //	return 0;
 //}
@@ -497,13 +891,45 @@ void MatMinus(Mat* src, Mat* dst)
 
 
 
-int main() {
-	float a;
-	a = 10;
-	float b;
 
-	b = log10(a);
-	printf("%f\n", b);
+
+/************************************************************************/
+/*                        激活函数测试主函数                            */
+/************************************************************************/
+int main() {
+	//float z = 1.6;
+
+	//printf("%f\n", sigmoid(z));
+	//printf("%f\n", tanh(z));
+	//printf("%f\n", relu(z));
+	//printf("%f\n", leakyRelu(z,0.1));
+
+
+
+	Mat a;
+	Mat b;
+
+	float val[] = {
+		1.45, 3.92, 0.983,
+		5.4, 7.65, 0.876,
+		1.3, 9.86, 9.56
+	};
+	MatCreate(&b, 3, 1);
+	MatCreate(&a, 3, 3);
+	MatSetVal(&a, val);
+
+	printf("原矩阵：\n");
+	MatDump(&a);
+	printf("激活后的矩阵：\n");
+	MatDump(MatSoftmax(&a, &a));
+	printf("行求和矩阵：\n");
+	MatDump(MatSum(&a, &b));
+
 
 	return 0;
+
+
+
+
+
 }
