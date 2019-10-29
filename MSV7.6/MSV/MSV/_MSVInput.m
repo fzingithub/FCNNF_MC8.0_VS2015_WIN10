@@ -705,7 +705,7 @@ float **element
      MatZeros(mat,RValue);
      MatEye_i:=0;
      
-     while( (MatEye_i<min(mat->row,mat->col,RValue)) )
+     while( (MatEye_i<min((float)(mat->row),(float)(mat->col),RValue)) )
      {
          (mat->element[MatEye_i])[MatEye_i]:=1.0;
          MatEye_i:=MatEye_i+1
@@ -1153,7 +1153,7 @@ float **element
  {
      frame(return) and ( 
      int return<==0 and skip;
-     return<==1 and RValue:=( if(z>0) then z else a);
+     return<==1 and RValue:=( if(z<0) then a else z);
      skip
      )
      }; 
@@ -1163,7 +1163,7 @@ float **element
      int return<==0 and skip;
      if(src->row!=dst->row OR src->col!=dst->col) then 
      {
-         output ("\t\terr check, unmathed matrix for Matsofmax\t\t\n") and skip;
+         output ("\t\terr check, unmathed matrix for MatSofmax\t\t\n") and skip;
          output ("\t\tsrcMatShape:\n\t\t\t") and skip;
          MatShape(src);
          output ("\t\tdstMatShape:\n\t\t\t") and skip;
@@ -1185,6 +1185,191 @@ float **element
          MatExp(dst,dst,RValue);
          MatSum(dst,&MatSoftmax_tempV,RValue);
          MatVectorDiv(dst,&MatSoftmax_tempV,dst,RValue);
+         MatDelete(&MatSoftmax_tempV);
+         return<==1 and RValue:=dst;
+         skip
+     }
+     else
+     {
+         skip
+     }
+     )
+     }; 
+  function MatSigmoid ( Mat *src,Mat *dst,Mat* RValue )
+ {
+     frame(MatSigmoid_row,MatSigmoid_col,return) and ( 
+     int return<==0 and skip;
+     int MatSigmoid_row,MatSigmoid_col and skip;
+     if(src->row!=dst->row OR src->col!=dst->col) then 
+     {
+         output ("\t\terr check, unmathed matrix for MatSigmoid\t\t\n") and skip;
+         output ("\t\tsrcMatShape:\n\t\t\t") and skip;
+         MatShape(src);
+         output ("\t\tdstMatShape:\n\t\t\t") and skip;
+         MatShape(dst);
+         return<==1 and RValue:=NULL;
+         skip
+         
+     }
+     else 
+     {
+          skip 
+     };
+     if(return=0)   then 
+     {
+         MatSigmoid_row:=0;
+         
+         while( (MatSigmoid_row<src->row) )
+         {
+             MatSigmoid_col:=0;
+             
+             while( (MatSigmoid_col<src->col) )
+             {
+                 (dst->element[MatSigmoid_row])[MatSigmoid_col]:=sigmoid((src->element[MatSigmoid_row])[MatSigmoid_col],RValue);
+                 MatSigmoid_col:=MatSigmoid_col+1
+                 
+             };
+             MatSigmoid_row:=MatSigmoid_row+1
+             
+         };
+         return<==1 and RValue:=dst;
+         skip
+     }
+     else
+     {
+         skip
+     }
+     )
+     }; 
+  function MatTanh ( Mat *src,Mat *dst,Mat* RValue )
+ {
+     frame(MatTanh_row,MatTanh_col,return) and ( 
+     int return<==0 and skip;
+     int MatTanh_row,MatTanh_col and skip;
+     if(src->row!=dst->row OR src->col!=dst->col) then 
+     {
+         output ("\t\terr check, unmathed matrix for MatTanh\t\t\n") and skip;
+         output ("\t\tsrcMatShape:\n\t\t\t") and skip;
+         MatShape(src);
+         output ("\t\tdstMatShape:\n\t\t\t") and skip;
+         MatShape(dst);
+         return<==1 and RValue:=NULL;
+         skip
+         
+     }
+     else 
+     {
+          skip 
+     };
+     if(return=0)   then 
+     {
+         MatTanh_row:=0;
+         
+         while( (MatTanh_row<src->row) )
+         {
+             MatTanh_col:=0;
+             
+             while( (MatTanh_col<src->col) )
+             {
+                 (dst->element[MatTanh_row])[MatTanh_col]:=tanh((src->element[MatTanh_row])[MatTanh_col]);
+                 MatTanh_col:=MatTanh_col+1
+                 
+             };
+             MatTanh_row:=MatTanh_row+1
+             
+         };
+         return<==1 and RValue:=dst;
+         skip
+     }
+     else
+     {
+         skip
+     }
+     )
+     }; 
+  function MatRelu ( Mat *src,Mat *dst,Mat* RValue )
+ {
+     frame(MatRelu_row,MatRelu_col,return) and ( 
+     int return<==0 and skip;
+     int MatRelu_row,MatRelu_col and skip;
+     if(src->row!=dst->row OR src->col!=dst->col) then 
+     {
+         output ("\t\terr check, unmathed matrix for MatRelu\t\t\n") and skip;
+         output ("\t\tsrcMatShape:\n\t\t\t") and skip;
+         MatShape(src);
+         output ("\t\tdstMatShape:\n\t\t\t") and skip;
+         MatShape(dst);
+         return<==1 and RValue:=NULL;
+         skip
+         
+     }
+     else 
+     {
+          skip 
+     };
+     if(return=0)   then 
+     {
+         MatRelu_row:=0;
+         
+         while( (MatRelu_row<src->row) )
+         {
+             MatRelu_col:=0;
+             
+             while( (MatRelu_col<src->col) )
+             {
+                 (dst->element[MatRelu_row])[MatRelu_col]:=relu((src->element[MatRelu_row])[MatRelu_col],RValue);
+                 MatRelu_col:=MatRelu_col+1
+                 
+             };
+             MatRelu_row:=MatRelu_row+1
+             
+         };
+         return<==1 and RValue:=dst;
+         skip
+     }
+     else
+     {
+         skip
+     }
+     )
+     }; 
+  function MatLeakyRelu ( float a,Mat *src,Mat *dst,Mat* RValue )
+ {
+     frame(MatLeakyRelu_row,MatLeakyRelu_col,return) and ( 
+     int return<==0 and skip;
+     int MatLeakyRelu_row,MatLeakyRelu_col and skip;
+     if(src->row!=dst->row OR src->col!=dst->col) then 
+     {
+         output ("\t\terr check, unmathed matrix for MatLeakyRelu\t\t\n") and skip;
+         output ("\t\tsrcMatShape:\n\t\t\t") and skip;
+         MatShape(src);
+         output ("\t\tdstMatShape:\n\t\t\t") and skip;
+         MatShape(dst);
+         return<==1 and RValue:=NULL;
+         skip
+         
+     }
+     else 
+     {
+          skip 
+     };
+     if(return=0)   then 
+     {
+         MatLeakyRelu_row:=0;
+         
+         while( (MatLeakyRelu_row<src->row) )
+         {
+             MatLeakyRelu_col:=0;
+             
+             while( (MatLeakyRelu_col<src->col) )
+             {
+                 (dst->element[MatLeakyRelu_row])[MatLeakyRelu_col]:=leakyRelu((src->element[MatLeakyRelu_row])[MatLeakyRelu_col],a,RValue);
+                 MatLeakyRelu_col:=MatLeakyRelu_col+1
+                 
+             };
+             MatLeakyRelu_row:=MatLeakyRelu_row+1
+             
+         };
          return<==1 and RValue:=dst;
          skip
      }
@@ -1196,24 +1381,59 @@ float **element
      }; 
   function main ( int  RValue )
  {
-     frame(main_a,main_b,main_val,main_temp$_1,main_temp$_2,return) and (
+     frame(main_a,main_b,main_act,main_val,main_temp$_1,main_temp$_2,main_temp$_3,main_temp$_4,main_temp$_5,main_temp$_6,return) and (
      int return<==0 and skip;
      Mat main_a and skip;
      Mat main_b and skip;
-     float main_val[9]<=={1.45,3.92,0.983,5.4,7.65,0.876,1.3,9.86,9.56} and skip;
+     Mat main_act and skip;
+     float main_val[9]<=={-0.2,1.3,0.0,-1.5,2.6,3.3,0.5,-2.5,6.0} and skip;
      MatCreate(&main_b,3,1,RValue);
      MatCreate(&main_a,3,3,RValue);
+     MatCreate(&main_act,3,3,RValue);
      MatSetVal(&main_a,main_val,RValue);
+     output ("Softmax 激活\n") and skip;
      output ("原矩阵：\n") and skip;
      MatDump(&main_a);
      output ("激活后的矩阵：\n") and skip;
      Mat* main_temp$_1 and skip;
-     main_temp$_1:=MatSoftmax(&main_a,&main_a,RValue);
+     main_temp$_1:=MatSoftmax(&main_a,&main_act,RValue);
      MatDump(main_temp$_1);
      output ("行求和矩阵：\n") and skip;
      Mat* main_temp$_2 and skip;
-     main_temp$_2:=MatSum(&main_a,&main_b,RValue);
+     main_temp$_2:=MatSum(&main_act,&main_b,RValue);
      MatDump(main_temp$_2);
+     output ("===================================================\n") and skip;
+     output ("Sigmoid 激活\n") and skip;
+     output ("原矩阵：\n") and skip;
+     MatDump(&main_a);
+     output ("激活后的矩阵：\n") and skip;
+     Mat* main_temp$_3 and skip;
+     main_temp$_3:=MatSigmoid(&main_a,&main_act,RValue);
+     MatDump(main_temp$_3);
+     output ("===================================================\n") and skip;
+     output ("Tanh 激活\n") and skip;
+     output ("原矩阵：\n") and skip;
+     MatDump(&main_a);
+     output ("激活后的矩阵：\n") and skip;
+     Mat* main_temp$_4 and skip;
+     main_temp$_4:=MatTanh(&main_a,&main_act,RValue);
+     MatDump(main_temp$_4);
+     output ("===================================================\n") and skip;
+     output ("Relu 激活\n") and skip;
+     output ("原矩阵：\n") and skip;
+     MatDump(&main_a);
+     output ("激活后的矩阵：\n") and skip;
+     Mat* main_temp$_5 and skip;
+     main_temp$_5:=MatRelu(&main_a,&main_act,RValue);
+     MatDump(main_temp$_5);
+     output ("===================================================\n") and skip;
+     output ("LeakyRelu 激活\n") and skip;
+     output ("原矩阵：\n") and skip;
+     MatDump(&main_a);
+     output ("激活后的矩阵：\n") and skip;
+     Mat* main_temp$_6 and skip;
+     main_temp$_6:=MatLeakyRelu(0.1,&main_a,&main_act,RValue);
+     MatDump(main_temp$_6);
      return<==1 and RValue:=0;
      skip
      )

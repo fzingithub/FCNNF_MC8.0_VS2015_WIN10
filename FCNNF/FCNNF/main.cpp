@@ -27,6 +27,7 @@ float absolute(float a)
 	}
 }
 
+
 float min(float a, float b)
 {
 	if (a > b)
@@ -38,6 +39,7 @@ float min(float a, float b)
 		return a;
 	}
 }
+
 
 int equal(float a, float b)
 {
@@ -116,20 +118,6 @@ char* F2S(float f, char* str)
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 /************************************************************************/
 /*                           二维矩阵操作                               */
 /************************************************************************/
@@ -160,6 +148,7 @@ Mat* MatCreate(Mat* mat, int row, int col)
 	return mat;
 }
 
+
 void MatDelete(Mat* mat)
 {
 	int i;
@@ -168,6 +157,7 @@ void MatDelete(Mat* mat)
 		free(mat->element[i]);
 	free(mat->element);
 }
+
 
 Mat* MatSetVal(Mat* mat, float* val)
 {
@@ -183,8 +173,6 @@ Mat* MatSetVal(Mat* mat, float* val)
 }
 
 
-
-
 void MatShape(const Mat* mat)
 {
 #ifdef MAT_LEGAL_CHECKING
@@ -196,8 +184,6 @@ void MatShape(const Mat* mat)
 
 	printf("Mat %dx%d:\n", mat->row, mat->col);
 }
-
-
 
 
 void MatDump(const Mat* mat)
@@ -221,7 +207,6 @@ void MatDump(const Mat* mat)
 	}
 	printf("\n");
 }
-
 
 
 /* dst = src1 + src2 */
@@ -252,7 +237,6 @@ Mat* MatAdd(Mat* src1, Mat* src2, Mat* dst)
 }
 
 
-
 /* dst = src1 - src2 */
 Mat* MatSub(Mat* src1, Mat* src2, Mat* dst)
 {
@@ -279,6 +263,7 @@ Mat* MatSub(Mat* src1, Mat* src2, Mat* dst)
 
 	return dst;
 }
+
 
 /* dst = src1 x src2 */
 Mat* MatMul(Mat* src1, Mat* src2, Mat* dst)
@@ -312,6 +297,7 @@ Mat* MatMul(Mat* src1, Mat* src2, Mat* dst)
 
 	return dst;
 }
+
 
 /* dst = src1 * src2 */   // Hadamard product
 Mat* MatProduct(Mat* src1, Mat* src2, Mat* dst)
@@ -391,7 +377,6 @@ Mat* MatNumAdd(float num, Mat* src, Mat* dst)
 }
 
 
-
 /* dst = src^T */
 Mat* MatTrans(Mat* src, Mat* dst)
 {
@@ -416,6 +401,7 @@ Mat* MatTrans(Mat* src, Mat* dst)
 
 	return dst;
 }
+
 
 /*全0阵*/
 Mat* MatZeros(Mat* mat)
@@ -453,17 +439,12 @@ Mat* MatEye(Mat* mat)
 	int i;
 
 	MatZeros(mat);
-	for (i = 0; i < min(mat->row, mat->col); i++){
+	for (i = 0; i < min(float(mat->row), float(mat->col)); i++){
 		(mat->element[i])[i] = 1.0f;
 	}
 
 	return mat;
 }
-
-
-
-
-
 
 
 /*dst = sum(src)  src 矩阵的每一行相加*/
@@ -496,6 +477,7 @@ Mat* MatSum(Mat* src, Mat* dst)
 	return dst;
 }
 
+
 /*dst = MatMax(src)  src 找出矩阵的每一行最大值*/
 Mat* MatMax(Mat* src, Mat* dst)
 {
@@ -527,9 +509,6 @@ Mat* MatMax(Mat* src, Mat* dst)
 }
 
 
-
-
-
 /*dst = MatExp(src)  指数作用*/
 Mat* MatExp(Mat* src, Mat* dst)
 {
@@ -554,7 +533,6 @@ Mat* MatExp(Mat* src, Mat* dst)
 
 	return dst;
 }
-
 
 
 /* dst = src - vector   矩阵减向量 行减*/
@@ -585,7 +563,6 @@ Mat* MatVectorSub(Mat* src, Mat* vector, Mat *dst)
 	return dst;
 
 }
-
 
 
 /* dst = src / vector   矩阵除向量 行除*/
@@ -623,8 +600,6 @@ Mat* MatVectorDiv(Mat* src, Mat* vector, Mat *dst)
 	return dst;
 
 }
-
-
 
 
 /* dst = src 内存拷贝 */
@@ -675,7 +650,6 @@ void MatPlus(Mat* src, Mat* dst)
 }
 
 
-
 /* dst = src^- */
 void MatMinus(Mat* src, Mat* dst)
 {
@@ -696,6 +670,8 @@ void MatMinus(Mat* src, Mat* dst)
 			(dst->element[row])[col] = (src->element[row])[col + 1];
 	}
 }
+
+
 /************************************************************************/
 /*                           二维矩阵操作                               */
 /************************************************************************/
@@ -723,29 +699,31 @@ float sigmoid(float z)
 	return 1 / (1 + exp(-z));
 }
 
+
 //直接调用 math.h 里函数
 //float tanh(float z){
 //	return (exp(z) - exp(-z)) / (exp(z) + exp(-z));
 //}
-// 
+//
+
 
 float relu(float z)
 {
 	return z > 0 ? z : 0;
 }
 
+
 float leakyRelu(float z, float a)
 {
-	return z > 0 ? z : a;
+	return z < 0 ? a : z;
 }
-
 
 
 Mat* MatSoftmax(Mat *src, Mat *dst)
 {
 #ifdef MAT_LEGAL_CHECKING
 	if (src->row != dst->row || src->col != dst->col) {
-		printf("\t\terr check, unmathed matrix for Matsofmax\t\t\n");
+		printf("\t\terr check, unmathed matrix for MatSofmax\t\t\n");
 		printf("\t\tsrcMatShape:\n\t\t\t");
 		MatShape(src);
 		printf("\t\tdstMatShape:\n\t\t\t");
@@ -766,6 +744,104 @@ Mat* MatSoftmax(Mat *src, Mat *dst)
 	MatSum(dst, &tempV);   //求行求和向量
 
 	MatVectorDiv(dst, &tempV, dst);   //矩阵向量相除
+
+	MatDelete(&tempV);
+
+	return dst;
+}
+
+
+Mat* MatSigmoid(Mat *src, Mat *dst)
+{
+	int row, col;
+
+#ifdef MAT_LEGAL_CHECKING
+	if (src->row != dst->row || src->col != dst->col) {
+		printf("\t\terr check, unmathed matrix for MatSigmoid\t\t\n");
+		printf("\t\tsrcMatShape:\n\t\t\t");
+		MatShape(src);
+		printf("\t\tdstMatShape:\n\t\t\t");
+		MatShape(dst);
+		return NULL;
+	}
+#endif
+
+	for (row = 0; row < src->row; row++) {
+		for (col = 0; col < src->col; col++)
+			(dst->element[row])[col] = sigmoid((src->element[row])[col]);
+	}
+
+	return dst;
+}
+
+
+Mat* MatTanh(Mat *src, Mat *dst)
+{
+	int row, col;
+
+#ifdef MAT_LEGAL_CHECKING
+	if (src->row != dst->row || src->col != dst->col) {
+		printf("\t\terr check, unmathed matrix for MatTanh\t\t\n");
+		printf("\t\tsrcMatShape:\n\t\t\t");
+		MatShape(src);
+		printf("\t\tdstMatShape:\n\t\t\t");
+		MatShape(dst);
+		return NULL;
+	}
+#endif
+
+	for (row = 0; row < src->row; row++) {
+		for (col = 0; col < src->col; col++)
+			(dst->element[row])[col] = tanh((src->element[row])[col]);
+	}
+
+	return dst;
+}
+
+
+Mat* MatRelu(Mat *src, Mat *dst)
+{
+	int row, col;
+
+#ifdef MAT_LEGAL_CHECKING
+	if (src->row != dst->row || src->col != dst->col) {
+		printf("\t\terr check, unmathed matrix for MatRelu\t\t\n");
+		printf("\t\tsrcMatShape:\n\t\t\t");
+		MatShape(src);
+		printf("\t\tdstMatShape:\n\t\t\t");
+		MatShape(dst);
+		return NULL;
+	}
+#endif
+
+	for (row = 0; row < src->row; row++) {
+		for (col = 0; col < src->col; col++)
+			(dst->element[row])[col] = relu((src->element[row])[col]);
+	}
+
+	return dst;
+}
+
+
+Mat* MatLeakyRelu(float a, Mat *src, Mat *dst)
+{
+	int row, col;
+
+#ifdef MAT_LEGAL_CHECKING
+	if (src->row != dst->row || src->col != dst->col) {
+		printf("\t\terr check, unmathed matrix for MatLeakyRelu\t\t\n");
+		printf("\t\tsrcMatShape:\n\t\t\t");
+		MatShape(src);
+		printf("\t\tdstMatShape:\n\t\t\t");
+		MatShape(dst);
+		return NULL;
+	}
+#endif
+
+	for (row = 0; row < src->row; row++) {
+		for (col = 0; col < src->col; col++)
+			(dst->element[row])[col] = leakyRelu((src->element[row])[col], a);
+	}
 
 	return dst;
 }
@@ -905,26 +981,55 @@ int main() {
 	//printf("%f\n", leakyRelu(z,0.1));
 
 
-
 	Mat a;
 	Mat b;
-
+	Mat act;
 	float val[] = {
-		1.45, 3.92, 0.983,
-		5.4, 7.65, 0.876,
-		1.3, 9.86, 9.56
+		-0.2f, 1.3f, 0.f,
+		-1.5f, 2.6f, 3.3f,
+		0.5f, -2.5f, 6.f
 	};
 	MatCreate(&b, 3, 1);
 	MatCreate(&a, 3, 3);
+	MatCreate(&act, 3, 3);
 	MatSetVal(&a, val);
 
+	printf("Softmax 激活\n");
 	printf("原矩阵：\n");
 	MatDump(&a);
 	printf("激活后的矩阵：\n");
-	MatDump(MatSoftmax(&a, &a));
+	MatDump(MatSoftmax(&a, &act));
 	printf("行求和矩阵：\n");
-	MatDump(MatSum(&a, &b));
+	MatDump(MatSum(&act, &b));
 
+	printf("===================================================\n");
+	printf("Sigmoid 激活\n");
+	printf("原矩阵：\n");
+	MatDump(&a);
+	printf("激活后的矩阵：\n");
+	MatDump(MatSigmoid(&a, &act));
+
+
+	printf("===================================================\n");
+	printf("Tanh 激活\n");
+	printf("原矩阵：\n");
+	MatDump(&a);
+	printf("激活后的矩阵：\n");
+	MatDump(MatTanh(&a, &act));
+
+	printf("===================================================\n");
+	printf("Relu 激活\n");
+	printf("原矩阵：\n");
+	MatDump(&a);
+	printf("激活后的矩阵：\n");
+	MatDump(MatRelu(&a, &act));
+
+	printf("===================================================\n");
+	printf("LeakyRelu 激活\n");
+	printf("原矩阵：\n");
+	MatDump(&a);
+	printf("激活后的矩阵：\n");
+	MatDump(MatLeakyRelu(0.1f, &a, &act));
 
 	return 0;
 
