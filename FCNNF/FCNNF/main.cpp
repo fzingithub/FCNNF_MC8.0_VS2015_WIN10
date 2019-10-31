@@ -448,7 +448,7 @@ Mat* MatEye(Mat* mat)
 
 
 /*dst = sum(src)  src 矩阵的每一行相加*/
-Mat* MatSum(Mat* src, Mat* dst)
+Mat* MatRowSum(Mat* src, Mat* dst)
 {
 	int row, col;
 	float temp;
@@ -479,7 +479,7 @@ Mat* MatSum(Mat* src, Mat* dst)
 
 
 /*dst = MatMax(src)  src 找出矩阵的每一行最大值*/
-Mat* MatMax(Mat* src, Mat* dst)
+Mat* MatRowMax(Mat* src, Mat* dst)
 {
 	int row, col;
 	float temp;
@@ -503,6 +503,31 @@ Mat* MatMax(Mat* src, Mat* dst)
 			}
 		}
 		(dst->element[row])[0] = temp;
+	}
+
+	return dst;
+}
+
+/* dst = src * src (Hadamard product)*/
+Mat* MatSquare(Mat* src, Mat* dst)
+{
+	int row, col;
+
+#ifdef MAT_LEGAL_CHECKING
+	if (src->row != dst->row || src->col != dst->col) {
+		printf("err check, unmatch matrix for MatSquare\n");
+		printf("\t\tsrcMatShape:\n\t\t\t");
+		MatShape(src);
+		printf("\t\tdstMatShape:\n\t\t\t");
+		MatShape(dst);
+		return NULL;
+	}
+#endif
+
+	for (row = 0; row < src->row; row++){
+		for (col = 0; col < src->col; col++){
+			(dst->element[row])[col] = (src->element[row])[col] * (src->element[row])[col];
+		}
 	}
 
 	return dst;
@@ -735,13 +760,13 @@ Mat* MatSoftmax(Mat *src, Mat *dst)
 	Mat tempV;
 	MatCreate(&tempV, src->row, 1);   //存临时的最大行值以及求和行值向量
 
-	MatMax(src, &tempV);   //求最大行值向量
+	MatRowMax(src, &tempV);   //求最大行值向量
 
 	MatVectorSub(src, &tempV, dst);   //矩阵向量相减
 
 	MatExp(dst, dst);   //矩阵求对数
 
-	MatSum(dst, &tempV);   //求行求和向量
+	MatRowSum(dst, &tempV);   //求行求和向量
 
 	MatVectorDiv(dst, &tempV, dst);   //矩阵向量相除
 
@@ -849,6 +874,112 @@ Mat* MatLeakyRelu(float a, Mat *src, Mat *dst)
 /*                           激活函数操作                               */
 /************************************************************************/
 
+
+
+
+
+
+
+
+
+/************************************************************************/
+/*                           损失函数操作                               */
+/************************************************************************/
+Mat* OneHot(Mat *src, int k, Mat *dst)
+{
+	int row;
+
+#ifdef MAT_LEGAL_CHECKING
+	if (src->row != dst->row || src->col != 1 || dst->col != k) {
+		printf("\t\terr check, unmathed matrix for Onehot\t\t\n");
+		printf("\t\tsrcMatShape:\n\t\t\t");
+		MatShape(src);
+		printf("\t\tThe number of class:\n\t\t\t");
+		printf("%d\n", k);
+		printf("\t\tdstMatShape:\n\t\t\t");
+		MatShape(dst);
+		return NULL;
+	}
+#endif
+
+	MatZeros(dst);
+
+	for (row = 0; row < dst->row; row++) {
+		(dst->element[row])[int((src->element[row])[0])] = 1.0f;
+	}
+
+	return dst;
+}
+
+/*均方误差*/
+float MSE(Mat *src, Mat *dst)
+{
+	int row;
+	float loss=0.f;
+	Mat sub_square_mat;
+	Mat sum_row_mat;
+
+#ifdef MAT_LEGAL_CHECKING
+	if (src->row != dst->row || src->col != dst->col) {
+		printf("\t\terr check, unmathed matrix for Loss Function MSE\t\t\n");
+		printf("\t\tPredictoinMatShape:\n\t\t\t");
+		MatShape(src);
+		printf("\t\tOneHotMatShape:\n\t\t\t");
+		MatShape(dst);
+		return -1.;     // 参数检查不过关返回 -1；
+	}
+#endif
+
+	MatCreate(&sub_square_mat, src->row, src->col);
+	MatCreate(&sum_row_mat, src->row, 1);
+
+	MatSub(src, dst, &sub_square_mat);
+	//MatDump(&sub_square_mat);
+	MatSquare(&sub_square_mat, &sub_square_mat);
+	//MatDump(&sub_square_mat);
+	MatRowSum(&sub_square_mat, &sum_row_mat);
+	//MatDump(&sum_row_mat);
+
+	for (row = 0; row < src->row; ++row){
+		//printf("%f\t", (sum_row_mat.element[row])[0]);
+		loss = loss + (sum_row_mat.element[row])[0];
+	}
+	loss = loss / float(src->row);
+
+	MatDelete(&sub_square_mat);
+	MatDelete(&sum_row_mat);
+	return loss;
+}
+
+
+float CrossEntropy(Mat *src, Mat *dst)
+{
+	int row, col;
+	float loss = 0.f;
+
+#ifdef MAT_LEGAL_CHECKING
+	if (src->row != dst->row || src->col != dst->col) {
+		printf("\t\terr check, unmathed matrix for Loss Function CrossEntropy\t\t\n");
+		printf("\t\tPredictoinMatShape:\n\t\t\t");
+		MatShape(src);
+		printf("\t\tOneHotMatShape:\n\t\t\t");
+		MatShape(dst);
+		return -1.;     // 参数检查不过关返回 -1；
+	}
+#endif
+
+	for (row = 0; row < src->row; row++) {
+		for (col = 0; col < src->col; col++)
+			loss += -1*(dst->element[row])[col]*log((src->element[row])[col]);
+	}
+
+	loss = loss / (src->row);
+	
+	return loss;
+}
+/************************************************************************/
+/*                           损失函数操作                               */
+/************************************************************************/
 
 
 
@@ -972,69 +1103,127 @@ Mat* MatLeakyRelu(float a, Mat *src, Mat *dst)
 /************************************************************************/
 /*                        激活函数测试主函数                            */
 /************************************************************************/
-int main() {
-	//float z = 1.6;
+//int main() {
+//	//float z = 1.6;
+//
+//	//printf("%f\n", sigmoid(z));
+//	//printf("%f\n", tanh(z));
+//	//printf("%f\n", relu(z));
+//	//printf("%f\n", leakyRelu(z,0.1));
+//
+//
+//	Mat a;
+//	Mat b;
+//	Mat act;
+//	float val[] = {
+//		-0.2f, 1.3f, 0.f,
+//		-1.5f, 2.6f, 3.3f,
+//		0.5f, -2.5f, 6.f
+//	};
+//	MatCreate(&b, 3, 1);
+//	MatCreate(&a, 3, 3);
+//	MatCreate(&act, 3, 3);
+//	MatSetVal(&a, val);
+//
+//	printf("Softmax 激活\n");
+//	printf("原矩阵：\n");
+//	MatDump(&a);
+//	printf("激活后的矩阵：\n");
+//	MatDump(MatSoftmax(&a, &act));
+//	printf("行求和矩阵：\n");
+//	MatDump(MatRowSum(&act, &b));
+//
+//	printf("===================================================\n");
+//	printf("Sigmoid 激活\n");
+//	printf("原矩阵：\n");
+//	MatDump(&a);
+//	printf("激活后的矩阵：\n");
+//	MatDump(MatSigmoid(&a, &act));
+//
+//
+//	printf("===================================================\n");
+//	printf("Tanh 激活\n");
+//	printf("原矩阵：\n");
+//	MatDump(&a);
+//	printf("激活后的矩阵：\n");
+//	MatDump(MatTanh(&a, &act));
+//
+//	printf("===================================================\n");
+//	printf("Relu 激活\n");
+//	printf("原矩阵：\n");
+//	MatDump(&a);
+//	printf("激活后的矩阵：\n");
+//	MatDump(MatRelu(&a, &act));
+//
+//	printf("===================================================\n");
+//	printf("LeakyRelu 激活\n");
+//	printf("原矩阵：\n");
+//	MatDump(&a);
+//	printf("激活后的矩阵：\n");
+//	MatDump(MatLeakyRelu(0.1f, &a, &act));
+//
+//	return 0;
+//}
 
-	//printf("%f\n", sigmoid(z));
-	//printf("%f\n", tanh(z));
-	//printf("%f\n", relu(z));
-	//printf("%f\n", leakyRelu(z,0.1));
 
 
-	Mat a;
-	Mat b;
-	Mat act;
-	float val[] = {
-		-0.2f, 1.3f, 0.f,
-		-1.5f, 2.6f, 3.3f,
-		0.5f, -2.5f, 6.f
-	};
-	MatCreate(&b, 3, 1);
-	MatCreate(&a, 3, 3);
-	MatCreate(&act, 3, 3);
-	MatSetVal(&a, val);
-
-	printf("Softmax 激活\n");
-	printf("原矩阵：\n");
-	MatDump(&a);
-	printf("激活后的矩阵：\n");
-	MatDump(MatSoftmax(&a, &act));
-	printf("行求和矩阵：\n");
-	MatDump(MatSum(&act, &b));
-
-	printf("===================================================\n");
-	printf("Sigmoid 激活\n");
-	printf("原矩阵：\n");
-	MatDump(&a);
-	printf("激活后的矩阵：\n");
-	MatDump(MatSigmoid(&a, &act));
 
 
-	printf("===================================================\n");
-	printf("Tanh 激活\n");
-	printf("原矩阵：\n");
-	MatDump(&a);
-	printf("激活后的矩阵：\n");
-	MatDump(MatTanh(&a, &act));
 
-	printf("===================================================\n");
-	printf("Relu 激活\n");
-	printf("原矩阵：\n");
-	MatDump(&a);
-	printf("激活后的矩阵：\n");
-	MatDump(MatRelu(&a, &act));
 
-	printf("===================================================\n");
-	printf("LeakyRelu 激活\n");
-	printf("原矩阵：\n");
-	MatDump(&a);
-	printf("激活后的矩阵：\n");
-	MatDump(MatLeakyRelu(0.1f, &a, &act));
 
+/************************************************************************/
+/*                       损失函数测试主函数                             */
+/************************************************************************/
+int main()
+{
+	Mat Y;
+	Mat Yonehot;
+	Mat Ytrans;
+	Mat Sum;
+
+	float val[5] = { 0, 3, 1, 2, 3};
+
+	MatCreate(&Y, 5, 1);
+	MatCreate(&Ytrans, 1, 5);
+	MatCreate(&Yonehot, 5, 4);
+	MatSetVal(&Y, val);
+	MatCreate(&Sum, 1, 1);
+
+	OneHot(&Y, 4, &Yonehot);
+	//MatDump(&Y);
+	MatDump(&Yonehot);
+
+	MatRowSum(&Yonehot, &Y);
+	//MatDump(&Y);
+	MatTrans(&Y, &Ytrans);
+
+	MatRowSum(&Ytrans, &Sum);
+
+	//MatDump(&Sum);
+
+
+
+
+
+	Mat prediction;
+	MatCreate(&prediction, 5, 4);
+	float prop[20] = { 0.8f, 0.7f, 0.3f, 0.2f, 1.0f, 1.6f, 0.8f, 0.1f, 0.6f, 0.7f, 0.9f, 0.6f, 0.1f, 0.9f, 1.2f, 1.3f ,0.8f, 6.f, 1.f, 0.7f};
+	
+	MatSetVal(&prediction, prop);
+	MatDump(&prediction);
+
+	MatSoftmax(&prediction, &prediction);
+	MatDump(&prediction);
+
+	float MSEloss = 0.f;
+	MSEloss = MSE(&prediction, &Yonehot);
+
+	printf("MSE loss = %f\n", MSEloss);
+
+	float CEloss = 0.f;
+	CEloss = CrossEntropy(&prediction, &Yonehot);
+
+	printf("CE loss = %f\n", CEloss);
 	return 0;
-
-
-
-
-
 }
