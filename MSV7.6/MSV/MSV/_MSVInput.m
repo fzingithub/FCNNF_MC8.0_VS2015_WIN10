@@ -1565,38 +1565,87 @@ float **element
      }
      )
      }; 
+  function gaussrand_NORMAL ( float  RValue )
+ {
+     frame(gaussrand_NORMAL_V1,gaussrand_NORMAL_V2,gaussrand_NORMAL_S,gaussrand_NORMAL_phase,gaussrand_NORMAL_X,gaussrand_NORMAL_1_2_U1,gaussrand_NORMAL_1_2_U2,count$,gaussrand_NORMAL_1_temp$_1,gaussrand_NORMAL_3_temp$_2,return) and ( 
+     int return<==0 and skip;
+     float gaussrand_NORMAL_V1,gaussrand_NORMAL_V2,gaussrand_NORMAL_S and skip;
+     int gaussrand_NORMAL_phase<==0 and skip;
+     float gaussrand_NORMAL_X and skip;
+     int gaussrand_NORMAL_3_temp$_2 and skip;
+     gaussrand_NORMAL_3_temp$_2:=log(gaussrand_NORMAL_S);
+     if(gaussrand_NORMAL_phase=0) then 
+     {
+         int count$<==0 and skip;
+         while( (count$=0 OR (gaussrand_NORMAL_S>=1 OR gaussrand_NORMAL_S=0) ) )
+         {
+             count$:=count$+1;
+             float gaussrand_NORMAL_1_2_U1<==(float)rand()/ RAND_MAX and skip;
+             float gaussrand_NORMAL_1_2_U2<==(float)rand()/ RAND_MAX and skip;
+             gaussrand_NORMAL_V1:=2*gaussrand_NORMAL_1_2_U1-1;
+             gaussrand_NORMAL_V2:=2*gaussrand_NORMAL_1_2_U2-1;
+             gaussrand_NORMAL_S:=gaussrand_NORMAL_V1*gaussrand_NORMAL_V1+gaussrand_NORMAL_V2*gaussrand_NORMAL_V2
+         };
+         int gaussrand_NORMAL_1_temp$_1 and skip;
+         gaussrand_NORMAL_1_temp$_1:=log(gaussrand_NORMAL_S);
+         gaussrand_NORMAL_X:=gaussrand_NORMAL_V1*sqrt(-2*gaussrand_NORMAL_1_temp$_1/ gaussrand_NORMAL_S)
+         
+     }
+     else
+     {
+         gaussrand_NORMAL_X:=gaussrand_NORMAL_V2*sqrt(-2*gaussrand_NORMAL_3_temp$_2/ gaussrand_NORMAL_S)
+     };
+     gaussrand_NORMAL_phase:=1-gaussrand_NORMAL_phase;
+     return<==1 and RValue:=gaussrand_NORMAL_X;
+     skip
+     )
+     }; 
+  function gaussrand ( float mean,float stdc,float RValue )
+ {
+     frame(return) and ( 
+     int return<==0 and skip;
+     return<==1 and RValue:=mean+gaussrand_NORMAL(RValue)*stdc;
+     skip
+     )
+     }; 
+  function MatInitZero ( Mat *src,Mat* RValue )
+ {
+     frame(return) and ( 
+     int return<==0 and skip;
+     MatZeros(src,RValue);
+     return<==1 and RValue:=src;
+     skip
+     )
+     }; 
+  function MatInitRandom ( Mat *src,Mat* RValue )
+ {
+     frame(return) and ( 
+     int return<==0 and skip;
+     return<==1 and RValue:=NULL;
+     skip
+     )
+     }; 
   function main ( int  RValue )
  {
-     frame(main_Y,main_Yonehot,main_Ytrans,main_Sum,main_val,main_prediction,main_prop,main_MSEloss,main_CEloss,return) and (
+     frame(main_m,main_mean,main_stdc,main_data,main_i,return) and (
      int return<==0 and skip;
-     Mat main_Y and skip;
-     Mat main_Yonehot and skip;
-     Mat main_Ytrans and skip;
-     Mat main_Sum and skip;
-     float main_val[5]<=={0,3,1,2,3} and skip;
-     MatCreate(&main_Y,5,1,RValue);
-     MatCreate(&main_Ytrans,1,5,RValue);
-     MatCreate(&main_Yonehot,5,4,RValue);
-     MatSetVal(&main_Y,main_val,RValue);
-     MatCreate(&main_Sum,1,1,RValue);
-     OneHot(&main_Y,4,&main_Yonehot,RValue);
-     MatDump(&main_Yonehot);
-     MatRowSum(&main_Yonehot,&main_Y,RValue);
-     MatTrans(&main_Y,&main_Ytrans,RValue);
-     MatRowSum(&main_Ytrans,&main_Sum,RValue);
-     Mat main_prediction and skip;
-     MatCreate(&main_prediction,5,4,RValue);
-     float main_prop[20]<=={0.8,0.7,0.3,0.2,1.0,1.6,0.8,0.1,0.6,0.7,0.9,0.6,0.1,0.9,1.2,1.3,0.8,6.0,1.0,0.7} and skip;
-     MatSetVal(&main_prediction,main_prop,RValue);
-     MatDump(&main_prediction);
-     MatSoftmax(&main_prediction,&main_prediction,RValue);
-     MatDump(&main_prediction);
-     float main_MSEloss<==0.0 and skip;
-     main_MSEloss:=MSE(&main_prediction,&main_Yonehot,RValue);
-     output ("MSE loss = ",main_MSEloss,"\n") and skip;
-     float main_CEloss<==0.0 and skip;
-     main_CEloss:=CrossEntropy(&main_prediction,&main_Yonehot,RValue);
-     output ("CE loss = ",main_CEloss,"\n") and skip;
+     Mat main_m and skip;
+     MatCreate(&main_m,10,4,RValue);
+     MatDump(&main_m);
+     MatInitZero(&main_m,RValue);
+     MatDump(&main_m);
+     float main_mean<==0 and skip;
+     float main_stdc<==1 and skip;
+     float main_data<==0 and skip;
+     int main_i<==0 and skip;
+     
+     while( (main_i<100) )
+     {
+         main_data:=gaussrand(0,0.01,RValue);
+         output (main_data,"\t","\t") and skip;
+         main_i:=main_i+1
+         
+     };
      return<==1 and RValue:=0;
      skip
      )

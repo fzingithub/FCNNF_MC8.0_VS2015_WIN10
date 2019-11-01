@@ -882,6 +882,11 @@ Mat* MatLeakyRelu(float a, Mat *src, Mat *dst)
 
 
 
+
+
+
+
+
 /************************************************************************/
 /*                           损失函数操作                               */
 /************************************************************************/
@@ -981,6 +986,71 @@ float CrossEntropy(Mat *src, Mat *dst)
 /*                           损失函数操作                               */
 /************************************************************************/
 
+
+
+
+
+
+
+
+
+/************************************************************************/
+/*                           权值初始化函数操作                         */
+/************************************************************************/
+float gaussrand_NORMAL() {
+	static float V1, V2, S;
+	static int phase = 0;
+	float X;
+
+
+	if (phase == 0) {
+		do {
+			float U1 = (float)rand() / RAND_MAX;
+			float U2 = (float)rand() / RAND_MAX;
+
+
+			V1 = 2 * U1 - 1;
+			V2 = 2 * U2 - 1;
+			S = V1 * V1 + V2 * V2;
+		} while (S >= 1 || S == 0);
+
+
+		X = V1 * sqrt(-2 * log(S) / S);
+	}
+	else
+		X = V2 * sqrt(-2 * log(S) / S);
+
+
+	phase = 1 - phase;
+
+
+	return X;
+}
+
+
+float gaussrand(float mean, float stdc) {
+	return mean + gaussrand_NORMAL() * stdc;
+}
+
+
+// 全0初始化 
+Mat* MatInitZero(Mat *src)
+{
+	MatZeros(src);
+	return src;
+}
+
+
+
+/* 初始化成0均值 0.01方差的标准化数据*/
+Mat* MatInitRandom(Mat *src)
+{
+	return NULL;
+}
+
+/************************************************************************/
+/*                           权值初始化函数操作                         */
+/************************************************************************/
 
 
 
@@ -1175,55 +1245,100 @@ float CrossEntropy(Mat *src, Mat *dst)
 /************************************************************************/
 /*                       损失函数测试主函数                             */
 /************************************************************************/
+//int main()
+//{
+//	Mat Y;
+//	Mat Yonehot;
+//	Mat Ytrans;
+//	Mat Sum;
+//
+//	float val[5] = { 0, 3, 1, 2, 3};
+//
+//	MatCreate(&Y, 5, 1);
+//	MatCreate(&Ytrans, 1, 5);
+//	MatCreate(&Yonehot, 5, 4);
+//	MatSetVal(&Y, val);
+//	MatCreate(&Sum, 1, 1);
+//
+//	OneHot(&Y, 4, &Yonehot);
+//	//MatDump(&Y);
+//	MatDump(&Yonehot);
+//
+//	MatRowSum(&Yonehot, &Y);
+//	//MatDump(&Y);
+//	MatTrans(&Y, &Ytrans);
+//
+//	MatRowSum(&Ytrans, &Sum);
+//
+//	//MatDump(&Sum);
+//
+//
+//
+//
+//
+//	Mat prediction;
+//	MatCreate(&prediction, 5, 4);
+//	float prop[20] = { 0.8f, 0.7f, 0.3f, 0.2f, 1.0f, 1.6f, 0.8f, 0.1f, 0.6f, 0.7f, 0.9f, 0.6f, 0.1f, 0.9f, 1.2f, 1.3f ,0.8f, 6.f, 1.f, 0.7f};
+//	
+//	MatSetVal(&prediction, prop);
+//	MatDump(&prediction);
+//
+//	MatSoftmax(&prediction, &prediction);
+//	MatDump(&prediction);
+//
+//	float MSEloss = 0.f;
+//	MSEloss = MSE(&prediction, &Yonehot);
+//
+//	printf("MSE loss = %f\n", MSEloss);
+//
+//	float CEloss = 0.f;
+//	CEloss = CrossEntropy(&prediction, &Yonehot);
+//
+//	printf("CE loss = %f\n", CEloss);
+//	return 0;
+//}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/************************************************************************/
+/*                       权值初始化测试主函数                           */
+/************************************************************************/
 int main()
 {
-	Mat Y;
-	Mat Yonehot;
-	Mat Ytrans;
-	Mat Sum;
+	Mat m;
+	MatCreate(&m, 10, 4);
+	MatDump(&m);
+	MatInitZero(&m);
+	MatDump(&m);
 
-	float val[5] = { 0, 3, 1, 2, 3};
+	float mean = 0;
+	float stdc = 1;
+	float data = 0;
 
-	MatCreate(&Y, 5, 1);
-	MatCreate(&Ytrans, 1, 5);
-	MatCreate(&Yonehot, 5, 4);
-	MatSetVal(&Y, val);
-	MatCreate(&Sum, 1, 1);
-
-	OneHot(&Y, 4, &Yonehot);
-	//MatDump(&Y);
-	MatDump(&Yonehot);
-
-	MatRowSum(&Yonehot, &Y);
-	//MatDump(&Y);
-	MatTrans(&Y, &Ytrans);
-
-	MatRowSum(&Ytrans, &Sum);
-
-	//MatDump(&Sum);
+	for (int i = 0; i<100; ++i){
+		data = gaussrand(0, 0.01);
+		printf("%f\t", data);
+	}
 
 
 
-
-
-	Mat prediction;
-	MatCreate(&prediction, 5, 4);
-	float prop[20] = { 0.8f, 0.7f, 0.3f, 0.2f, 1.0f, 1.6f, 0.8f, 0.1f, 0.6f, 0.7f, 0.9f, 0.6f, 0.1f, 0.9f, 1.2f, 1.3f ,0.8f, 6.f, 1.f, 0.7f};
-	
-	MatSetVal(&prediction, prop);
-	MatDump(&prediction);
-
-	MatSoftmax(&prediction, &prediction);
-	MatDump(&prediction);
-
-	float MSEloss = 0.f;
-	MSEloss = MSE(&prediction, &Yonehot);
-
-	printf("MSE loss = %f\n", MSEloss);
-
-	float CEloss = 0.f;
-	CEloss = CrossEntropy(&prediction, &Yonehot);
-
-	printf("CE loss = %f\n", CEloss);
 	return 0;
 }
+
