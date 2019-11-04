@@ -200,7 +200,7 @@ void ex()
 	sin(1.0); asin(1.0); tan(1.0); atan(1.0); atan2(1.0, 1.0); tanh(1.0);
 	cos(1.0); acos(1.0); abs(1); fabs(1.0); fmod(1.0, 1.0); log(1.0); log10(1.0);
 	calloc(1,1);
-	clock(); time(NULL); srand(0); rand();
+	clock(); time(NULL); srand(0); rand(); 
 	getenv(c);
 	FILE * fp;
 	fp = fopen("1.txt","r");
@@ -375,6 +375,10 @@ if(c[0]!=EOF)
 	
 	char *tepppppa = "";
 	strtod(tepppppa,NULL);
+
+	//gaussrand_NORMAL();
+	//gaussrand(0.f, 1.0f);
+
 	
 	exit(0);
 }
@@ -382,6 +386,7 @@ if(c[0]!=EOF)
 void ex1()
 {
 	longjmp(j_buf, 0);
+	RAND_MAX;
 }
 
 void *memcpy(void *dest, const void *src, size_t count)
@@ -462,4 +467,39 @@ void $$addString(char* str)
 	strcat($$varsInfo, str);
 	$$tempLen += strlen(str);
 	$$varsInfo[$$tempLen] = '\0';
+}
+
+float gaussrand_NORMAL() {
+	static float V1, V2, S;
+	static int phase = 0;
+	float X;
+
+
+	if (phase == 0) {
+		do {
+			float U1 = (float)rand() / RAND_MAX;
+			float U2 = (float)rand() / RAND_MAX;
+
+
+			V1 = 2 * U1 - 1;
+			V2 = 2 * U2 - 1;
+			S = V1 * V1 + V2 * V2;
+		} while (S >= 1 || S == 0);
+
+
+		X = V1 * sqrt(-2 * log(S) / S);
+	}
+	else
+		X = V2 * sqrt(-2 * log(S) / S);
+
+
+	phase = 1 - phase;
+
+
+	return X;
+}
+
+
+float gaussrand(float mean, float stdc) {
+	return mean + gaussrand_NORMAL() * stdc;
 }

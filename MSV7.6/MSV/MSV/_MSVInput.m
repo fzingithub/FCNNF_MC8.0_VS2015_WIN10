@@ -99,12 +99,7 @@ float **element
          F2S_i:=F2S_i+1
          
      };
-     while( (str[(F2S_j-1)]='0') )
-     {
-         F2S_j:=F2S_j-1
-     };
-     str[(F2S_j+1)]:='\0';
-     F2S_j:=F2S_j+1;
+     str[F2S_j]:='\0';
      if(f<0) then 
      {
          F2S_j:=0;
@@ -267,10 +262,11 @@ float **element
      }; 
   function MatDump ( Mat *mat )
  {
-     frame(MatDump_row,MatDump_col,MatDump_str,return) and ( 
+     frame(MatDump_row,MatDump_col,MatDump_str,MatDump_data,return) and ( 
      int return<==0 and skip;
      int MatDump_row,MatDump_col and skip;
      char MatDump_str[40] and skip;
+     char *MatDump_data and skip;
      if(mat=NULL) then 
      {
          output ("err check for MatDump\n") and skip;
@@ -292,7 +288,16 @@ float **element
              
              while( (MatDump_col<mat->col) )
              {
-                 output (F2S((mat->element[MatDump_row])[MatDump_col],MatDump_str,RValue),"\t","\t") and skip;
+                 MatDump_data:=F2S((mat->element[MatDump_row])[MatDump_col],MatDump_str,RValue);
+                 if(MatDump_data[0]='-') then 
+                 {
+                     output (" ",F2S((mat->element[MatDump_row])[MatDump_col],MatDump_str,RValue),"\t") and skip
+                     
+                 }
+                 else
+                 {
+                     output ("  ",F2S((mat->element[MatDump_row])[MatDump_col],MatDump_str,RValue),"\t") and skip
+                 };
                  MatDump_col:=MatDump_col+1
                  
              };
@@ -1567,33 +1572,33 @@ float **element
      }; 
   function gaussrand_NORMAL ( float  RValue )
  {
-     frame(gaussrand_NORMAL_V1,gaussrand_NORMAL_V2,gaussrand_NORMAL_S,gaussrand_NORMAL_phase,gaussrand_NORMAL_X,gaussrand_NORMAL_1_2_U1,gaussrand_NORMAL_1_2_U2,count$,gaussrand_NORMAL_1_temp$_1,gaussrand_NORMAL_3_temp$_2,return) and ( 
+     frame(gaussrand_NORMAL_V1,gaussrand_NORMAL_V2,gaussrand_NORMAL_S,gaussrand_NORMAL_phase,gaussrand_NORMAL_count,gaussrand_NORMAL_X,gaussrand_NORMAL_1_2_U1,gaussrand_NORMAL_1_2_U2,gaussrand_NORMAL_1_temp_S_1,gaussrand_NORMAL_3_temp_S_2,return) and ( 
      int return<==0 and skip;
-     float gaussrand_NORMAL_V1,gaussrand_NORMAL_V2,gaussrand_NORMAL_S and skip;
+     float gaussrand_NORMAL_V1<==0.0,gaussrand_NORMAL_V2<==0.0,gaussrand_NORMAL_S<==0.0 and skip;
      int gaussrand_NORMAL_phase<==0 and skip;
+     int gaussrand_NORMAL_count<==0 and skip;
      float gaussrand_NORMAL_X and skip;
-     int gaussrand_NORMAL_3_temp$_2 and skip;
-     gaussrand_NORMAL_3_temp$_2:=log(gaussrand_NORMAL_S);
      if(gaussrand_NORMAL_phase=0) then 
      {
-         int count$<==0 and skip;
-         while( (count$=0 OR (gaussrand_NORMAL_S>=1 OR gaussrand_NORMAL_S=0) ) )
+         while( (gaussrand_NORMAL_count=0 OR (gaussrand_NORMAL_S>=1 OR gaussrand_NORMAL_S=0)) )
          {
-             count$:=count$+1;
-             float gaussrand_NORMAL_1_2_U1<==(float)rand()/ RAND_MAX and skip;
-             float gaussrand_NORMAL_1_2_U2<==(float)rand()/ RAND_MAX and skip;
+             float gaussrand_NORMAL_1_2_U1<==(float)(rand() % 10000)/ 10000.0 and skip;
+             float gaussrand_NORMAL_1_2_U2<==(float)(rand() % 10000)/ 10000.0 and skip;
              gaussrand_NORMAL_V1:=2*gaussrand_NORMAL_1_2_U1-1;
              gaussrand_NORMAL_V2:=2*gaussrand_NORMAL_1_2_U2-1;
-             gaussrand_NORMAL_S:=gaussrand_NORMAL_V1*gaussrand_NORMAL_V1+gaussrand_NORMAL_V2*gaussrand_NORMAL_V2
+             gaussrand_NORMAL_S:=gaussrand_NORMAL_V1*gaussrand_NORMAL_V1+gaussrand_NORMAL_V2*gaussrand_NORMAL_V2;
+             gaussrand_NORMAL_count:=gaussrand_NORMAL_count+1
          };
-         int gaussrand_NORMAL_1_temp$_1 and skip;
-         gaussrand_NORMAL_1_temp$_1:=log(gaussrand_NORMAL_S);
-         gaussrand_NORMAL_X:=gaussrand_NORMAL_V1*sqrt(-2*gaussrand_NORMAL_1_temp$_1/ gaussrand_NORMAL_S)
+         float gaussrand_NORMAL_1_temp_S_1 and skip;
+         gaussrand_NORMAL_1_temp_S_1:=log(gaussrand_NORMAL_S);
+         gaussrand_NORMAL_X:=gaussrand_NORMAL_V1*sqrt(-2*gaussrand_NORMAL_1_temp_S_1/ gaussrand_NORMAL_S)
          
      }
      else
      {
-         gaussrand_NORMAL_X:=gaussrand_NORMAL_V2*sqrt(-2*gaussrand_NORMAL_3_temp$_2/ gaussrand_NORMAL_S)
+         float gaussrand_NORMAL_3_temp_S_2 and skip;
+         gaussrand_NORMAL_3_temp_S_2:=log(gaussrand_NORMAL_S);
+         gaussrand_NORMAL_X:=gaussrand_NORMAL_V2*sqrt(-2*gaussrand_NORMAL_3_temp_S_2/ gaussrand_NORMAL_S)
      };
      gaussrand_NORMAL_phase:=1-gaussrand_NORMAL_phase;
      return<==1 and RValue:=gaussrand_NORMAL_X;
@@ -1617,35 +1622,41 @@ float **element
      skip
      )
      }; 
-  function MatInitRandom ( Mat *src,Mat* RValue )
+  function MatInitRandomNormalization ( Mat *src,Mat* RValue )
  {
-     frame(return) and ( 
+     frame(MatInitRandomNormalization_temp$_1,MatInitRandomNormalization_row,MatInitRandomNormalization_col,return) and ( 
      int return<==0 and skip;
-     return<==1 and RValue:=NULL;
+     int MatInitRandomNormalization_temp$_1 and skip;
+     MatInitRandomNormalization_temp$_1:=time(NULL);
+     srand((unsigned int)MatInitRandomNormalization_temp$_1) and skip;
+     int MatInitRandomNormalization_row,MatInitRandomNormalization_col and skip;
+     MatInitRandomNormalization_row:=0;
+     
+     while( (MatInitRandomNormalization_row<src->row) )
+     {
+         MatInitRandomNormalization_col:=0;
+         
+         while( (MatInitRandomNormalization_col<src->col) )
+         {
+             (src->element[MatInitRandomNormalization_row])[MatInitRandomNormalization_col]:=gaussrand(0.0,0.01,RValue);
+             MatInitRandomNormalization_col:=MatInitRandomNormalization_col+1
+             
+         };
+         MatInitRandomNormalization_row:=MatInitRandomNormalization_row+1
+         
+     };
+     return<==1 and RValue:=src;
      skip
      )
      }; 
   function main ( int  RValue )
  {
-     frame(main_m,main_mean,main_stdc,main_data,main_i,return) and (
+     frame(main_weight,return) and (
      int return<==0 and skip;
-     Mat main_m and skip;
-     MatCreate(&main_m,10,4,RValue);
-     MatDump(&main_m);
-     MatInitZero(&main_m,RValue);
-     MatDump(&main_m);
-     float main_mean<==0 and skip;
-     float main_stdc<==1 and skip;
-     float main_data<==0 and skip;
-     int main_i<==0 and skip;
-     
-     while( (main_i<100) )
-     {
-         main_data:=gaussrand(0,0.01,RValue);
-         output (main_data,"\t","\t") and skip;
-         main_i:=main_i+1
-         
-     };
+     Mat main_weight and skip;
+     MatCreate(&main_weight,160,10,RValue);
+     MatInitRandomNormalization(&main_weight,RValue);
+     MatDump(&main_weight);
      return<==1 and RValue:=0;
      skip
      )

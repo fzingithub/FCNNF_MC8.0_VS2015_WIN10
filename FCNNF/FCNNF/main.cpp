@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#include <time.h>
 
 #define MAT_LEGAL_CHECKING
 //#undef MAT_LEGAL_CHECKING
@@ -80,14 +81,17 @@ char* F2S(float f, char* str)
 	str[j++] = '.';
 
 	d = d - (int)d;//小数部分提取
+	//printf("小数部分%f\n", d);
 	for (i = 0; i < 4; i++)
 	{
 		d = d * 10;
 		str[j++] = (int)d + '0';
+		//printf("%c", str[j - 1]);
 		d = d - (int)d;
+		
 	}
-	while (str[--j] == '0');
-	str[++j] = '\0';
+	/*while (str[--j] == '0');*/
+	str[j] = '\0';
 
 	/*printf("%c\n", str[0]);*/
 
@@ -190,6 +194,7 @@ void MatDump(const Mat* mat)
 {
 	int row, col;
 	char str[40];
+	char * data;
 
 #ifdef MAT_LEGAL_CHECKING
 	if (mat == NULL) {
@@ -201,11 +206,32 @@ void MatDump(const Mat* mat)
 	printf("Mat %dx%d:\n", mat->row, mat->col);
 	for (row = 0; row < mat->row; row++) {
 		for (col = 0; col < mat->col; col++) {
-			printf("%s\t", F2S((mat->element[row])[col], str));
+			data = F2S((mat->element[row])[col], str);
+			if (data[0] == '-'){
+				printf(" %s\t", F2S((mat->element[row])[col], str));
+			}
+			else{
+				printf("  %s\t", F2S((mat->element[row])[col], str));
+			}
+			
 		}
 		printf("\n");
 	}
 	printf("\n");
+	//for (row = 0; row < mat->row; row++) {
+	//	for (col = 0; col < mat->col; col++) {
+	//		data = (mat->element[row])[col];
+	//		if (data<0){
+	//			printf("%.4f\t", data);
+	//		}
+	//		else{
+	//			printf(" %.4f\t", data);
+	//		}
+
+	//	}
+	//	printf("\n");
+	//}
+	//printf("\n");
 }
 
 
@@ -998,32 +1024,38 @@ float CrossEntropy(Mat *src, Mat *dst)
 /*                           权值初始化函数操作                         */
 /************************************************************************/
 float gaussrand_NORMAL() {
-	static float V1, V2, S;
-	static int phase = 0;
+	float V1=0., V2=0., S=0.;
+	int phase = 0;
+	int count = 0;
 	float X;
 
 
 	if (phase == 0) {
-		do {
-			float U1 = (float)rand() / RAND_MAX;
-			float U2 = (float)rand() / RAND_MAX;
+		while (count == 0 || (S >= 1 || S == 0)){
+			float U1 = (float)(rand() % 10000) / 10000.f;
+			float U2 = (float)(rand() % 10000) / 10000.f;
 
 
 			V1 = 2 * U1 - 1;
 			V2 = 2 * U2 - 1;
 			S = V1 * V1 + V2 * V2;
-		} while (S >= 1 || S == 0);
+			count += 1;
+		} ;
 
-
-		X = V1 * sqrt(-2 * log(S) / S);
+		float temp_S_1 = log(S);
+		X = V1 * sqrt(-2 * temp_S_1 / S);
 	}
 	else
-		X = V2 * sqrt(-2 * log(S) / S);
+	{
+		float temp_S_2 = log(S);
+		X = V2 * sqrt(-2 * temp_S_2 / S);
+	}
+		
 
 
 	phase = 1 - phase;
 
-
+	
 	return X;
 }
 
@@ -1043,9 +1075,18 @@ Mat* MatInitZero(Mat *src)
 
 
 /* 初始化成0均值 0.01方差的标准化数据*/
-Mat* MatInitRandom(Mat *src)
+Mat* MatInitRandomNormalization(Mat *src)
 {
-	return NULL;
+	srand((unsigned int)time(NULL));  // set randon seed
+	
+	int row, col;
+
+	for (row = 0; row < src->row; ++row){
+		for (col = 0; col < src->col; ++col){
+			(src->element[row])[col] = gaussrand(0.f, 0.01f);
+		}
+	}
+	return src;
 }
 
 /************************************************************************/
@@ -1322,23 +1363,37 @@ Mat* MatInitRandom(Mat *src)
 /************************************************************************/
 int main()
 {
-	Mat m;
-	MatCreate(&m, 10, 4);
-	MatDump(&m);
-	MatInitZero(&m);
-	MatDump(&m);
+	////test Init zero
+	//Mat m;
+	//MatCreate(&m, 10, 4);
+	//MatDump(&m);
+	//MatInitZero(&m);
+	//MatDump(&m);
 
-	float mean = 0;
-	float stdc = 1;
-	float data = 0;
+	////test gaussrand
+	//float mean = 0.f;
+	//float stdc = 0.1f;
+	//float data = 0;
+	//int num = 100;
+	//float total = 0.;
+	//srand((unsigned int)time(NULL));
 
-	for (int i = 0; i<100; ++i){
-		data = gaussrand(0, 0.01);
-		printf("%f\t", data);
-	}
+	//for (int i = 0; i<num; ++i){
+	//	data = gaussrand(mean, stdc);
+	//	total += data;
+	//	printf("%f\n", data);
+	//}
 
+	//printf("real mean =  %f\n", total/num);
 
+	Mat weight;
+	MatCreate(&weight, 160, 10);
+
+	MatInitRandomNormalization(&weight);
+	MatDump(&weight);
+
+	//char buf[20];
+	//printf("%s\n", F2S(0.0, buf));
 
 	return 0;
 }
-

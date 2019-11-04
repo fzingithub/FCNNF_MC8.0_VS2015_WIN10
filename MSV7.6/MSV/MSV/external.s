@@ -44,6 +44,10 @@ target triple = "i686-pc-windows-msvc"
 %"struct.std::_Container_base0" = type { i8 }
 %eh.ThrowInfo = type { i32, i8*, i8*, i8* }
 
+$"\01?sqrt@@YAMM@Z" = comdat any
+
+$"\01?log@@YAMM@Z" = comdat any
+
 $"\01??__E_Generic_object@?$_Error_objects@H@std@@2V_Generic_error_category@2@A@YAXXZ" = comdat any
 
 $"\01??0_Generic_error_category@std@@QAE@XZ" = comdat any
@@ -61,6 +65,10 @@ $"\01??__E_System_object@?$_Error_objects@H@std@@2V_System_error_category@2@A@YA
 $"\01??0_System_error_category@std@@QAE@XZ" = comdat any
 
 $"\01??1_System_error_category@std@@UAE@XZ" = comdat any
+
+$sqrtf = comdat any
+
+$logf = comdat any
 
 $"\01??0error_category@std@@QAE@XZ" = comdat any
 
@@ -319,6 +327,10 @@ $"\01??_C@_06FHFOAHML@system?$AA@" = comdat any
 @"\01?$$tempLen@@3HA" = global i32 0, align 4
 @"\01?$$varsInfo@@3PADA" = global [100000 x i8] zeroinitializer, align 1
 @"\01??_C@_02NJPGOMH@?$CFf?$AA@" = linkonce_odr unnamed_addr constant [3 x i8] c"%f\00", comdat, align 1
+@"\01?V1@?1??gaussrand_NORMAL@@YAMXZ@4MA" = internal global float 0.000000e+00, align 4
+@"\01?V2@?1??gaussrand_NORMAL@@YAMXZ@4MA" = internal global float 0.000000e+00, align 4
+@"\01?S@?1??gaussrand_NORMAL@@YAMXZ@4MA" = internal global float 0.000000e+00, align 4
+@"\01?phase@?1??gaussrand_NORMAL@@YAMXZ@4HA" = internal global i32 0, align 4
 @"\01?_Generic_object@?$_Error_objects@H@std@@2V_Generic_error_category@2@A" = linkonce_odr global %"class.std::_Generic_error_category" zeroinitializer, comdat, align 4
 @"\01?_Iostream_object@?$_Error_objects@H@std@@2V_Iostream_error_category@2@A" = linkonce_odr global %"class.std::_Iostream_error_category" zeroinitializer, comdat, align 4
 @"\01?_System_object@?$_Error_objects@H@std@@2V_System_error_category@2@A" = linkonce_odr global %"class.std::_System_error_category" zeroinitializer, comdat, align 4
@@ -1602,6 +1614,121 @@ define void @"\01?$$addString@@YAXPAD@Z"(i8* %str) #0 {
   ret void
 }
 
+define float @"\01?gaussrand_NORMAL@@YAMXZ"() #0 {
+  %X = alloca float, align 4
+  %U1 = alloca float, align 4
+  %U2 = alloca float, align 4
+  %1 = load i32, i32* @"\01?phase@?1??gaussrand_NORMAL@@YAMXZ@4HA", align 4
+  %2 = icmp eq i32 %1, 0
+  br i1 %2, label %3, label %41
+
+; <label>:3                                       ; preds = %0
+  br label %4
+
+; <label>:4                                       ; preds = %30, %3
+  %5 = call i32 @rand()
+  %6 = sitofp i32 %5 to float
+  %7 = fdiv float %6, 3.276700e+04
+  store float %7, float* %U1, align 4
+  %8 = call i32 @rand()
+  %9 = sitofp i32 %8 to float
+  %10 = fdiv float %9, 3.276700e+04
+  store float %10, float* %U2, align 4
+  %11 = load float, float* %U1, align 4
+  %12 = fmul float 2.000000e+00, %11
+  %13 = fsub float %12, 1.000000e+00
+  store float %13, float* @"\01?V1@?1??gaussrand_NORMAL@@YAMXZ@4MA", align 4
+  %14 = load float, float* %U2, align 4
+  %15 = fmul float 2.000000e+00, %14
+  %16 = fsub float %15, 1.000000e+00
+  store float %16, float* @"\01?V2@?1??gaussrand_NORMAL@@YAMXZ@4MA", align 4
+  %17 = load float, float* @"\01?V1@?1??gaussrand_NORMAL@@YAMXZ@4MA", align 4
+  %18 = load float, float* @"\01?V1@?1??gaussrand_NORMAL@@YAMXZ@4MA", align 4
+  %19 = fmul float %17, %18
+  %20 = load float, float* @"\01?V2@?1??gaussrand_NORMAL@@YAMXZ@4MA", align 4
+  %21 = load float, float* @"\01?V2@?1??gaussrand_NORMAL@@YAMXZ@4MA", align 4
+  %22 = fmul float %20, %21
+  %23 = fadd float %19, %22
+  store float %23, float* @"\01?S@?1??gaussrand_NORMAL@@YAMXZ@4MA", align 4
+  br label %24
+
+; <label>:24                                      ; preds = %4
+  %25 = load float, float* @"\01?S@?1??gaussrand_NORMAL@@YAMXZ@4MA", align 4
+  %26 = fcmp oge float %25, 1.000000e+00
+  br i1 %26, label %30, label %27
+
+; <label>:27                                      ; preds = %24
+  %28 = load float, float* @"\01?S@?1??gaussrand_NORMAL@@YAMXZ@4MA", align 4
+  %29 = fcmp oeq float %28, 0.000000e+00
+  br label %30
+
+; <label>:30                                      ; preds = %27, %24
+  %31 = phi i1 [ true, %24 ], [ %29, %27 ]
+  br i1 %31, label %4, label %32
+
+; <label>:32                                      ; preds = %30
+  %33 = load float, float* @"\01?V1@?1??gaussrand_NORMAL@@YAMXZ@4MA", align 4
+  %34 = load float, float* @"\01?S@?1??gaussrand_NORMAL@@YAMXZ@4MA", align 4
+  %35 = call float @"\01?log@@YAMM@Z"(float %34) #5
+  %36 = fmul float -2.000000e+00, %35
+  %37 = load float, float* @"\01?S@?1??gaussrand_NORMAL@@YAMXZ@4MA", align 4
+  %38 = fdiv float %36, %37
+  %39 = call float @"\01?sqrt@@YAMM@Z"(float %38) #5
+  %40 = fmul float %33, %39
+  store float %40, float* %X, align 4
+  br label %50
+
+; <label>:41                                      ; preds = %0
+  %42 = load float, float* @"\01?V2@?1??gaussrand_NORMAL@@YAMXZ@4MA", align 4
+  %43 = load float, float* @"\01?S@?1??gaussrand_NORMAL@@YAMXZ@4MA", align 4
+  %44 = call float @"\01?log@@YAMM@Z"(float %43) #5
+  %45 = fmul float -2.000000e+00, %44
+  %46 = load float, float* @"\01?S@?1??gaussrand_NORMAL@@YAMXZ@4MA", align 4
+  %47 = fdiv float %45, %46
+  %48 = call float @"\01?sqrt@@YAMM@Z"(float %47) #5
+  %49 = fmul float %42, %48
+  store float %49, float* %X, align 4
+  br label %50
+
+; <label>:50                                      ; preds = %41, %32
+  %51 = load i32, i32* @"\01?phase@?1??gaussrand_NORMAL@@YAMXZ@4HA", align 4
+  %52 = sub nsw i32 1, %51
+  store i32 %52, i32* @"\01?phase@?1??gaussrand_NORMAL@@YAMXZ@4HA", align 4
+  %53 = load float, float* %X, align 4
+  ret float %53
+}
+
+; Function Attrs: inlinehint nounwind
+define linkonce_odr float @"\01?sqrt@@YAMM@Z"(float %_X) #8 comdat {
+  %1 = alloca float, align 4
+  store float %_X, float* %1, align 4
+  %2 = load float, float* %1, align 4
+  %3 = call float @sqrtf(float %2) #5
+  ret float %3
+}
+
+; Function Attrs: inlinehint nounwind
+define linkonce_odr float @"\01?log@@YAMM@Z"(float %_X) #8 comdat {
+  %1 = alloca float, align 4
+  store float %_X, float* %1, align 4
+  %2 = load float, float* %1, align 4
+  %3 = call float @logf(float %2) #5
+  ret float %3
+}
+
+define float @"\01?gaussrand@@YAMMM@Z"(float %mean, float %stdc) #0 {
+  %1 = alloca float, align 4
+  %2 = alloca float, align 4
+  store float %stdc, float* %1, align 4
+  store float %mean, float* %2, align 4
+  %3 = load float, float* %2, align 4
+  %4 = call float @"\01?gaussrand_NORMAL@@YAMXZ"()
+  %5 = load float, float* %1, align 4
+  %6 = fmul float %4, %5
+  %7 = fadd float %3, %6
+  ret float %7
+}
+
 define linkonce_odr void @"\01??__E_Generic_object@?$_Error_objects@H@std@@2V_Generic_error_category@2@A@YAXXZ"() comdat {
   %1 = call x86_thiscallcc %"class.std::_Generic_error_category"* @"\01??0_Generic_error_category@std@@QAE@XZ"(%"class.std::_Generic_error_category"* @"\01?_Generic_object@?$_Error_objects@H@std@@2V_Generic_error_category@2@A")
   %2 = call i32 @atexit(void ()* @"\01??__F_Generic_object@?$_Error_objects@H@std@@2V_Generic_error_category@2@A@YAXXZ") #5
@@ -1704,6 +1831,28 @@ define internal void @"\01??__F_System_object@?$_Error_objects@H@std@@2V_System_
 declare i64 @_time64(i64*) #0
 
 declare %struct.tm* @_localtime64(i64*) #0
+
+; Function Attrs: inlinehint nounwind
+define linkonce_odr float @sqrtf(float %_X) #8 comdat {
+  %1 = alloca float, align 4
+  store float %_X, float* %1, align 4
+  %2 = load float, float* %1, align 4
+  %3 = fpext float %2 to double
+  %4 = call double @sqrt(double %3) #5
+  %5 = fptrunc double %4 to float
+  ret float %5
+}
+
+; Function Attrs: inlinehint nounwind
+define linkonce_odr float @logf(float %_X) #8 comdat {
+  %1 = alloca float, align 4
+  store float %_X, float* %1, align 4
+  %2 = load float, float* %1, align 4
+  %3 = fpext float %2 to double
+  %4 = call double @log(double %3) #5
+  %5 = fptrunc double %4 to float
+  ret float %5
+}
 
 ; Function Attrs: nounwind
 define linkonce_odr x86_thiscallcc %"class.std::error_category"* @"\01??0error_category@std@@QAE@XZ"(%"class.std::error_category"* returned %this) unnamed_addr #3 comdat align 2 {
