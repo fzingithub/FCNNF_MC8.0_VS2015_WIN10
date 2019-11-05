@@ -1099,9 +1099,9 @@ Mat* MatInitRandomNormalization(Mat *src)
 			(src->element[row])[col] = gaussrand(0.f, 0.1f);  // mean stdc
 		}
 	}
-	//bias
-	for (row = 0; row < src->row; ++row){
-		(src->element[row])[0] = 0.f;
+	//set bias row 0
+	for (col = 0; col < src->col; ++col){
+		(src->element[0])[col] = 0.f;
 	}
 	return src;
 }
@@ -1118,9 +1118,9 @@ Mat* MatInitXavier(Mat *src)
 			(src->element[row])[col] = gaussrand(0.f, 0.1f) * sqrt(1.f/src->row);  // mean stdc
 		}
 	}
-	//bias
-	for (row = 0; row < src->row; ++row){
-		(src->element[row])[0] = 0.f;
+	//set bias row 0
+	for (col = 0; col < src->col; ++col){
+		(src->element[0])[col] = 0.f;
 	}
 	return src;
 }
@@ -1137,9 +1137,9 @@ Mat* MatInitHe(Mat *src)
 			(src->element[row])[col] = gaussrand(0.f, 0.1f) * sqrt(2.f / src->row);  // mean stdc
 		}
 	}
-	//bias
-	for (row = 0; row < src->row; ++row){
-		(src->element[row])[0] = 0.f;
+	//set bias row 0
+	for (col = 0; col < src->col; ++col){
+		(src->element[0])[col] = 0.f;
 	}
 	return src;
 }

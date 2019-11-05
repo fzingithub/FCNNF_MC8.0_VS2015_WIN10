@@ -1667,12 +1667,12 @@ float **element
          MatInitRandomNormalization_row:=MatInitRandomNormalization_row+1
          
      };
-     MatInitRandomNormalization_row:=0;
+     MatInitRandomNormalization_col:=0;
      
-     while( (MatInitRandomNormalization_row<src->row) )
+     while( (MatInitRandomNormalization_col<src->col) )
      {
-         (src->element[MatInitRandomNormalization_row])[0]:=0.0;
-         MatInitRandomNormalization_row:=MatInitRandomNormalization_row+1
+         (src->element[0])[MatInitRandomNormalization_col]:=0.0;
+         MatInitRandomNormalization_col:=MatInitRandomNormalization_col+1
          
      };
      return<==1 and RValue:=src;
@@ -1702,12 +1702,12 @@ float **element
          MatInitXavier_row:=MatInitXavier_row+1
          
      };
-     MatInitXavier_row:=0;
+     MatInitXavier_col:=0;
      
-     while( (MatInitXavier_row<src->row) )
+     while( (MatInitXavier_col<src->col) )
      {
-         (src->element[MatInitXavier_row])[0]:=0.0;
-         MatInitXavier_row:=MatInitXavier_row+1
+         (src->element[0])[MatInitXavier_col]:=0.0;
+         MatInitXavier_col:=MatInitXavier_col+1
          
      };
      return<==1 and RValue:=src;
@@ -1737,12 +1737,12 @@ float **element
          MatInitHe_row:=MatInitHe_row+1
          
      };
-     MatInitHe_row:=0;
+     MatInitHe_col:=0;
      
-     while( (MatInitHe_row<src->row) )
+     while( (MatInitHe_col<src->col) )
      {
-         (src->element[MatInitHe_row])[0]:=0.0;
-         MatInitHe_row:=MatInitHe_row+1
+         (src->element[0])[MatInitHe_col]:=0.0;
+         MatInitHe_col:=MatInitHe_col+1
          
      };
      return<==1 and RValue:=src;
