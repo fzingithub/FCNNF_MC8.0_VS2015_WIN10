@@ -129,6 +129,18 @@ Mat* MatCreate(Mat* mat, int row, int col)
 {
 	int i;
 
+#ifdef MAT_LEGAL_CHECKING
+	if (row <= 0 || col <= 0) {
+		printf("err check, unmatch matrix for MatCreate\n");
+		printf("\t\trow:\n\t\t\t");
+		printf("%d\n", row);
+		printf("\t\tcol:\n\t\t\t");
+		printf("%d\n", col);
+		return NULL;
+	}
+#endif
+
+
 	mat->element = (float**)malloc(row * sizeof(float*));
 	if (mat->element == NULL) {
 		printf("mat create fail!\n");
@@ -1081,14 +1093,56 @@ Mat* MatInitRandomNormalization(Mat *src)
 	
 	int row, col;
 
+	//weight
 	for (row = 0; row < src->row; ++row){
 		for (col = 0; col < src->col; ++col){
-			(src->element[row])[col] = gaussrand(0.f, 0.01f);
+			(src->element[row])[col] = gaussrand(0.f, 0.1f);  // mean stdc
 		}
+	}
+	//bias
+	for (row = 0; row < src->row; ++row){
+		(src->element[row])[0] = 0.f;
 	}
 	return src;
 }
 
+
+Mat* MatInitXavier(Mat *src)
+{
+	srand((unsigned int)time(NULL));  // set randon seed
+
+	int row, col;
+	//weight
+	for (row = 0; row < src->row; ++row){
+		for (col = 0; col < src->col; ++col){
+			(src->element[row])[col] = gaussrand(0.f, 0.1f) * sqrt(1.f/src->row);  // mean stdc
+		}
+	}
+	//bias
+	for (row = 0; row < src->row; ++row){
+		(src->element[row])[0] = 0.f;
+	}
+	return src;
+}
+
+
+Mat* MatInitHe(Mat *src)
+{
+	srand((unsigned int)time(NULL));  // set randon seed
+
+	int row, col;
+	//weight
+	for (row = 0; row < src->row; ++row){
+		for (col = 0; col < src->col; ++col){
+			(src->element[row])[col] = gaussrand(0.f, 0.1f) * sqrt(2.f / src->row);  // mean stdc
+		}
+	}
+	//bias
+	for (row = 0; row < src->row; ++row){
+		(src->element[row])[0] = 0.f;
+	}
+	return src;
+}
 /************************************************************************/
 /*                           权值初始化函数操作                         */
 /************************************************************************/
@@ -1387,13 +1441,19 @@ int main()
 	//printf("real mean =  %f\n", total/num);
 
 	Mat weight;
-	MatCreate(&weight, 160, 10);
+	MatCreate(&weight, 16, 10);
 
 	MatInitRandomNormalization(&weight);
+	printf("Random Initial:\n");
 	MatDump(&weight);
 
-	//char buf[20];
-	//printf("%s\n", F2S(0.0, buf));
+	printf("Xavier Initial:\n");
+	MatInitXavier(&weight);
+	MatDump(&weight);
 
+
+	printf("He Initial:\n");
+	MatInitHe(&weight);
+	MatDump(&weight);
 	return 0;
 }

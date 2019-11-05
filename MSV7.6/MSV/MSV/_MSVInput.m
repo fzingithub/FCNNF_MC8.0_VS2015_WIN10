@@ -126,13 +126,16 @@ float **element
      }; 
   function MatCreate ( Mat *mat,int row,int col,Mat* RValue )
  {
-     frame(MatCreate_i,MatCreate_2_j,return) and ( 
+     frame(MatCreate_i,MatCreate_3_j,return) and ( 
      int return<==0 and skip;
      int MatCreate_i and skip;
-     mat->element:=(float **)malloc(row*sizeof(float *));
-     if(mat->element=NULL) then 
+     if(row<=0 OR col<=0) then 
      {
-         output ("mat create fail!\n") and skip;
+         output ("err check, unmatch matrix for MatCreate\n") and skip;
+         output ("\t\trow:\n\t\t\t") and skip;
+         output (row,"\n","\n") and skip;
+         output ("\t\tcol:\n\t\t\t") and skip;
+         output (col,"\n","\n") and skip;
          return<==1 and RValue:=NULL;
          skip
          
@@ -143,48 +146,67 @@ float **element
      };
      if(return=0)   then 
      {
-         MatCreate_i:=0;
-         
-         while( return=0 AND   (MatCreate_i<row) )
+         mat->element:=(float **)malloc(row*sizeof(float *));
+         if(mat->element=NULL) then 
          {
-             mat->element[MatCreate_i]:=(float *)malloc(col*sizeof(float));
-             if(mat->element[MatCreate_i]=NULL) then 
+             output ("mat create fail!\n") and skip;
+             return<==1 and RValue:=NULL;
+             skip
+             
+         }
+         else 
+         {
+              skip 
+         };
+         if(return=0)   then 
+         {
+             MatCreate_i:=0;
+             
+             while( return=0 AND   (MatCreate_i<row) )
              {
-                 int MatCreate_2_j and skip;
-                 output ("mat create fail!\n") and skip;
-                 MatCreate_2_j:=0;
-                 
-                 while( (MatCreate_2_j<MatCreate_i) )
+                 mat->element[MatCreate_i]:=(float *)malloc(col*sizeof(float));
+                 if(mat->element[MatCreate_i]=NULL) then 
                  {
-                     free(mat->element[MatCreate_2_j]) and skip;
-                     MatCreate_2_j:=MatCreate_2_j+1
+                     int MatCreate_3_j and skip;
+                     output ("mat create fail!\n") and skip;
+                     MatCreate_3_j:=0;
                      
+                     while( (MatCreate_3_j<MatCreate_i) )
+                     {
+                         free(mat->element[MatCreate_3_j]) and skip;
+                         MatCreate_3_j:=MatCreate_3_j+1
+                         
+                     };
+                     free(mat->element) and skip;
+                     return<==1 and RValue:=NULL;
+                     skip
+                     
+                 }
+                 else 
+                 {
+                      skip 
                  };
-                 free(mat->element) and skip;
-                 return<==1 and RValue:=NULL;
-                 skip
+                 if(return=0)   then 
+                 {
+                     MatCreate_i:=MatCreate_i+1
+                 }
+                 else
+                 {
+                     skip
+                 }
                  
-             }
-             else 
-             {
-                  skip 
              };
              if(return=0)   then 
              {
-                 MatCreate_i:=MatCreate_i+1
+                 mat->row:=row;
+                 mat->col:=col;
+                 return<==1 and RValue:=mat;
+                 skip
              }
              else
              {
                  skip
              }
-             
-         };
-         if(return=0)   then 
-         {
-             mat->row:=row;
-             mat->col:=col;
-             return<==1 and RValue:=mat;
-             skip
          }
          else
          {
@@ -1638,11 +1660,89 @@ float **element
          
          while( (MatInitRandomNormalization_col<src->col) )
          {
-             (src->element[MatInitRandomNormalization_row])[MatInitRandomNormalization_col]:=gaussrand(0.0,0.01,RValue);
+             (src->element[MatInitRandomNormalization_row])[MatInitRandomNormalization_col]:=gaussrand(0.0,0.1,RValue);
              MatInitRandomNormalization_col:=MatInitRandomNormalization_col+1
              
          };
          MatInitRandomNormalization_row:=MatInitRandomNormalization_row+1
+         
+     };
+     MatInitRandomNormalization_row:=0;
+     
+     while( (MatInitRandomNormalization_row<src->row) )
+     {
+         (src->element[MatInitRandomNormalization_row])[0]:=0.0;
+         MatInitRandomNormalization_row:=MatInitRandomNormalization_row+1
+         
+     };
+     return<==1 and RValue:=src;
+     skip
+     )
+     }; 
+  function MatInitXavier ( Mat *src,Mat* RValue )
+ {
+     frame(MatInitXavier_temp$_1,MatInitXavier_row,MatInitXavier_col,return) and ( 
+     int return<==0 and skip;
+     int MatInitXavier_temp$_1 and skip;
+     MatInitXavier_temp$_1:=time(NULL);
+     srand((unsigned int)MatInitXavier_temp$_1) and skip;
+     int MatInitXavier_row,MatInitXavier_col and skip;
+     MatInitXavier_row:=0;
+     
+     while( (MatInitXavier_row<src->row) )
+     {
+         MatInitXavier_col:=0;
+         
+         while( (MatInitXavier_col<src->col) )
+         {
+             (src->element[MatInitXavier_row])[MatInitXavier_col]:=gaussrand(0.0,0.1,RValue)*sqrt(1.0/ src->row);
+             MatInitXavier_col:=MatInitXavier_col+1
+             
+         };
+         MatInitXavier_row:=MatInitXavier_row+1
+         
+     };
+     MatInitXavier_row:=0;
+     
+     while( (MatInitXavier_row<src->row) )
+     {
+         (src->element[MatInitXavier_row])[0]:=0.0;
+         MatInitXavier_row:=MatInitXavier_row+1
+         
+     };
+     return<==1 and RValue:=src;
+     skip
+     )
+     }; 
+  function MatInitHe ( Mat *src,Mat* RValue )
+ {
+     frame(MatInitHe_temp$_1,MatInitHe_row,MatInitHe_col,return) and ( 
+     int return<==0 and skip;
+     int MatInitHe_temp$_1 and skip;
+     MatInitHe_temp$_1:=time(NULL);
+     srand((unsigned int)MatInitHe_temp$_1) and skip;
+     int MatInitHe_row,MatInitHe_col and skip;
+     MatInitHe_row:=0;
+     
+     while( (MatInitHe_row<src->row) )
+     {
+         MatInitHe_col:=0;
+         
+         while( (MatInitHe_col<src->col) )
+         {
+             (src->element[MatInitHe_row])[MatInitHe_col]:=gaussrand(0.0,0.1,RValue)*sqrt(2.0/ src->row);
+             MatInitHe_col:=MatInitHe_col+1
+             
+         };
+         MatInitHe_row:=MatInitHe_row+1
+         
+     };
+     MatInitHe_row:=0;
+     
+     while( (MatInitHe_row<src->row) )
+     {
+         (src->element[MatInitHe_row])[0]:=0.0;
+         MatInitHe_row:=MatInitHe_row+1
          
      };
      return<==1 and RValue:=src;
@@ -1654,8 +1754,15 @@ float **element
      frame(main_weight,return) and (
      int return<==0 and skip;
      Mat main_weight and skip;
-     MatCreate(&main_weight,160,10,RValue);
+     MatCreate(&main_weight,16,10,RValue);
      MatInitRandomNormalization(&main_weight,RValue);
+     output ("Random Initial:\n") and skip;
+     MatDump(&main_weight);
+     output ("Xavier Initial:\n") and skip;
+     MatInitXavier(&main_weight,RValue);
+     MatDump(&main_weight);
+     output ("He Initial:\n") and skip;
+     MatInitHe(&main_weight,RValue);
      MatDump(&main_weight);
      return<==1 and RValue:=0;
      skip
