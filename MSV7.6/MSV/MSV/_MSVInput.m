@@ -1749,23 +1749,47 @@ float **element
      skip
      )
      }; 
-  function main ( int  RValue )
+  function ParaPassedIn ( int  RValue )
  {
-     frame(main_weight,return) and (
+     frame(return) and ( 
      int return<==0 and skip;
-     Mat main_weight and skip;
-     MatCreate(&main_weight,16,10,RValue);
-     MatInitRandomNormalization(&main_weight,RValue);
-     output ("Random Initial:\n") and skip;
-     MatDump(&main_weight);
-     output ("Xavier Initial:\n") and skip;
-     MatInitXavier(&main_weight,RValue);
-     MatDump(&main_weight);
-     output ("He Initial:\n") and skip;
-     MatInitHe(&main_weight,RValue);
-     MatDump(&main_weight);
      return<==1 and RValue:=0;
      skip
+     )
+     }; 
+  function intVal2List ( int length,int *src,int *dst,int* RValue )
+ {
+     frame(intVal2List_i,return) and ( 
+     int return<==0 and skip;
+     dst:=(int *)malloc(length*sizeof(int));
+     int intVal2List_i<==0 and skip;
+     
+     while( (intVal2List_i<length) )
+     {
+         dst[intVal2List_i]:=src[intVal2List_i];
+         intVal2List_i:=intVal2List_i+1
+         
+     };
+     return<==1 and RValue:=dst;
+     skip
+     )
+     }; 
+  function main ( int  RValue )
+ {
+     frame(main_N_sample,main_D_sample,main_N_out,main_Xval,main_Yval,main_N_hidden,main_N_layerNeuron,main_Nval,main_NStr_ActiFsHidden,main_Aval,main_Nstr_LossF) and (
+     int main_N_sample<==16 and skip;
+     int main_D_sample<==4 and skip;
+     int main_N_out<==2 and skip;
+     float main_Xval[64]<=={0,0,0,0,0,0,0,1,0,0,1,0,0,0,1,1,0,1,0,0,0,1,0,1,0,1,1,0,0,1,1,1,1,0,0,0,1,0,0,1,1,0,1,0,1,0,1,1,1,1,0,0,1,1,0,1,1,1,1,0,1,1,1,1} and skip;
+     float main_Yval[16]<=={0,1,1,0,1,0,0,1,1,0,0,1,0,1,1,0} and skip;
+     int main_N_hidden<==3 and skip;
+     int *main_N_layerNeuron<==NULL and skip;
+     int main_Nval[5]<=={4,6,10,8,2} and skip;
+     main_N_layerNeuron:=intVal2List(main_N_hidden+2,main_Nval,main_N_layerNeuron,RValue);
+     int *main_NStr_ActiFsHidden<==NULL and skip;
+     int main_Aval[5]<=={0,3,3,3,5} and skip;
+     main_NStr_ActiFsHidden:=intVal2List(main_N_hidden+2,main_Aval,main_NStr_ActiFsHidden,RValue);
+     int main_Nstr_LossF<==1 and skip
      )
  };
   main(RValue)

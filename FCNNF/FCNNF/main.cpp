@@ -1153,6 +1153,150 @@ Mat* MatInitHe(Mat *src)
 
 
 
+
+/************************************************************************/
+/*                     用户输入参数列表及传入函数                       */
+/************************************************************************/
+//用户输入参数列表
+//输入样本的数量：			N_sample.
+//单一样本的维度：			D_sample.
+//样本真值：				Xval = [], length = N_sample * D_sample.
+//样本标签：				Yval = [], length = N_sample.
+
+//神经网络隐藏层层数:		N_hidden.
+//各层神经元个数 :			N_layerNeuron[i], i =0(输入层),1,...,N_hidden,N_hidden+1(输出层).
+//各层激活函数：			NStr_ActiFsHidden[i], i=0,1,...,N_hidden,N_hidden+1(输出层).
+								//0  -> no activation
+								//1  -> sigmoid
+								//2  -> tanh
+								//3  -> relu
+								//4  -> leaky relu
+								//5  -> softmax (output layer)
+
+//输出层维度（分类类别数）：N_out
+//输出层损失函数：			Nstr_LossF 
+								//0  -> MSE
+								//1  -> CE
+
+//伪填充
+int ParaPassedIn(void){
+	return 0;
+}
+
+//建立长度为 length 的整形数组，并传入值。
+int* intVal2List(int length, int *src, int* dst){
+	dst = (int*)malloc(length*sizeof(int));
+	for (int i = 0; i < length; ++i){
+		dst[i] = src[i];
+	}
+	return dst;
+}
+/************************************************************************/
+/*                     用户输入参数列表及传入函数                       */
+/************************************************************************/
+
+
+
+
+
+
+
+
+
+
+
+
+/************************************************************************/
+/*                           神经网络参数列表                           */
+/************************************************************************/
+
+/************************************************************************/
+/*                           神经网络参数列表                           */
+/************************************************************************/
+
+
+
+
+
+
+/************************************************************************/
+/*                          整体框架测试主函数                          */
+/************************************************************************/
+int main(){
+	int N_sample = 16; //样本数量
+	int D_sample = 4;  //样本维度
+	int N_out = 2;   //二分类
+
+	float Xval[] = {
+		0, 0, 0, 0,
+		0, 0, 0, 1,
+		0, 0, 1, 0,
+		0, 0, 1, 1,
+		0, 1, 0, 0,
+		0, 1, 0, 1,
+		0, 1, 1, 0,
+		0, 1, 1, 1,
+		1, 0, 0, 0,
+		1, 0, 0, 1,
+		1, 0, 1, 0,
+		1, 0, 1, 1,
+		1, 1, 0, 0,
+		1, 1, 0, 1,
+		1, 1, 1, 0,
+		1, 1, 1, 1 }; //样本真值
+
+	float Yval[] = { 0, 1, 1, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0, 1, 1, 0 };  //样本标签二分类
+
+	int N_hidden = 3;//神经网络隐藏层层数
+
+	int *N_layerNeuron = NULL; // 各隐藏层神经元个数  0(输入层),1,...,N_hidden.
+	int Nval[] = { 4, 6, 10, 8, 2 };// 各隐藏层神经元个数真值
+
+	N_layerNeuron = intVal2List(N_hidden + 2, Nval, N_layerNeuron);
+	////测试传入正确性
+	//for (int i = 0; i < N_hidden + 2; ++i){
+	//	printf("%d\n", N_layerNeuron[i]);
+	//}
+
+	int *NStr_ActiFsHidden = NULL;// 各层激活函数使用；
+	int Aval[] = { 0, 3, 3, 3, 5 };// 各层激活函数使用真值；注意映射关系。
+
+	NStr_ActiFsHidden = intVal2List(N_hidden + 2, Aval, NStr_ActiFsHidden);
+
+	////测试传入正确性
+	//for (int i = 0; i < N_hidden + 2; ++i){
+	//	printf("%d\n", NStr_ActiFsHidden[i]);
+	//}
+
+
+	int Nstr_LossF = 1;//use CrossEntropy Loss function
+
+
+
+
+
+
+
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 ///************************************************************************/
 ///*                        二维矩阵测试主函数                            */
 ///************************************************************************/
@@ -1415,45 +1559,56 @@ Mat* MatInitHe(Mat *src)
 /************************************************************************/
 /*                       权值初始化测试主函数                           */
 /************************************************************************/
-int main()
-{
-	////test Init zero
-	//Mat m;
-	//MatCreate(&m, 10, 4);
-	//MatDump(&m);
-	//MatInitZero(&m);
-	//MatDump(&m);
+//int main()
+//{
+//	////test Init zero
+//	//Mat m;
+//	//MatCreate(&m, 10, 4);
+//	//MatDump(&m);
+//	//MatInitZero(&m);
+//	//MatDump(&m);
+//
+//	////test gaussrand
+//	//float mean = 0.f;
+//	//float stdc = 0.1f;
+//	//float data = 0;
+//	//int num = 100;
+//	//float total = 0.;
+//	//srand((unsigned int)time(NULL));
+//
+//	//for (int i = 0; i<num; ++i){
+//	//	data = gaussrand(mean, stdc);
+//	//	total += data;
+//	//	printf("%f\n", data);
+//	//}
+//
+//	//printf("real mean =  %f\n", total/num);
+//
+//	Mat weight;
+//	MatCreate(&weight, 16, 10);
+//
+//	MatInitRandomNormalization(&weight);
+//	printf("Random Initial:\n");
+//	MatDump(&weight);
+//
+//	printf("Xavier Initial:\n");
+//	MatInitXavier(&weight);
+//	MatDump(&weight);
+//
+//
+//	printf("He Initial:\n");
+//	MatInitHe(&weight);
+//	MatDump(&weight);
+//	return 0;
+//}
 
-	////test gaussrand
-	//float mean = 0.f;
-	//float stdc = 0.1f;
-	//float data = 0;
-	//int num = 100;
-	//float total = 0.;
-	//srand((unsigned int)time(NULL));
-
-	//for (int i = 0; i<num; ++i){
-	//	data = gaussrand(mean, stdc);
-	//	total += data;
-	//	printf("%f\n", data);
-	//}
-
-	//printf("real mean =  %f\n", total/num);
-
-	Mat weight;
-	MatCreate(&weight, 16, 10);
-
-	MatInitRandomNormalization(&weight);
-	printf("Random Initial:\n");
-	MatDump(&weight);
-
-	printf("Xavier Initial:\n");
-	MatInitXavier(&weight);
-	MatDump(&weight);
 
 
-	printf("He Initial:\n");
-	MatInitHe(&weight);
-	MatDump(&weight);
-	return 0;
-}
+
+
+
+
+
+
+
+
