@@ -214,7 +214,7 @@ void MatDump(const Mat* mat)
 		return;
 	}
 #endif
-
+	
 	printf("Mat %dx%d:\n", mat->row, mat->col);
 	for (row = 0; row < mat->row; row++) {
 		for (col = 0; col < mat->col; col++) {
@@ -1207,11 +1207,132 @@ int* intVal2List(int length, int *src, int* dst){
 
 
 /************************************************************************/
-/*                           神经网络参数列表                           */
+/*                      神经网络的运算所需空间变量                      */
 /************************************************************************/
+//神经网络激活值矩阵			P_ActiMat		Mat*		列表索引i = 0(输入层), 1, ..., N hidden，N hidden + 1(输出层)
+//神经网络激活值矩阵加偏置列	P_ActiMatPlus	Mat*		列表索引i = 0(输入层), 1, ..., N hidden
+														  //加偏置列偏置列全部置1.输出层不需要Plus
+//神经网络求和矩阵				P_SumMat		Mat*		列表索引i = 0(输入层), 1, ..., N hidden，N hidden + 1(输出层)
+														  //i = 0 时输入层求和矩阵行列置零无实际含义
+//神经网络权值矩阵				P_WeightMat		Mat*		列表索引i = 0(输入层), 1, ..., N hidden，N hidden + 1(输出层)
+														  //i = 0 时输入层求和矩阵行列置零无实际含义
+//神经网络权值偏置矩阵			P_WeightBiasMat	Mat*		列表索引i = 0(输入层), 1, ..., N hidden，N hidden + 1(输出层)
+//i = 0 时输入层求和矩阵行列置零无实际含义
+//训练数据标签					Mat_oneHot		Mat			row = N_sample col = N_out
+//反向传播中间变量矩阵			P_DeltaMat		Mat*		列表索引i = 0(输入层), 1, ..., N hidden，N hidden + 1(输出层)
+														  //i = 0 时输入层求和矩阵行列置零无实际含义
 
+// malloc并初始化激活值矩阵空间
+Mat* SpaceCreateActi(Mat* P_ActiMat, int N_sample, int N_hidden, int* N_layerNeuron){
+	P_ActiMat = (Mat*)malloc((N_hidden + 2)*sizeof(Mat));
+
+	for (int i = 0; i < N_hidden + 2; ++i){
+		(P_ActiMat[i]).row = N_sample;
+		(P_ActiMat[i]).col = N_layerNeuron[i];
+		MatCreate(&(P_ActiMat[i]), N_sample, N_layerNeuron[i]);
+		MatInitZero(&(P_ActiMat[i]));
+		//printf("%d %d\n", (P_ActiMat[i]).row, (P_ActiMat[i]).col);
+		//MatDump(&(P_ActiMat[i]));
+	}
+
+	return P_ActiMat;
+}
+
+
+// malloc并初始化激活值Plus矩阵空间
+Mat* SpaceCreateActiPlus(Mat* P_ActiMatPlus, int N_sample, int N_hidden, int* N_layerNeuron){
+	P_ActiMatPlus = (Mat*)malloc((N_hidden + 1)*sizeof(Mat)); //输出层不需要Plus
+
+	for (int i = 0; i < N_hidden + 1; ++i){
+		(P_ActiMatPlus[i]).row = N_sample;
+		(P_ActiMatPlus[i]).col = N_layerNeuron[i] + 1;
+		MatCreate(&(P_ActiMatPlus[i]), N_sample, N_layerNeuron[i] + 1);
+		MatInitZero(&(P_ActiMatPlus[i]));
+		//printf("%d %d\n", (P_ActiMatPlus[i]).row, (P_ActiMatPlus[i]).col);
+		//MatDump(&(P_ActiMatPlus[i]));
+	}
+
+	return P_ActiMatPlus;
+}
+
+
+// malloc并初始化求和值矩阵空间
+Mat* SpaceCreateSum(Mat* P_SumMat, int N_sample, int N_hidden, int* N_layerNeuron){
+	P_SumMat = (Mat*)malloc((N_hidden + 2)*sizeof(Mat));
+
+	(P_SumMat[0]).row = 0; //输入层求和矩阵无意义
+	(P_SumMat[0]).col = 0;
+	for (int i = 1; i < N_hidden + 2; ++i){
+		(P_SumMat[i]).row = N_sample;
+		(P_SumMat[i]).col = N_layerNeuron[i];
+		MatCreate(&(P_SumMat[i]), N_sample, N_layerNeuron[i]);
+		MatInitZero(&(P_SumMat[i]));
+		//printf("%d %d\n", (P_SumMat[i]).row, (P_SumMat[i]).col);
+		//MatDump(&(P_SumMat[i]));
+	}
+	return P_SumMat;
+}
+
+
+// malloc并初始化神经网络权值矩阵空间
+Mat* SpaceCreateWeight(Mat* P_WeightMat, int N_hidden, int* N_layerNeuron){
+	P_WeightMat = (Mat*)malloc((N_hidden + 2)*sizeof(Mat));
+
+	(P_WeightMat[0]).row = 0; //输入层权值矩阵无意义
+	(P_WeightMat[0]).col = 0; 
+	for (int i = 1; i < N_hidden + 2; ++i){
+		(P_WeightMat[i]).row = N_layerNeuron[i - 1];
+		(P_WeightMat[i]).col = N_layerNeuron[i];
+		MatCreate(&(P_WeightMat[i]), N_layerNeuron[i - 1], N_layerNeuron[i]);
+		MatInitZero(&(P_WeightMat[i]));
+		//printf("%d %d\n", (P_ActiMat[i]).row, (P_ActiMat[i]).col);
+		//MatDump(&(P_ActiMat[i]));
+	}
+
+	return P_WeightMat;
+}
+
+
+
+// malloc并初始化神经网络权值偏置矩阵空间
+Mat* SpaceCreateWeightBias(Mat* P_WeightBiasMat, int N_hidden, int* N_layerNeuron){
+	P_WeightBiasMat = (Mat*)malloc((N_hidden + 2)*sizeof(Mat));
+
+	(P_WeightBiasMat[0]).row = 0; //输入层权值矩阵无意义
+	(P_WeightBiasMat[0]).col = 0;
+	for (int i = 1; i < N_hidden + 2; ++i){
+		(P_WeightBiasMat[i]).row = N_layerNeuron[i - 1]+1;
+		(P_WeightBiasMat[i]).col = N_layerNeuron[i];
+		MatCreate(&(P_WeightBiasMat[i]), N_layerNeuron[i - 1]+1, N_layerNeuron[i]);
+		MatInitZero(&(P_WeightBiasMat[i]));
+		//printf("%d %d\n", (P_WeightBiasMat[i]).row, (P_WeightBiasMat[i]).col);
+		//MatDump(&(P_WeightBiasMat[i]));
+	}
+
+	return P_WeightBiasMat;
+}
+
+
+
+// malloc并初始化反向传播中间变量空间
+Mat* SpaceCreateDelta(Mat* P_DeltaMat, int N_sample, int N_hidden, int* N_layerNeuron){
+	P_DeltaMat = (Mat*)malloc((N_hidden + 2)*sizeof(Mat));
+
+	(P_DeltaMat[0]).row = 0; //输入层权值矩阵无意义
+	(P_DeltaMat[0]).col = 0;
+	for (int i = 1; i < N_hidden + 2; ++i){
+		(P_DeltaMat[i]).row = N_sample;
+		(P_DeltaMat[i]).col = N_layerNeuron[i];
+		MatCreate(&(P_DeltaMat[i]), N_sample, N_layerNeuron[i]);
+		MatInitZero(&(P_DeltaMat[i]));
+		//printf("%d %d\n", (P_DeltaMat[i]).row, (P_DeltaMat[i]).col);
+		//MatDump(&(P_DeltaMat[i]));
+	}
+
+	return P_DeltaMat;
+}
 /************************************************************************/
-/*                           神经网络参数列表                           */
+/*                      神经网络的运算所需空间变量                      */
 /************************************************************************/
 
 
@@ -1223,6 +1344,8 @@ int* intVal2List(int length, int *src, int* dst){
 /*                          整体框架测试主函数                          */
 /************************************************************************/
 int main(){
+
+	/*用户自定义参数输入*/
 	int N_sample = 16; //样本数量
 	int D_sample = 4;  //样本维度
 	int N_out = 2;   //二分类
@@ -1249,7 +1372,7 @@ int main(){
 
 	int N_hidden = 3;//神经网络隐藏层层数
 
-	int *N_layerNeuron = NULL; // 各隐藏层神经元个数  0(输入层),1,...,N_hidden.
+	int *N_layerNeuron = NULL; // 各层神经元个数  0(输入层),1,...,N_hidden,N_hidden+1(输出层).
 	int Nval[] = { 4, 6, 10, 8, 2 };// 各隐藏层神经元个数真值
 
 	N_layerNeuron = intVal2List(N_hidden + 2, Nval, N_layerNeuron);
@@ -1276,8 +1399,46 @@ int main(){
 
 
 
+	/*构建神经网络所需空间并初始化所需参数*/
+	//神经网络所需空间变量
+	Mat* P_ActiMat=NULL;			//神经网络激活值矩阵
+	Mat* P_ActiMatPlus = NULL;		//神经网络激活值矩阵加偏置列	
+	Mat* P_SumMat = NULL;			//神经网络求和矩阵				
+	Mat* P_WeightMat = NULL;		//神经网络权值矩阵		
+	Mat* P_WeightBiasMat = NULL;	//神经网络权值偏置矩阵	
+	Mat Mat_oneHot;					//训练数据标签					
+	Mat* P_DeltaMat = NULL;			//反向传播中间变量矩阵			
+
+	//用户输入参数
+	//样本数量			N_sample			int
+	//隐藏层层数		N_hidden			int
+	//各层神经元个数	N_layerNeuron		int*
+	//各层激活函数		NStr_ActiFsHidden	int*
 
 
+	P_ActiMat = SpaceCreateActi(P_ActiMat, N_sample, N_hidden, N_layerNeuron);
+
+	MatDump(&(P_ActiMat[0]));
+
+	P_ActiMatPlus = SpaceCreateActiPlus(P_ActiMatPlus, N_sample, N_hidden, N_layerNeuron);
+
+	MatDump(&(P_ActiMatPlus[0]));
+
+	P_SumMat = SpaceCreateSum(P_SumMat, N_sample, N_hidden, N_layerNeuron);
+
+	MatDump(&P_SumMat[0]);    //P_SumMat[0] 无意义
+
+	P_WeightMat = SpaceCreateWeight(P_WeightMat, N_hidden, N_layerNeuron);
+
+	MatDump(&P_WeightMat[1]);
+
+	P_WeightBiasMat = SpaceCreateWeightBias(P_WeightBiasMat, N_hidden, N_layerNeuron);
+
+	MatDump(&P_WeightBiasMat[1]);
+
+	P_DeltaMat = SpaceCreateDelta(P_DeltaMat, N_sample, N_hidden, N_layerNeuron);
+
+	MatDump(&(P_DeltaMat[1]));
 }
 
 

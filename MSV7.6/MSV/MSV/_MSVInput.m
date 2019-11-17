@@ -1774,9 +1774,137 @@ float **element
      skip
      )
      }; 
+  function SpaceCreateActi ( Mat *P_ActiMat,int N_sample,int N_hidden,int *N_layerNeuron,Mat* RValue )
+ {
+     frame(SpaceCreateActi_i,return) and ( 
+     int return<==0 and skip;
+     P_ActiMat:=(Mat *)malloc((N_hidden+2)*sizeof(Mat));
+     int SpaceCreateActi_i<==0 and skip;
+     
+     while( (SpaceCreateActi_i<N_hidden+2) )
+     {
+         (P_ActiMat[SpaceCreateActi_i]).row:=N_sample;
+         (P_ActiMat[SpaceCreateActi_i]).col:=N_layerNeuron[SpaceCreateActi_i];
+         MatCreate(&(P_ActiMat[SpaceCreateActi_i]),N_sample,N_layerNeuron[SpaceCreateActi_i],RValue);
+         MatInitZero(&(P_ActiMat[SpaceCreateActi_i]),RValue);
+         SpaceCreateActi_i:=SpaceCreateActi_i+1
+         
+     };
+     return<==1 and RValue:=P_ActiMat;
+     skip
+     )
+     }; 
+  function SpaceCreateActiPlus ( Mat *P_ActiMatPlus,int N_sample,int N_hidden,int *N_layerNeuron,Mat* RValue )
+ {
+     frame(SpaceCreateActiPlus_i,return) and ( 
+     int return<==0 and skip;
+     P_ActiMatPlus:=(Mat *)malloc((N_hidden+1)*sizeof(Mat));
+     int SpaceCreateActiPlus_i<==0 and skip;
+     
+     while( (SpaceCreateActiPlus_i<N_hidden+1) )
+     {
+         (P_ActiMatPlus[SpaceCreateActiPlus_i]).row:=N_sample;
+         (P_ActiMatPlus[SpaceCreateActiPlus_i]).col:=N_layerNeuron[SpaceCreateActiPlus_i]+1;
+         MatCreate(&(P_ActiMatPlus[SpaceCreateActiPlus_i]),N_sample,N_layerNeuron[SpaceCreateActiPlus_i]+1,RValue);
+         MatInitZero(&(P_ActiMatPlus[SpaceCreateActiPlus_i]),RValue);
+         SpaceCreateActiPlus_i:=SpaceCreateActiPlus_i+1
+         
+     };
+     return<==1 and RValue:=P_ActiMatPlus;
+     skip
+     )
+     }; 
+  function SpaceCreateSum ( Mat *P_SumMat,int N_sample,int N_hidden,int *N_layerNeuron,Mat* RValue )
+ {
+     frame(SpaceCreateSum_i,return) and ( 
+     int return<==0 and skip;
+     P_SumMat:=(Mat *)malloc((N_hidden+2)*sizeof(Mat));
+     (P_SumMat[0]).row:=0;
+     (P_SumMat[0]).col:=0;
+     int SpaceCreateSum_i<==1 and skip;
+     
+     while( (SpaceCreateSum_i<N_hidden+2) )
+     {
+         (P_SumMat[SpaceCreateSum_i]).row:=N_sample;
+         (P_SumMat[SpaceCreateSum_i]).col:=N_layerNeuron[SpaceCreateSum_i];
+         MatCreate(&(P_SumMat[SpaceCreateSum_i]),N_sample,N_layerNeuron[SpaceCreateSum_i],RValue);
+         MatInitZero(&(P_SumMat[SpaceCreateSum_i]),RValue);
+         SpaceCreateSum_i:=SpaceCreateSum_i+1
+         
+     };
+     return<==1 and RValue:=P_SumMat;
+     skip
+     )
+     }; 
+  function SpaceCreateWeight ( Mat *P_WeightMat,int N_hidden,int *N_layerNeuron,Mat* RValue )
+ {
+     frame(SpaceCreateWeight_i,return) and ( 
+     int return<==0 and skip;
+     P_WeightMat:=(Mat *)malloc((N_hidden+2)*sizeof(Mat));
+     (P_WeightMat[0]).row:=0;
+     (P_WeightMat[0]).col:=0;
+     int SpaceCreateWeight_i<==1 and skip;
+     
+     while( (SpaceCreateWeight_i<N_hidden+2) )
+     {
+         (P_WeightMat[SpaceCreateWeight_i]).row:=N_layerNeuron[SpaceCreateWeight_i-1];
+         (P_WeightMat[SpaceCreateWeight_i]).col:=N_layerNeuron[SpaceCreateWeight_i];
+         MatCreate(&(P_WeightMat[SpaceCreateWeight_i]),N_layerNeuron[SpaceCreateWeight_i-1],N_layerNeuron[SpaceCreateWeight_i],RValue);
+         MatInitZero(&(P_WeightMat[SpaceCreateWeight_i]),RValue);
+         SpaceCreateWeight_i:=SpaceCreateWeight_i+1
+         
+     };
+     return<==1 and RValue:=P_WeightMat;
+     skip
+     )
+     }; 
+  function SpaceCreateWeightBias ( Mat *P_WeightBiasMat,int N_hidden,int *N_layerNeuron,Mat* RValue )
+ {
+     frame(SpaceCreateWeightBias_i,return) and ( 
+     int return<==0 and skip;
+     P_WeightBiasMat:=(Mat *)malloc((N_hidden+2)*sizeof(Mat));
+     (P_WeightBiasMat[0]).row:=0;
+     (P_WeightBiasMat[0]).col:=0;
+     int SpaceCreateWeightBias_i<==1 and skip;
+     
+     while( (SpaceCreateWeightBias_i<N_hidden+2) )
+     {
+         (P_WeightBiasMat[SpaceCreateWeightBias_i]).row:=N_layerNeuron[SpaceCreateWeightBias_i-1]+1;
+         (P_WeightBiasMat[SpaceCreateWeightBias_i]).col:=N_layerNeuron[SpaceCreateWeightBias_i];
+         MatCreate(&(P_WeightBiasMat[SpaceCreateWeightBias_i]),N_layerNeuron[SpaceCreateWeightBias_i-1]+1,N_layerNeuron[SpaceCreateWeightBias_i],RValue);
+         MatInitZero(&(P_WeightBiasMat[SpaceCreateWeightBias_i]),RValue);
+         SpaceCreateWeightBias_i:=SpaceCreateWeightBias_i+1
+         
+     };
+     return<==1 and RValue:=P_WeightBiasMat;
+     skip
+     )
+     }; 
+  function SpaceCreateDelta ( Mat *P_DeltaMat,int N_sample,int N_hidden,int *N_layerNeuron,Mat* RValue )
+ {
+     frame(SpaceCreateDelta_i,return) and ( 
+     int return<==0 and skip;
+     P_DeltaMat:=(Mat *)malloc((N_hidden+2)*sizeof(Mat));
+     (P_DeltaMat[0]).row:=0;
+     (P_DeltaMat[0]).col:=0;
+     int SpaceCreateDelta_i<==1 and skip;
+     
+     while( (SpaceCreateDelta_i<N_hidden+2) )
+     {
+         (P_DeltaMat[SpaceCreateDelta_i]).row:=N_sample;
+         (P_DeltaMat[SpaceCreateDelta_i]).col:=N_layerNeuron[SpaceCreateDelta_i];
+         MatCreate(&(P_DeltaMat[SpaceCreateDelta_i]),N_sample,N_layerNeuron[SpaceCreateDelta_i],RValue);
+         MatInitZero(&(P_DeltaMat[SpaceCreateDelta_i]),RValue);
+         SpaceCreateDelta_i:=SpaceCreateDelta_i+1
+         
+     };
+     return<==1 and RValue:=P_DeltaMat;
+     skip
+     )
+     }; 
   function main ( int  RValue )
  {
-     frame(main_N_sample,main_D_sample,main_N_out,main_Xval,main_Yval,main_N_hidden,main_N_layerNeuron,main_Nval,main_NStr_ActiFsHidden,main_Aval,main_Nstr_LossF) and (
+     frame(main_N_sample,main_D_sample,main_N_out,main_Xval,main_Yval,main_N_hidden,main_N_layerNeuron,main_Nval,main_NStr_ActiFsHidden,main_Aval,main_Nstr_LossF,main_P_ActiMat,main_P_ActiMatPlus,main_P_SumMat,main_P_WeightMat,main_P_WeightBiasMat,main_Mat_oneHot,main_P_DeltaMat) and (
      int main_N_sample<==16 and skip;
      int main_D_sample<==4 and skip;
      int main_N_out<==2 and skip;
@@ -1789,7 +1917,26 @@ float **element
      int *main_NStr_ActiFsHidden<==NULL and skip;
      int main_Aval[5]<=={0,3,3,3,5} and skip;
      main_NStr_ActiFsHidden:=intVal2List(main_N_hidden+2,main_Aval,main_NStr_ActiFsHidden,RValue);
-     int main_Nstr_LossF<==1 and skip
+     int main_Nstr_LossF<==1 and skip;
+     Mat *main_P_ActiMat<==NULL and skip;
+     Mat *main_P_ActiMatPlus<==NULL and skip;
+     Mat *main_P_SumMat<==NULL and skip;
+     Mat *main_P_WeightMat<==NULL and skip;
+     Mat *main_P_WeightBiasMat<==NULL and skip;
+     Mat main_Mat_oneHot and skip;
+     Mat *main_P_DeltaMat<==NULL and skip;
+     main_P_ActiMat:=SpaceCreateActi(main_P_ActiMat,main_N_sample,main_N_hidden,main_N_layerNeuron,RValue);
+     MatDump(&(main_P_ActiMat[0]));
+     main_P_ActiMatPlus:=SpaceCreateActiPlus(main_P_ActiMatPlus,main_N_sample,main_N_hidden,main_N_layerNeuron,RValue);
+     MatDump(&(main_P_ActiMatPlus[0]));
+     main_P_SumMat:=SpaceCreateSum(main_P_SumMat,main_N_sample,main_N_hidden,main_N_layerNeuron,RValue);
+     MatDump(&main_P_SumMat[0]);
+     main_P_WeightMat:=SpaceCreateWeight(main_P_WeightMat,main_N_hidden,main_N_layerNeuron,RValue);
+     MatDump(&main_P_WeightMat[1]);
+     main_P_WeightBiasMat:=SpaceCreateWeightBias(main_P_WeightBiasMat,main_N_hidden,main_N_layerNeuron,RValue);
+     MatDump(&main_P_WeightBiasMat[1]);
+     main_P_DeltaMat:=SpaceCreateDelta(main_P_DeltaMat,main_N_sample,main_N_hidden,main_N_layerNeuron,RValue);
+     MatDump(&(main_P_DeltaMat[1]))
      )
  };
   main(RValue)
