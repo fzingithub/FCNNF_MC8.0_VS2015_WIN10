@@ -1885,7 +1885,40 @@ float **element
      skip
      )
      }; 
-  function NNinit ( Mat *P_ActiMat,Mat *P_ActiMatPlus,Mat *Mat_Y,Mat *Mat_oneHot,Mat *P_WeightMat,Mat *P_WeightBiasMat,int N_out,int N_hidden,float *Xval,float *Yval,int RValue )
+  function WeightInit_ChooseWay ( Mat *Weight,int Style_initWeight )
+ {
+     if(Style_initWeight=0) then 
+     {
+         MatInitZero(Weight,RValue)
+     }
+     else
+     {
+         if(Style_initWeight=1) then 
+         {
+             MatInitRandomNormalization(Weight,RValue)
+         }
+         else
+         {
+             if(Style_initWeight=2) then 
+             {
+                 MatInitXavier(Weight,RValue)
+             }
+             else
+             {
+                 if(Style_initWeight=3) then 
+                 {
+                     MatInitHe(Weight,RValue)
+                 }
+                 else
+                 {
+                     output ("error for WeightInit_ChooseWay, please check Style_initWeight variable!\n") and skip
+                 }
+             }
+         }
+     }
+     
+ };
+ function NNinit ( Mat *P_ActiMat,Mat *P_ActiMatPlus,Mat *Mat_Y,Mat *Mat_oneHot,Mat *P_WeightMat,Mat *P_WeightBiasMat,int N_out,int N_hidden,float *Xval,float *Yval,int Style_initWeight,int RValue )
  {
      frame(NNinit_i,return) and ( 
      int return<==0 and skip;
@@ -1897,7 +1930,7 @@ float **element
      
      while( (NNinit_i<N_hidden+2) )
      {
-         MatInitHe(&P_WeightMat[NNinit_i],RValue);
+         WeightInit_ChooseWay(&P_WeightMat[NNinit_i],Style_initWeight);
          MatPlusRow(&P_WeightMat[NNinit_i],&P_WeightBiasMat[NNinit_i]);
          NNinit_i:=NNinit_i+1
          
@@ -1906,7 +1939,7 @@ float **element
      skip
      )
      }; 
-  function NNforward ( Mat *P_ActiMat,Mat *P_ActiMatPlus,Mat *P_SumMat,Mat *P_WeightMatBias,Mat Mat_oneHot,int RValue )
+  function NNforward ( Mat *P_ActiMat,Mat *P_ActiMatPlus,Mat *P_SumMat,Mat *P_WeightMatBias,Mat Mat_oneHot,float RValue )
  {
      frame(return) and ( 
      int return<==0 and skip;
@@ -1916,7 +1949,7 @@ float **element
      }; 
   function main ( int  RValue )
  {
-     frame(main_N_sample,main_D_sample,main_N_out,main_Xval,main_Yval,main_N_hidden,main_N_layerNeuron,main_Nval,main_NStr_ActiFsHidden,main_Aval,main_Nstr_LossF,main_P_ActiMat,main_P_ActiMatPlus,main_P_SumMat,main_P_WeightMat,main_P_WeightBiasMat,main_Mat_oneHot,main_Mat_Y,main_P_DeltaMat) and (
+     frame(main_N_sample,main_D_sample,main_N_out,main_Xval,main_Yval,main_N_hidden,main_N_layerNeuron,main_Nval,main_NStr_ActiFsHidden,main_Aval,main_Nstr_LossF,main_Style_initWeight,main_P_ActiMat,main_P_ActiMatPlus,main_P_SumMat,main_P_WeightMat,main_P_WeightBiasMat,main_Mat_oneHot,main_Mat_Y,main_P_DeltaMat) and (
      int main_N_sample<==16 and skip;
      int main_D_sample<==4 and skip;
      int main_N_out<==2 and skip;
@@ -1930,6 +1963,7 @@ float **element
      int main_Aval[5]<=={0,3,3,3,5} and skip;
      main_NStr_ActiFsHidden:=intVal2List(main_N_hidden+2,main_Aval,main_NStr_ActiFsHidden,RValue);
      int main_Nstr_LossF<==1 and skip;
+     int main_Style_initWeight<==3 and skip;
      Mat *main_P_ActiMat<==NULL and skip;
      Mat *main_P_ActiMatPlus<==NULL and skip;
      Mat *main_P_SumMat<==NULL and skip;
@@ -1946,7 +1980,7 @@ float **element
      main_P_WeightMat:=SpaceCreateWeight(main_P_WeightMat,main_N_hidden,main_N_layerNeuron,RValue);
      main_P_WeightBiasMat:=SpaceCreateWeightBias(main_P_WeightBiasMat,main_N_hidden,main_N_layerNeuron,RValue);
      main_P_DeltaMat:=SpaceCreateDelta(main_P_DeltaMat,main_N_sample,main_N_hidden,main_N_layerNeuron,RValue);
-     NNinit(main_P_ActiMat,main_P_ActiMatPlus,&main_Mat_Y,&main_Mat_oneHot,main_P_WeightMat,main_P_WeightBiasMat,main_N_out,main_N_hidden,main_Xval,main_Yval,RValue);
+     NNinit(main_P_ActiMat,main_P_ActiMatPlus,&main_Mat_Y,&main_Mat_oneHot,main_P_WeightMat,main_P_WeightBiasMat,main_N_out,main_N_hidden,main_Xval,main_Yval,main_Style_initWeight,RValue);
      MatDump(&main_P_ActiMat[0]);
      MatDump(&main_P_ActiMatPlus[0]);
      MatDump(&main_Mat_Y);

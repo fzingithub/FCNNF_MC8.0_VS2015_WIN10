@@ -1036,6 +1036,11 @@ float CrossEntropy(Mat *src, Mat *dst)
 
 
 
+
+
+
+
+
 /************************************************************************/
 /*                           权值初始化函数操作                         */
 /************************************************************************/
@@ -1158,6 +1163,21 @@ Mat* MatInitHe(Mat *src)
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 /************************************************************************/
 /*                     用户输入参数列表及传入函数                       */
 /************************************************************************/
@@ -1166,6 +1186,12 @@ Mat* MatInitHe(Mat *src)
 //单一样本的维度：			D_sample.
 //样本真值：				Xval = [], length = N_sample * D_sample.
 //样本标签：				Yval = [], length = N_sample.
+//权值初始化方式			Style_initWeight. 
+						  //0  -> 全0初始化
+						  //1  -> 随机初始化
+						  //2  -> Xavier初始化
+						  //3  -> 何凯明初始化
+
 
 //神经网络隐藏层层数:		N_hidden.
 //各层神经元个数 :			N_layerNeuron[i], i =0(输入层),1,...,N_hidden,N_hidden+1(输出层).
@@ -1198,6 +1224,18 @@ int* intVal2List(int length, int *src, int* dst){
 /************************************************************************/
 /*                     用户输入参数列表及传入函数                       */
 /************************************************************************/
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -1344,6 +1382,90 @@ Mat* SpaceCreateDelta(Mat* P_DeltaMat, int N_sample, int N_hidden, int* N_layerN
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/************************************************************************/
+/*                             初始化神经网络                           */
+/************************************************************************/
+/*初始化神经网络参数*/
+//输入矩阵 输出矩阵 权值权值矩阵
+
+void WeightInit_ChooseWay(Mat *Weight, int Style_initWeight){
+	if (Style_initWeight == 0){
+		MatInitZero(Weight);
+	}
+	else if (Style_initWeight == 1){
+		MatInitRandomNormalization(Weight);
+	}
+	else if (Style_initWeight == 2){
+		MatInitXavier(Weight);
+	}
+	else if (Style_initWeight == 3){
+		MatInitHe(Weight);
+	}
+	else{
+		printf("error for WeightInit_ChooseWay, please check Style_initWeight variable!\n");
+	}
+
+}
+
+
+int NNinit(Mat *P_ActiMat, Mat *P_ActiMatPlus, Mat *Mat_Y, Mat * Mat_oneHot, Mat *P_WeightMat, Mat *P_WeightBiasMat, int N_out, int N_hidden, float *Xval, float *Yval, int Style_initWeight){
+
+	MatSetVal(&P_ActiMat[0], Xval);
+	MatPlusCol(&P_ActiMat[0], &P_ActiMatPlus[0]);
+	MatSetVal(Mat_Y, Yval);
+	OneHot(Mat_Y, N_out, Mat_oneHot);
+
+
+
+	//权值何凯明初始化（后期扩展可选常用的几种初始化方式）
+	for (int i = 1; i < N_hidden + 2; ++i){
+		WeightInit_ChooseWay(&P_WeightMat[i], Style_initWeight);
+		MatPlusRow(&P_WeightMat[i], &P_WeightBiasMat[i]);
+	}
+
+	return 0;
+}
+/************************************************************************/
+/*                             初始化神经网络                           */
+/************************************************************************/
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 /************************************************************************/
 /*                           神经网络前向传播                           */
 /************************************************************************/
@@ -1353,42 +1475,18 @@ Mat* SpaceCreateDelta(Mat* P_DeltaMat, int N_sample, int N_hidden, int* N_layerN
 //加偏置列偏置列全部置1.输出层不需要Plus
 //神经网络求和矩阵				P_SumMat		Mat*		列表索引i = 0(输入层), 1, ..., N hidden，N hidden + 1(输出层)
 //i = 0 时输入层求和矩阵行列置零无实际含义
-//神经网络权值矩阵				P_WeightMat		Mat*		列表索引i = 0(输入层), 1, ..., N hidden，N hidden + 1(输出层)
-//i = 0 时输入层求和矩阵行列置零无实际含义
 //神经网络权值偏置矩阵			P_WeightBiasMat	Mat*		列表索引i = 0(输入层), 1, ..., N hidden，N hidden + 1(输出层)
 //i = 0 时输入层求和矩阵行列置零无实际含义
 //训练数据标签					Mat_oneHot		Mat			row = N_sample col = N_out
 
 
-/*初始化神经网络参数*/
-//输入矩阵 输出矩阵 权值权值矩阵
-int NNinit(Mat *P_ActiMat, Mat *P_ActiMatPlus, Mat *Mat_Y, Mat * Mat_oneHot, Mat *P_WeightMat, Mat *P_WeightBiasMat, int N_out, int N_hidden, float *Xval, float *Yval){
-
-	MatSetVal(&P_ActiMat[0], Xval);
-	MatPlusCol(&P_ActiMat[0], &P_ActiMatPlus[0]);
-	MatSetVal(Mat_Y, Yval);
-	OneHot(Mat_Y, N_out, Mat_oneHot);
-	
 
 
-	//权值何凯明初始化（后期扩展可选常用的几种初始化方式）
-	for (int i = 1; i < N_hidden + 2; ++i){
-		MatInitHe(&P_WeightMat[i]);
-		MatPlusRow(&P_WeightMat[i], &P_WeightBiasMat[i]);
-	}
-
-	return 0;
-}
-
-
-
-
-int NNforward(Mat *P_ActiMat, Mat *P_ActiMatPlus, Mat *P_SumMat, Mat *P_WeightMatBias, Mat Mat_oneHot){
+float NNforward(Mat *P_ActiMat, Mat *P_ActiMatPlus, Mat *P_SumMat, Mat *P_WeightMatBias, Mat Mat_oneHot){
 
 	return 0;
 
 }
-
 
 /************************************************************************/
 /*                           神经网络前向传播                           */
@@ -1460,10 +1558,9 @@ int main(){
 	//	printf("%d\n", NStr_ActiFsHidden[i]);
 	//}
 
-
 	int Nstr_LossF = 1;//use CrossEntropy Loss function
 
-
+	int Style_initWeight = 3;   //kaiming initialization
 
 
 
@@ -1537,7 +1634,7 @@ int main(){
 
 	/*初始化神经网络参数*/
 	//输入矩阵 输出矩阵 权值权值矩阵
-	NNinit(P_ActiMat, P_ActiMatPlus, &Mat_Y, &Mat_oneHot, P_WeightMat, P_WeightBiasMat, N_out, N_hidden, Xval, Yval);
+	NNinit(P_ActiMat, P_ActiMatPlus, &Mat_Y, &Mat_oneHot, P_WeightMat, P_WeightBiasMat, N_out, N_hidden, Xval, Yval, Style_initWeight);
 
 	MatDump(&P_ActiMat[0]);
 	MatDump(&P_ActiMatPlus[0]);
@@ -1546,6 +1643,14 @@ int main(){
 	MatDump(&P_WeightMat[1]);
 	MatDump(&P_WeightBiasMat[1]);
 
+
+
+
+
+
+
+
+	/*神经网络前项传播*/
 }
 
 
@@ -1565,9 +1670,9 @@ int main(){
 
 
 
-///************************************************************************/
-///*                        二维矩阵测试主函数                            */
-///************************************************************************/
+/************************************************************************/
+/*                        二维矩阵测试主函数                            */
+/************************************************************************/
 //int main(void)
 //{
 //	Mat a;
