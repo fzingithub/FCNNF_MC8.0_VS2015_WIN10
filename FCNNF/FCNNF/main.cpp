@@ -818,6 +818,30 @@ Mat* MatSoftmax(Mat *src, Mat *dst)
 }
 
 
+Mat* MatNoneActi(Mat *src, Mat *dst)
+{
+	int row, col;
+
+#ifdef MAT_LEGAL_CHECKING
+	if (src->row != dst->row || src->col != dst->col) {
+		printf("\t\terr check, unmathed matrix for MatNoneActi\t\t\n");
+		printf("\t\tsrcMatShape:\n\t\t\t");
+		MatShape(src);
+		printf("\t\tdstMatShape:\n\t\t\t");
+		MatShape(dst);
+		return NULL;
+	}
+#endif
+
+	for (row = 0; row < src->row; row++) {
+		for (col = 0; col < src->col; col++)
+			(dst->element[row])[col] = (src->element[row])[col];
+	}
+
+	return dst;
+}
+
+
 Mat* MatSigmoid(Mat *src, Mat *dst)
 {
 	int row, col;
@@ -1480,12 +1504,58 @@ int NNinit(Mat *P_ActiMat, Mat *P_ActiMatPlus, Mat *Mat_Y, Mat * Mat_oneHot, Mat
 //训练数据标签					Mat_oneHot		Mat			row = N_sample col = N_out
 
 
+Mat* *MatActivate(Mat *src, Mat *dst, int way){
+	if (way == 0){
+		MatNoneActi(src, dst);
+	}
+	else if (way == 1){
+		MatSigmoid(src, dst);
+	}
+	else if (way == 2){
+		MatTanh(src, dst);
+	}
+	else if (way == 3){
+		MatRelu(src, dst);
+	}
+	else if (way == 4){
+		MatLeakyRelu(0.2f, src, dst); //leak = 0.2
+	}
+	else if (way == 5){
+		MatSoftmax(src, dst);
+	}
+	else{
+		printf("error for MatActivate, please check ActiFsHidden  variable!\n");
+	}
+	return NULL;
+}
 
 
-float NNforward(Mat *P_ActiMat, Mat *P_ActiMatPlus, Mat *P_SumMat, Mat *P_WeightMatBias, Mat Mat_oneHot){
+float LossFunction(Mat *src, Mat *dst, int Nstr_LossF){
+	if (Nstr_LossF == 0){
+		return MSE(src, dst);
+	}
+	else if (Nstr_LossF == 1){
+		return CrossEntropy(src, dst);
+	}
+	else{
+		printf("error for Nstr_LossF, please check loss function variable!\n");
+	}
+}
 
-	return 0;
+//神经网络向前传播， 返回loss scalar
+float NNforward(Mat *P_ActiMat, Mat *P_ActiMatPlus, Mat *P_SumMat, Mat *P_WeightBiasMat, Mat Mat_oneHot, int N_hidden, int *NStr_ActiFsHidden, int Nstr_LossF){
 
+	// 向前传播
+	for (int i = 0; i < N_hidden+1; ++i){
+		MatMul(&P_ActiMatPlus[i], &P_WeightBiasMat[i + 1], &P_SumMat[i + 1]);
+		MatActivate(&P_SumMat[i + 1], &P_ActiMat[i + 1], NStr_ActiFsHidden[i + 1]);
+		if (i != N_hidden){
+			MatPlusCol(&P_ActiMat[i + 1], &P_ActiMatPlus[i + 1]);
+		}
+		MatDump(&P_ActiMat[i + 1]);
+	}
+	//计算loss
+	return LossFunction(&Mat_oneHot, &P_ActiMat[N_hidden + 1], Nstr_LossF);
 }
 
 /************************************************************************/
@@ -1518,29 +1588,47 @@ int main(){
 	int N_out = 2;   //二分类
 
 	float Xval[] = {
-		0, 0, 0, 0,
-		0, 0, 0, 1,
-		0, 0, 1, 0,
-		0, 0, 1, 1,
-		0, 1, 0, 0,
-		0, 1, 0, 1,
-		0, 1, 1, 0,
-		0, 1, 1, 1,
-		1, 0, 0, 0,
-		1, 0, 0, 1,
-		1, 0, 1, 0,
-		1, 0, 1, 1,
-		1, 1, 0, 0,
-		1, 1, 0, 1,
-		1, 1, 1, 0,
-		1, 1, 1, 1 }; //样本真值
+		0.f, 0.f, 0.f, 0.f,
+		0.f, 0.f, 0.f, 1.f,
+		0.f, 0.f, 1.f, 0.f,
+		0.f, 0.f, 1.f, 1.f,
+		0.f, 1.f, 0.f, 0.f,
+		0.f, 1.f, 0.f, 1.f,
+		0.f, 1.f, 1.f, 0.f,
+		0.f, 1.f, 1.f, 1.f,
+		1.f, 0.f, 0.f, 0.f,
+		1.f, 0.f, 0.f, 1.f,
+		1.f, 0.f, 1.f, 0.f,
+		1.f, 0.f, 1.f, 1.f,
+		1.f, 1.f, 0.f, 0.f,
+		1.f, 1.f, 0.f, 1.f,
+		1.f, 1.f, 1.f, 0.f,
+		1.f, 1.f, 1.f, 1.f }; //样本真值
+
+	//float Xval[] = {
+	//	0.4f, 0.4f, 0.4f, 0.4f,
+	//	0.4f, 0.4f, 0.4f, 0.6f,
+	//	0.4f, 0.4f, 0.6f, 0.4f,
+	//	0.4f, 0.4f, 0.6f, 0.6f,
+	//	0.4f, 0.6f, 0.4f, 0.4f,
+	//	0.4f, 0.6f, 0.4f, 0.6f,
+	//	0.4f, 0.6f, 0.6f, 0.4f,
+	//	0.4f, 0.6f, 0.6f, 0.6f,
+	//	0.6f, 0.4f, 0.4f, 0.4f,
+	//	0.6f, 0.4f, 0.4f, 0.6f,
+	//	0.6f, 0.4f, 0.6f, 0.4f,
+	//	0.6f, 0.4f, 0.6f, 0.6f,
+	//	0.6f, 0.6f, 0.4f, 0.4f,
+	//	0.6f, 0.6f, 0.4f, 0.6f,
+	//	0.6f, 0.6f, 0.6f, 0.4f,
+	//	0.6f, 0.6f, 0.6f, 0.6f }; //样本真值
 
 	float Yval[] = { 0, 1, 1, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0, 1, 1, 0 };  //样本标签二分类
 
 	int N_hidden = 3;//神经网络隐藏层层数
 
 	int *N_layerNeuron = NULL; // 各层神经元个数  0(输入层),1,...,N_hidden,N_hidden+1(输出层).
-	int Nval[] = { 4, 6, 10, 8, 2 };// 各隐藏层神经元个数真值
+	int Nval[] = { 4, 3, 6, 3, 2 };// 各隐藏层神经元个数真值
 
 	N_layerNeuron = intVal2List(N_hidden + 2, Nval, N_layerNeuron);
 	////测试传入正确性
@@ -1637,10 +1725,10 @@ int main(){
 	NNinit(P_ActiMat, P_ActiMatPlus, &Mat_Y, &Mat_oneHot, P_WeightMat, P_WeightBiasMat, N_out, N_hidden, Xval, Yval, Style_initWeight);
 
 	MatDump(&P_ActiMat[0]);
-	MatDump(&P_ActiMatPlus[0]);
-	MatDump(&Mat_Y);
-	MatDump(&Mat_oneHot);
-	MatDump(&P_WeightMat[1]);
+	//MatDump(&P_ActiMatPlus[0]);
+	//MatDump(&Mat_Y);
+	//MatDump(&Mat_oneHot);
+	//MatDump(&P_WeightMat[1]);
 	MatDump(&P_WeightBiasMat[1]);
 
 
@@ -1649,8 +1737,17 @@ int main(){
 
 
 
-
+	float loss = 0.f;
 	/*神经网络前项传播*/
+	loss = NNforward(P_ActiMat, P_ActiMatPlus, P_SumMat, P_WeightBiasMat, Mat_oneHot, N_hidden, NStr_ActiFsHidden, Nstr_LossF);
+	printf("%f\n", loss);
+
+
+
+
+
+
+	return 0;
 }
 
 

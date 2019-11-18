@@ -1275,6 +1275,52 @@ float **element
      }
      )
      }; 
+  function MatNoneActi ( Mat *src,Mat *dst,Mat* RValue )
+ {
+     frame(MatNoneActi_row,MatNoneActi_col,return) and ( 
+     int return<==0 and skip;
+     int MatNoneActi_row,MatNoneActi_col and skip;
+     if(src->row!=dst->row OR src->col!=dst->col) then 
+     {
+         output ("\t\terr check, unmathed matrix for MatNoneActi\t\t\n") and skip;
+         output ("\t\tsrcMatShape:\n\t\t\t") and skip;
+         MatShape(src);
+         output ("\t\tdstMatShape:\n\t\t\t") and skip;
+         MatShape(dst);
+         return<==1 and RValue:=NULL;
+         skip
+         
+     }
+     else 
+     {
+          skip 
+     };
+     if(return=0)   then 
+     {
+         MatNoneActi_row:=0;
+         
+         while( (MatNoneActi_row<src->row) )
+         {
+             MatNoneActi_col:=0;
+             
+             while( (MatNoneActi_col<src->col) )
+             {
+                 (dst->element[MatNoneActi_row])[MatNoneActi_col]:=(src->element[MatNoneActi_row])[MatNoneActi_col];
+                 MatNoneActi_col:=MatNoneActi_col+1
+                 
+             };
+             MatNoneActi_row:=MatNoneActi_row+1
+             
+         };
+         return<==1 and RValue:=dst;
+         skip
+     }
+     else
+     {
+         skip
+     }
+     )
+     }; 
   function MatSigmoid ( Mat *src,Mat *dst,Mat* RValue )
  {
      frame(MatSigmoid_row,MatSigmoid_col,return) and ( 
@@ -1939,25 +1985,120 @@ float **element
      skip
      )
      }; 
-  function NNforward ( Mat *P_ActiMat,Mat *P_ActiMatPlus,Mat *P_SumMat,Mat *P_WeightMatBias,Mat Mat_oneHot,float RValue )
+  function MatActivate ( Mat *src,Mat *dst,int way,Mat** RValue )
  {
      frame(return) and ( 
      int return<==0 and skip;
-     return<==1 and RValue:=0;
+     if(way=0) then 
+     {
+         MatNoneActi(src,dst,RValue)
+         
+     }
+     else
+     {
+         if(way=1) then 
+         {
+             MatSigmoid(src,dst,RValue)
+         }
+         else
+         {
+             if(way=2) then 
+             {
+                 MatTanh(src,dst,RValue)
+             }
+             else
+             {
+                 if(way=3) then 
+                 {
+                     MatRelu(src,dst,RValue)
+                 }
+                 else
+                 {
+                     if(way=4) then 
+                     {
+                         MatLeakyRelu(0.2,src,dst,RValue)
+                     }
+                     else
+                     {
+                         if(way=5) then 
+                         {
+                             MatSoftmax(src,dst,RValue)
+                         }
+                         else
+                         {
+                             output ("error for MatActivate, please check ActiFsHidden  variable!\n") and skip
+                         }
+                     }
+                 }
+             }
+         }
+     };
+     return<==1 and RValue:=NULL;
+     skip
+     )
+     }; 
+  function LossFunction ( Mat *src,Mat *dst,int Nstr_LossF,float RValue )
+ {
+     frame(return) and ( 
+     int return<==0 and skip;
+     if(Nstr_LossF=0) then 
+     {
+         return<==1 and RValue:=MSE(src,dst,RValue);
+         skip
+     }
+     else
+     {
+         if(Nstr_LossF=1) then 
+         {
+             return<==1 and RValue:=CrossEntropy(src,dst,RValue);
+             skip
+         }
+         else
+         {
+ output ("error for Nstr_LossF, please check loss function variable!\n") and skip
+ }
+ }
+ )
+ }; 
+  function NNforward ( Mat *P_ActiMat,Mat *P_ActiMatPlus,Mat *P_SumMat,Mat *P_WeightBiasMat,Mat Mat_oneHot,int N_hidden,int *NStr_ActiFsHidden,int Nstr_LossF,float RValue )
+ {
+     frame(NNforward_i,return) and ( 
+     int return<==0 and skip;
+     int NNforward_i<==0 and skip;
+     
+     while( (NNforward_i<N_hidden+1) )
+     {
+         MatMul(&P_ActiMatPlus[NNforward_i],&P_WeightBiasMat[NNforward_i+1],&P_SumMat[NNforward_i+1],RValue);
+         MatActivate(&P_SumMat[NNforward_i+1],&P_ActiMat[NNforward_i+1],NStr_ActiFsHidden[NNforward_i+1],RValue);
+         if(NNforward_i!=N_hidden) then 
+         {
+             MatPlusCol(&P_ActiMat[NNforward_i+1],&P_ActiMatPlus[NNforward_i+1])
+             
+         }
+         else 
+         {
+              skip 
+         };
+         MatDump(&P_ActiMat[NNforward_i+1]);
+         NNforward_i:=NNforward_i+1
+         
+     };
+     return<==1 and RValue:=LossFunction(&Mat_oneHot,&P_ActiMat[N_hidden+1],Nstr_LossF,RValue);
      skip
      )
      }; 
   function main ( int  RValue )
  {
-     frame(main_N_sample,main_D_sample,main_N_out,main_Xval,main_Yval,main_N_hidden,main_N_layerNeuron,main_Nval,main_NStr_ActiFsHidden,main_Aval,main_Nstr_LossF,main_Style_initWeight,main_P_ActiMat,main_P_ActiMatPlus,main_P_SumMat,main_P_WeightMat,main_P_WeightBiasMat,main_Mat_oneHot,main_Mat_Y,main_P_DeltaMat) and (
+     frame(main_N_sample,main_D_sample,main_N_out,main_Xval,main_Yval,main_N_hidden,main_N_layerNeuron,main_Nval,main_NStr_ActiFsHidden,main_Aval,main_Nstr_LossF,main_Style_initWeight,main_P_ActiMat,main_P_ActiMatPlus,main_P_SumMat,main_P_WeightMat,main_P_WeightBiasMat,main_Mat_oneHot,main_Mat_Y,main_P_DeltaMat,main_loss,return) and (
+     int return<==0 and skip;
      int main_N_sample<==16 and skip;
      int main_D_sample<==4 and skip;
      int main_N_out<==2 and skip;
-     float main_Xval[64]<=={0,0,0,0,0,0,0,1,0,0,1,0,0,0,1,1,0,1,0,0,0,1,0,1,0,1,1,0,0,1,1,1,1,0,0,0,1,0,0,1,1,0,1,0,1,0,1,1,1,1,0,0,1,1,0,1,1,1,1,0,1,1,1,1} and skip;
+     float main_Xval[64]<=={0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,0.0,0.0,1.0,0.0,0.0,0.0,1.0,1.0,0.0,1.0,0.0,0.0,0.0,1.0,0.0,1.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,1.0,0.0,0.0,1.0,1.0,0.0,1.0,0.0,1.0,0.0,1.0,1.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,1.0,1.0,1.0,1.0,0.0,1.0,1.0,1.0,1.0} and skip;
      float main_Yval[16]<=={0,1,1,0,1,0,0,1,1,0,0,1,0,1,1,0} and skip;
      int main_N_hidden<==3 and skip;
      int *main_N_layerNeuron<==NULL and skip;
-     int main_Nval[5]<=={4,6,10,8,2} and skip;
+     int main_Nval[5]<=={4,3,6,3,2} and skip;
      main_N_layerNeuron:=intVal2List(main_N_hidden+2,main_Nval,main_N_layerNeuron,RValue);
      int *main_NStr_ActiFsHidden<==NULL and skip;
      int main_Aval[5]<=={0,3,3,3,5} and skip;
@@ -1982,11 +2123,12 @@ float **element
      main_P_DeltaMat:=SpaceCreateDelta(main_P_DeltaMat,main_N_sample,main_N_hidden,main_N_layerNeuron,RValue);
      NNinit(main_P_ActiMat,main_P_ActiMatPlus,&main_Mat_Y,&main_Mat_oneHot,main_P_WeightMat,main_P_WeightBiasMat,main_N_out,main_N_hidden,main_Xval,main_Yval,main_Style_initWeight,RValue);
      MatDump(&main_P_ActiMat[0]);
-     MatDump(&main_P_ActiMatPlus[0]);
-     MatDump(&main_Mat_Y);
-     MatDump(&main_Mat_oneHot);
-     MatDump(&main_P_WeightMat[1]);
-     MatDump(&main_P_WeightBiasMat[1])
+     MatDump(&main_P_WeightBiasMat[1]);
+     float main_loss<==0.0 and skip;
+     main_loss:=NNforward(main_P_ActiMat,main_P_ActiMatPlus,main_P_SumMat,main_P_WeightBiasMat,main_Mat_oneHot,main_N_hidden,main_NStr_ActiFsHidden,main_Nstr_LossF,RValue);
+     output (main_loss,"\n","\n") and skip;
+     return<==1 and RValue:=0;
+     skip
      )
  };
   main(RValue)
