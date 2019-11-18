@@ -1113,11 +1113,11 @@ float **element
      }
      )
      }; 
-  function MatPlus ( Mat *src,Mat *dst )
+  function MatPlusCol ( Mat *src,Mat *dst )
  {
-     frame(MatPlus_row,MatPlus_col,return) and ( 
+     frame(MatPlusCol_row,MatPlusCol_col,return) and ( 
      int return<==0 and skip;
-     int MatPlus_row,MatPlus_col and skip;
+     int MatPlusCol_row,MatPlusCol_col and skip;
      if(src->row!=dst->row OR (src->col)+1!=dst->col) then 
      {
          output ("\t\terr check, unmathed matrix for MatPlus\t\t\n") and skip;
@@ -1134,26 +1134,26 @@ float **element
      };
      if(return=0)   then 
      {
-         MatPlus_row:=0 and MatPlus_col:=0;
-         while( (MatPlus_row<dst->row) )
+         MatPlusCol_row:=0 and MatPlusCol_col:=0;
+         while( (MatPlusCol_row<dst->row) )
          {
-             (dst->element[MatPlus_row])[MatPlus_col]:=1;
-             MatPlus_row:=MatPlus_row+1
+             (dst->element[MatPlusCol_row])[MatPlusCol_col]:=1;
+             MatPlusCol_row:=MatPlusCol_row+1
              
          };
-         MatPlus_row:=0;
+         MatPlusCol_row:=0;
          
-         while( (MatPlus_row<src->row) )
+         while( (MatPlusCol_row<src->row) )
          {
-             MatPlus_col:=0;
+             MatPlusCol_col:=0;
              
-             while( (MatPlus_col<src->col) )
+             while( (MatPlusCol_col<src->col) )
              {
-                 (dst->element[MatPlus_row])[MatPlus_col+1]:=(src->element[MatPlus_row])[MatPlus_col];
-                 MatPlus_col:=MatPlus_col+1
+                 (dst->element[MatPlusCol_row])[MatPlusCol_col+1]:=(src->element[MatPlusCol_row])[MatPlusCol_col];
+                 MatPlusCol_col:=MatPlusCol_col+1
                  
              };
-             MatPlus_row:=MatPlus_row+1
+             MatPlusCol_row:=MatPlusCol_row+1
              
          }
      }
@@ -1163,14 +1163,14 @@ float **element
      }
      )
      }; 
-  function MatMinus ( Mat *src,Mat *dst )
+  function MatPlusRow ( Mat *src,Mat *dst )
  {
-     frame(MatMinus_row,MatMinus_col,return) and ( 
+     frame(MatPlusRow_row,MatPlusRow_col,return) and ( 
      int return<==0 and skip;
-     int MatMinus_row,MatMinus_col and skip;
-     if(src->row!=dst->row OR src->col!=(dst->col)+1) then 
+     int MatPlusRow_row,MatPlusRow_col and skip;
+     if(src->row+1!=dst->row OR (src->col)!=dst->col) then 
      {
-         output ("\t\terr check, unmathed matrix for MatMinus\t\t\n") and skip;
+         output ("\t\terr check, unmathed matrix for MatPlus\t\t\n") and skip;
          output ("\t\tsrcMatShape:\n\t\t\t") and skip;
          MatShape(src);
          output ("\t\tdstMatShape:\n\t\t\t") and skip;
@@ -1184,19 +1184,26 @@ float **element
      };
      if(return=0)   then 
      {
-         MatMinus_row:=0;
-         
-         while( (MatMinus_row<src->row) )
+         MatPlusRow_row:=0 and MatPlusRow_col:=0;
+         while( (MatPlusRow_col<dst->col) )
          {
-             MatMinus_col:=0;
+             (dst->element[MatPlusRow_row])[MatPlusRow_col]:=0.0;
+             MatPlusRow_col:=MatPlusRow_col+1
              
-             while( (MatMinus_col<src->col) )
+         };
+         MatPlusRow_row:=0;
+         
+         while( (MatPlusRow_row<src->row) )
+         {
+             MatPlusRow_col:=0;
+             
+             while( (MatPlusRow_col<src->col) )
              {
-                 (dst->element[MatMinus_row])[MatMinus_col]:=(src->element[MatMinus_row])[MatMinus_col+1];
-                 MatMinus_col:=MatMinus_col+1
+                 (dst->element[MatPlusRow_row+1])[MatPlusRow_col]:=(src->element[MatPlusRow_row])[MatPlusRow_col];
+                 MatPlusRow_col:=MatPlusRow_col+1
                  
              };
-             MatMinus_row:=MatMinus_row+1
+             MatPlusRow_row:=MatPlusRow_row+1
              
          }
      }
@@ -1667,14 +1674,6 @@ float **element
          MatInitRandomNormalization_row:=MatInitRandomNormalization_row+1
          
      };
-     MatInitRandomNormalization_col:=0;
-     
-     while( (MatInitRandomNormalization_col<src->col) )
-     {
-         (src->element[0])[MatInitRandomNormalization_col]:=0.0;
-         MatInitRandomNormalization_col:=MatInitRandomNormalization_col+1
-         
-     };
      return<==1 and RValue:=src;
      skip
      )
@@ -1702,14 +1701,6 @@ float **element
          MatInitXavier_row:=MatInitXavier_row+1
          
      };
-     MatInitXavier_col:=0;
-     
-     while( (MatInitXavier_col<src->col) )
-     {
-         (src->element[0])[MatInitXavier_col]:=0.0;
-         MatInitXavier_col:=MatInitXavier_col+1
-         
-     };
      return<==1 and RValue:=src;
      skip
      )
@@ -1735,14 +1726,6 @@ float **element
              
          };
          MatInitHe_row:=MatInitHe_row+1
-         
-     };
-     MatInitHe_col:=0;
-     
-     while( (MatInitHe_col<src->col) )
-     {
-         (src->element[0])[MatInitHe_col]:=0.0;
-         MatInitHe_col:=MatInitHe_col+1
          
      };
      return<==1 and RValue:=src;
@@ -1902,9 +1885,38 @@ float **element
      skip
      )
      }; 
+  function NNinit ( Mat *P_ActiMat,Mat *P_ActiMatPlus,Mat *Mat_Y,Mat *Mat_oneHot,Mat *P_WeightMat,Mat *P_WeightBiasMat,int N_out,int N_hidden,float *Xval,float *Yval,int RValue )
+ {
+     frame(NNinit_i,return) and ( 
+     int return<==0 and skip;
+     MatSetVal(&P_ActiMat[0],Xval,RValue);
+     MatPlusCol(&P_ActiMat[0],&P_ActiMatPlus[0]);
+     MatSetVal(Mat_Y,Yval,RValue);
+     OneHot(Mat_Y,N_out,Mat_oneHot,RValue);
+     int NNinit_i<==1 and skip;
+     
+     while( (NNinit_i<N_hidden+2) )
+     {
+         MatInitHe(&P_WeightMat[NNinit_i],RValue);
+         MatPlusRow(&P_WeightMat[NNinit_i],&P_WeightBiasMat[NNinit_i]);
+         NNinit_i:=NNinit_i+1
+         
+     };
+     return<==1 and RValue:=0;
+     skip
+     )
+     }; 
+  function NNforward ( Mat *P_ActiMat,Mat *P_ActiMatPlus,Mat *P_SumMat,Mat *P_WeightMatBias,Mat Mat_oneHot,int RValue )
+ {
+     frame(return) and ( 
+     int return<==0 and skip;
+     return<==1 and RValue:=0;
+     skip
+     )
+     }; 
   function main ( int  RValue )
  {
-     frame(main_N_sample,main_D_sample,main_N_out,main_Xval,main_Yval,main_N_hidden,main_N_layerNeuron,main_Nval,main_NStr_ActiFsHidden,main_Aval,main_Nstr_LossF,main_P_ActiMat,main_P_ActiMatPlus,main_P_SumMat,main_P_WeightMat,main_P_WeightBiasMat,main_Mat_oneHot,main_P_DeltaMat) and (
+     frame(main_N_sample,main_D_sample,main_N_out,main_Xval,main_Yval,main_N_hidden,main_N_layerNeuron,main_Nval,main_NStr_ActiFsHidden,main_Aval,main_Nstr_LossF,main_P_ActiMat,main_P_ActiMatPlus,main_P_SumMat,main_P_WeightMat,main_P_WeightBiasMat,main_Mat_oneHot,main_Mat_Y,main_P_DeltaMat) and (
      int main_N_sample<==16 and skip;
      int main_D_sample<==4 and skip;
      int main_N_out<==2 and skip;
@@ -1924,19 +1936,23 @@ float **element
      Mat *main_P_WeightMat<==NULL and skip;
      Mat *main_P_WeightBiasMat<==NULL and skip;
      Mat main_Mat_oneHot and skip;
+     MatCreate(&main_Mat_oneHot,main_N_sample,main_N_out,RValue);
+     Mat main_Mat_Y and skip;
+     MatCreate(&main_Mat_Y,main_N_sample,1,RValue);
      Mat *main_P_DeltaMat<==NULL and skip;
      main_P_ActiMat:=SpaceCreateActi(main_P_ActiMat,main_N_sample,main_N_hidden,main_N_layerNeuron,RValue);
-     MatDump(&(main_P_ActiMat[0]));
      main_P_ActiMatPlus:=SpaceCreateActiPlus(main_P_ActiMatPlus,main_N_sample,main_N_hidden,main_N_layerNeuron,RValue);
-     MatDump(&(main_P_ActiMatPlus[0]));
      main_P_SumMat:=SpaceCreateSum(main_P_SumMat,main_N_sample,main_N_hidden,main_N_layerNeuron,RValue);
-     MatDump(&main_P_SumMat[0]);
      main_P_WeightMat:=SpaceCreateWeight(main_P_WeightMat,main_N_hidden,main_N_layerNeuron,RValue);
-     MatDump(&main_P_WeightMat[1]);
      main_P_WeightBiasMat:=SpaceCreateWeightBias(main_P_WeightBiasMat,main_N_hidden,main_N_layerNeuron,RValue);
-     MatDump(&main_P_WeightBiasMat[1]);
      main_P_DeltaMat:=SpaceCreateDelta(main_P_DeltaMat,main_N_sample,main_N_hidden,main_N_layerNeuron,RValue);
-     MatDump(&(main_P_DeltaMat[1]))
+     NNinit(main_P_ActiMat,main_P_ActiMatPlus,&main_Mat_Y,&main_Mat_oneHot,main_P_WeightMat,main_P_WeightBiasMat,main_N_out,main_N_hidden,main_Xval,main_Yval,RValue);
+     MatDump(&main_P_ActiMat[0]);
+     MatDump(&main_P_ActiMatPlus[0]);
+     MatDump(&main_Mat_Y);
+     MatDump(&main_Mat_oneHot);
+     MatDump(&main_P_WeightMat[1]);
+     MatDump(&main_P_WeightBiasMat[1])
      )
  };
   main(RValue)

@@ -688,8 +688,8 @@ void MatCopy(Mat* src, Mat* dst)
 }
 
 
-/* dst = src^+ */
-void MatPlus(Mat* src, Mat* dst)
+/* dst = src^+   col+1*/
+void MatPlusCol(Mat* src, Mat* dst)
 {
 	int row, col;
 
@@ -713,14 +713,15 @@ void MatPlus(Mat* src, Mat* dst)
 }
 
 
-/* dst = src^- */
-void MatMinus(Mat* src, Mat* dst)
+
+/* dst = src^+    row+1*/
+void MatPlusRow(Mat* src, Mat* dst)
 {
 	int row, col;
 
 #ifdef MAT_LEGAL_CHECKING
-	if (src->row != dst->row || src->col != (dst->col) + 1) {
-		printf("\t\terr check, unmathed matrix for MatMinus\t\t\n");
+	if (src->row+1 != dst->row || (src->col) != dst->col) {
+		printf("\t\terr check, unmathed matrix for MatPlus\t\t\n");
 		printf("\t\tsrcMatShape:\n\t\t\t");
 		MatShape(src);
 		printf("\t\tdstMatShape:\n\t\t\t");
@@ -728,9 +729,12 @@ void MatMinus(Mat* src, Mat* dst)
 		return;
 	}
 #endif
-	for (row = 0; row < src->row; row++) {
+	for (row = 0, col = 0; col < dst->col; col++) {
+		(dst->element[row])[col] = 0.f;
+	}
+	for (row = 0; row < src->row; row++){
 		for (col = 0; col < src->col; col++)
-			(dst->element[row])[col] = (src->element[row])[col + 1];
+			(dst->element[row+1])[col] = (src->element[row])[col];
 	}
 }
 
@@ -1100,9 +1104,9 @@ Mat* MatInitRandomNormalization(Mat *src)
 		}
 	}
 	//set bias row 0
-	for (col = 0; col < src->col; ++col){
-		(src->element[0])[col] = 0.f;
-	}
+	//for (col = 0; col < src->col; ++col){
+	//	(src->element[0])[col] = 0.f;
+	//}
 	return src;
 }
 
@@ -1119,9 +1123,9 @@ Mat* MatInitXavier(Mat *src)
 		}
 	}
 	//set bias row 0
-	for (col = 0; col < src->col; ++col){
-		(src->element[0])[col] = 0.f;
-	}
+	//for (col = 0; col < src->col; ++col){
+	//	(src->element[0])[col] = 0.f;
+	//}
 	return src;
 }
 
@@ -1138,9 +1142,9 @@ Mat* MatInitHe(Mat *src)
 		}
 	}
 	//set bias row 0
-	for (col = 0; col < src->col; ++col){
-		(src->element[0])[col] = 0.f;
-	}
+	//for (col = 0; col < src->col; ++col){
+	//	(src->element[0])[col] = 0.f;
+	//}
 	return src;
 }
 /************************************************************************/
@@ -1341,9 +1345,74 @@ Mat* SpaceCreateDelta(Mat* P_DeltaMat, int N_sample, int N_hidden, int* N_layerN
 
 
 /************************************************************************/
+/*                           神经网络前向传播                           */
+/************************************************************************/
+//所需参数
+//神经网络激活值矩阵			P_ActiMat		Mat*		列表索引i = 0(输入层), 1, ..., N hidden，N hidden + 1(输出层)
+//神经网络激活值矩阵加偏置列	P_ActiMatPlus	Mat*		列表索引i = 0(输入层), 1, ..., N hidden
+//加偏置列偏置列全部置1.输出层不需要Plus
+//神经网络求和矩阵				P_SumMat		Mat*		列表索引i = 0(输入层), 1, ..., N hidden，N hidden + 1(输出层)
+//i = 0 时输入层求和矩阵行列置零无实际含义
+//神经网络权值矩阵				P_WeightMat		Mat*		列表索引i = 0(输入层), 1, ..., N hidden，N hidden + 1(输出层)
+//i = 0 时输入层求和矩阵行列置零无实际含义
+//神经网络权值偏置矩阵			P_WeightBiasMat	Mat*		列表索引i = 0(输入层), 1, ..., N hidden，N hidden + 1(输出层)
+//i = 0 时输入层求和矩阵行列置零无实际含义
+//训练数据标签					Mat_oneHot		Mat			row = N_sample col = N_out
+
+
+/*初始化神经网络参数*/
+//输入矩阵 输出矩阵 权值权值矩阵
+int NNinit(Mat *P_ActiMat, Mat *P_ActiMatPlus, Mat *Mat_Y, Mat * Mat_oneHot, Mat *P_WeightMat, Mat *P_WeightBiasMat, int N_out, int N_hidden, float *Xval, float *Yval){
+
+	MatSetVal(&P_ActiMat[0], Xval);
+	MatPlusCol(&P_ActiMat[0], &P_ActiMatPlus[0]);
+	MatSetVal(Mat_Y, Yval);
+	OneHot(Mat_Y, N_out, Mat_oneHot);
+	
+
+
+	//权值何凯明初始化（后期扩展可选常用的几种初始化方式）
+	for (int i = 1; i < N_hidden + 2; ++i){
+		MatInitHe(&P_WeightMat[i]);
+		MatPlusRow(&P_WeightMat[i], &P_WeightBiasMat[i]);
+	}
+
+	return 0;
+}
+
+
+
+
+int NNforward(Mat *P_ActiMat, Mat *P_ActiMatPlus, Mat *P_SumMat, Mat *P_WeightMatBias, Mat Mat_oneHot){
+
+	return 0;
+
+}
+
+
+/************************************************************************/
+/*                           神经网络前向传播                           */
+/************************************************************************/
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/************************************************************************/
 /*                          整体框架测试主函数                          */
 /************************************************************************/
 int main(){
+
 
 	/*用户自定义参数输入*/
 	int N_sample = 16; //样本数量
@@ -1399,6 +1468,16 @@ int main(){
 
 
 
+
+
+
+
+
+
+
+
+
+
 	/*构建神经网络所需空间并初始化所需参数*/
 	//神经网络所需空间变量
 	Mat* P_ActiMat=NULL;			//神经网络激活值矩阵
@@ -1406,7 +1485,10 @@ int main(){
 	Mat* P_SumMat = NULL;			//神经网络求和矩阵				
 	Mat* P_WeightMat = NULL;		//神经网络权值矩阵		
 	Mat* P_WeightBiasMat = NULL;	//神经网络权值偏置矩阵	
-	Mat Mat_oneHot;					//训练数据标签					
+	Mat Mat_oneHot;					//训练数据标签	
+	MatCreate(&Mat_oneHot, N_sample, N_out);
+	Mat Mat_Y;
+	MatCreate(&Mat_Y, N_sample, 1);
 	Mat* P_DeltaMat = NULL;			//反向传播中间变量矩阵			
 
 	//用户输入参数
@@ -1418,27 +1500,52 @@ int main(){
 
 	P_ActiMat = SpaceCreateActi(P_ActiMat, N_sample, N_hidden, N_layerNeuron);
 
-	MatDump(&(P_ActiMat[0]));
+	//MatDump(&(P_ActiMat[0]));
 
 	P_ActiMatPlus = SpaceCreateActiPlus(P_ActiMatPlus, N_sample, N_hidden, N_layerNeuron);
 
-	MatDump(&(P_ActiMatPlus[0]));
+	//MatDump(&(P_ActiMatPlus[0]));
 
 	P_SumMat = SpaceCreateSum(P_SumMat, N_sample, N_hidden, N_layerNeuron);
 
-	MatDump(&P_SumMat[0]);    //P_SumMat[0] 无意义
+	//MatDump(&P_SumMat[0]);    //P_SumMat[0] 无意义
 
 	P_WeightMat = SpaceCreateWeight(P_WeightMat, N_hidden, N_layerNeuron);
 
-	MatDump(&P_WeightMat[1]);
+	//MatDump(&P_WeightMat[1]);
 
 	P_WeightBiasMat = SpaceCreateWeightBias(P_WeightBiasMat, N_hidden, N_layerNeuron);
 
-	MatDump(&P_WeightBiasMat[1]);
+	//MatDump(&P_WeightBiasMat[1]);
 
 	P_DeltaMat = SpaceCreateDelta(P_DeltaMat, N_sample, N_hidden, N_layerNeuron);
 
-	MatDump(&(P_DeltaMat[1]));
+	//MatDump(&(P_DeltaMat[1]));
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	/*初始化神经网络参数*/
+	//输入矩阵 输出矩阵 权值权值矩阵
+	NNinit(P_ActiMat, P_ActiMatPlus, &Mat_Y, &Mat_oneHot, P_WeightMat, P_WeightBiasMat, N_out, N_hidden, Xval, Yval);
+
+	MatDump(&P_ActiMat[0]);
+	MatDump(&P_ActiMatPlus[0]);
+	MatDump(&Mat_Y);
+	MatDump(&Mat_oneHot);
+	MatDump(&P_WeightMat[1]);
+	MatDump(&P_WeightBiasMat[1]);
+
 }
 
 
