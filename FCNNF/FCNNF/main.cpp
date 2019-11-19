@@ -936,6 +936,165 @@ Mat* MatLeakyRelu(float a, Mat *src, Mat *dst)
 
 	return dst;
 }
+
+
+//Derivative
+Mat* MatDerivationSoftmax(Mat *src, Mat *dst)
+{
+#ifdef MAT_LEGAL_CHECKING
+	if (src->row != dst->row || src->col != dst->col) {
+		printf("\t\terr check, unmathed matrix for MatDerivationSofmax\t\t\n");
+		printf("\t\tsrcMatShape:\n\t\t\t");
+		MatShape(src);
+		printf("\t\tdstMatShape:\n\t\t\t");
+		MatShape(dst);
+		return NULL;
+	}
+#endif
+
+	return dst;
+}
+
+
+Mat* MatDerivationNoneActi(Mat *src, Mat *dst)
+{	//不激活导数值为1
+	int row, col;
+#ifdef MAT_LEGAL_CHECKING
+	if (src->row != dst->row || src->col != dst->col) {
+		printf("\t\terr check, unmathed matrix for MatDerivationNoneActi\t\t\n");
+		printf("\t\tsrcMatShape:\n\t\t\t");
+		MatShape(src);
+		printf("\t\tdstMatShape:\n\t\t\t");
+		MatShape(dst);
+		return NULL;
+	}
+#endif
+
+	for (row = 0; row < src->row; row++) {
+		for (col = 0; col < src->col; col++)
+			(dst->element[row])[col] = 1.f;
+	}
+
+	return dst;
+}
+
+
+Mat* MatDerivationSigmoid(Mat *src, Mat *dst)
+{
+#ifdef MAT_LEGAL_CHECKING
+	if (src->row != dst->row || src->col != dst->col) {
+		printf("\t\terr check, unmathed matrix for MatDerivationSigmoid\t\t\n");
+		printf("\t\tsrcMatShape:\n\t\t\t");
+		MatShape(src);
+		printf("\t\tdstMatShape:\n\t\t\t");
+		MatShape(dst);
+		return NULL;
+	}
+#endif
+	Mat temp1Mat;
+	Mat temp2Mat;
+	MatCreate(&temp1Mat, src->row, src->col);
+	MatCreate(&temp2Mat, src->row, src->col);
+
+	MatSigmoid(src, &temp1Mat);
+	//MatDump(&temp1Mat);
+	MatNumMul(-1.f, &temp1Mat, &temp2Mat);
+	//MatDump(&temp2Mat);
+	MatNumAdd(1.f, &temp2Mat, &temp2Mat);
+	//MatDump(&temp2Mat);
+	MatProduct(&temp1Mat, &temp2Mat, dst);
+	//MatDump(dst);
+	MatDelete(&temp1Mat);
+	MatDelete(&temp2Mat);
+	return dst;
+}
+
+
+Mat* MatDerivationTanh(Mat *src, Mat *dst)
+{
+#ifdef MAT_LEGAL_CHECKING
+	if (src->row != dst->row || src->col != dst->col) {
+		printf("\t\terr check, unmathed matrix for MatDerivationTanh\t\t\n");
+		printf("\t\tsrcMatShape:\n\t\t\t");
+		MatShape(src);
+		printf("\t\tdstMatShape:\n\t\t\t");
+		MatShape(dst);
+		return NULL;
+	}
+#endif
+
+	Mat tempMat;
+	MatCreate(&tempMat, src->row, src->col);
+	
+	MatTanh(src, &tempMat);
+	//MatDump(&tempMat);
+	MatSquare(&tempMat, &tempMat);
+	//MatDump(&tempMat);
+	MatNumMul(-1.f, &tempMat, &tempMat);
+	//MatDump(&tempMat);
+	MatNumAdd(1.f, &tempMat, dst);
+
+	MatDelete(&tempMat);
+	return dst;
+}
+
+
+Mat* MatDerivationRelu(Mat *src, Mat *dst)
+{
+	int row, col;
+#ifdef MAT_LEGAL_CHECKING
+	if (src->row != dst->row || src->col != dst->col) {
+		printf("\t\terr check, unmathed matrix for MatDerivationRelu\t\t\n");
+		printf("\t\tsrcMatShape:\n\t\t\t");
+		MatShape(src);
+		printf("\t\tdstMatShape:\n\t\t\t");
+		MatShape(dst);
+		return NULL;
+	}
+#endif
+	for (row = 0; row < src->row; row++) {
+		for (col = 0; col < src->col; col++){
+			if ((src->element[row])[col]>0){
+				(dst->element[row])[col] = 1.f;
+			}
+			else{
+				(dst->element[row])[col] = 0.f;
+				}
+		}
+			
+	}
+
+	return dst;
+}
+
+
+Mat* MatDerivationLeakyRelu(float a, Mat *src, Mat *dst)
+{
+	int row, col;
+#ifdef MAT_LEGAL_CHECKING
+	if (src->row != dst->row || src->col != dst->col) {
+		printf("\t\terr check, unmathed matrix for MatDerivationLeakyRelu\t\t\n");
+		printf("\t\tsrcMatShape:\n\t\t\t");
+		MatShape(src);
+		printf("\t\tdstMatShape:\n\t\t\t");
+		MatShape(dst);
+		return NULL;
+	}
+#endif
+	for (row = 0; row < src->row; row++) {
+		for (col = 0; col < src->col; col++){
+			if ((src->element[row])[col]>0){
+				(dst->element[row])[col] = 1.f;
+			}
+			else{
+				(dst->element[row])[col] = a;
+			}
+		}
+			
+	}
+
+	return dst;
+}
 /************************************************************************/
 /*                           激活函数操作                               */
 /************************************************************************/
@@ -1287,6 +1446,10 @@ int* intVal2List(int length, int *src, int* dst){
 //训练数据标签					Mat_oneHot		Mat			row = N_sample col = N_out
 //反向传播中间变量矩阵			P_DeltaMat		Mat*		列表索引i = 0(输入层), 1, ..., N hidden，N hidden + 1(输出层)
 														  //i = 0 时输入层求和矩阵行列置零无实际含义
+//权值偏置矩阵导数变量矩阵		P_NablaWbMat	Mat*		列表索引i = 0(输入层), 1, ..., N hidden，N hidden + 1(输出层)
+														  //i = 0 时输入层求和矩阵行列置零无实际含义
+
+
 
 // malloc并初始化激活值矩阵空间
 Mat* SpaceCreateActi(Mat* P_ActiMat, int N_sample, int N_hidden, int* N_layerNeuron){
@@ -1396,6 +1559,26 @@ Mat* SpaceCreateDelta(Mat* P_DeltaMat, int N_sample, int N_hidden, int* N_layerN
 	}
 
 	return P_DeltaMat;
+}
+
+
+
+//malloc并初始化权值偏置矩阵导数变量矩阵
+Mat* SpaceCreateNablaWeightBias(Mat* P_NablaWbMat, int N_hidden, int* N_layerNeuron){
+	P_NablaWbMat = (Mat*)malloc((N_hidden + 2)*sizeof(Mat));
+
+	(P_NablaWbMat[0]).row = 0; //输入层权值矩阵无意义
+	(P_NablaWbMat[0]).col = 0;
+	for (int i = 1; i < N_hidden + 2; ++i){
+		(P_NablaWbMat[i]).row = N_layerNeuron[i - 1] + 1;
+		(P_NablaWbMat[i]).col = N_layerNeuron[i];
+		MatCreate(&(P_NablaWbMat[i]), N_layerNeuron[i - 1] + 1, N_layerNeuron[i]);
+		MatInitZero(&(P_NablaWbMat[i]));
+		//printf("%d %d\n", (P_WeightBiasMat[i]).row, (P_WeightBiasMat[i]).col);
+		//MatDump(&(P_WeightBiasMat[i]));
+	}
+
+	return P_NablaWbMat;
 }
 /************************************************************************/
 /*                      神经网络的运算所需空间变量                      */
@@ -1539,6 +1722,7 @@ float LossFunction(Mat *src, Mat *dst, int Nstr_LossF){
 	}
 	else{
 		printf("error for Nstr_LossF, please check loss function variable!\n");
+		return -1;
 	}
 }
 
@@ -1552,7 +1736,7 @@ float NNforward(Mat *P_ActiMat, Mat *P_ActiMatPlus, Mat *P_SumMat, Mat *P_Weight
 		if (i != N_hidden){
 			MatPlusCol(&P_ActiMat[i + 1], &P_ActiMatPlus[i + 1]);
 		}
-		MatDump(&P_ActiMat[i + 1]);
+		//MatDump(&P_ActiMat[i + 1]);
 	}
 	//计算loss
 	return LossFunction(&Mat_oneHot, &P_ActiMat[N_hidden + 1], Nstr_LossF);
@@ -1561,6 +1745,21 @@ float NNforward(Mat *P_ActiMat, Mat *P_ActiMatPlus, Mat *P_SumMat, Mat *P_Weight
 /************************************************************************/
 /*                           神经网络前向传播                           */
 /************************************************************************/
+//所需参数
+
+
+
+
+
+/************************************************************************/
+/*                           神经网络反向传播                           */
+/************************************************************************/
+
+
+/************************************************************************/
+/*                           神经网络反向传播                           */
+/************************************************************************/
+
 
 
 
@@ -1579,176 +1778,173 @@ float NNforward(Mat *P_ActiMat, Mat *P_ActiMatPlus, Mat *P_SumMat, Mat *P_Weight
 /************************************************************************/
 /*                          整体框架测试主函数                          */
 /************************************************************************/
-int main(){
-
-
-	/*用户自定义参数输入*/
-	int N_sample = 16; //样本数量
-	int D_sample = 4;  //样本维度
-	int N_out = 2;   //二分类
-
-	float Xval[] = {
-		0.f, 0.f, 0.f, 0.f,
-		0.f, 0.f, 0.f, 1.f,
-		0.f, 0.f, 1.f, 0.f,
-		0.f, 0.f, 1.f, 1.f,
-		0.f, 1.f, 0.f, 0.f,
-		0.f, 1.f, 0.f, 1.f,
-		0.f, 1.f, 1.f, 0.f,
-		0.f, 1.f, 1.f, 1.f,
-		1.f, 0.f, 0.f, 0.f,
-		1.f, 0.f, 0.f, 1.f,
-		1.f, 0.f, 1.f, 0.f,
-		1.f, 0.f, 1.f, 1.f,
-		1.f, 1.f, 0.f, 0.f,
-		1.f, 1.f, 0.f, 1.f,
-		1.f, 1.f, 1.f, 0.f,
-		1.f, 1.f, 1.f, 1.f }; //样本真值
-
-	//float Xval[] = {
-	//	0.4f, 0.4f, 0.4f, 0.4f,
-	//	0.4f, 0.4f, 0.4f, 0.6f,
-	//	0.4f, 0.4f, 0.6f, 0.4f,
-	//	0.4f, 0.4f, 0.6f, 0.6f,
-	//	0.4f, 0.6f, 0.4f, 0.4f,
-	//	0.4f, 0.6f, 0.4f, 0.6f,
-	//	0.4f, 0.6f, 0.6f, 0.4f,
-	//	0.4f, 0.6f, 0.6f, 0.6f,
-	//	0.6f, 0.4f, 0.4f, 0.4f,
-	//	0.6f, 0.4f, 0.4f, 0.6f,
-	//	0.6f, 0.4f, 0.6f, 0.4f,
-	//	0.6f, 0.4f, 0.6f, 0.6f,
-	//	0.6f, 0.6f, 0.4f, 0.4f,
-	//	0.6f, 0.6f, 0.4f, 0.6f,
-	//	0.6f, 0.6f, 0.6f, 0.4f,
-	//	0.6f, 0.6f, 0.6f, 0.6f }; //样本真值
-
-	float Yval[] = { 0, 1, 1, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0, 1, 1, 0 };  //样本标签二分类
-
-	int N_hidden = 3;//神经网络隐藏层层数
-
-	int *N_layerNeuron = NULL; // 各层神经元个数  0(输入层),1,...,N_hidden,N_hidden+1(输出层).
-	int Nval[] = { 4, 3, 6, 3, 2 };// 各隐藏层神经元个数真值
-
-	N_layerNeuron = intVal2List(N_hidden + 2, Nval, N_layerNeuron);
-	////测试传入正确性
-	//for (int i = 0; i < N_hidden + 2; ++i){
-	//	printf("%d\n", N_layerNeuron[i]);
-	//}
-
-	int *NStr_ActiFsHidden = NULL;// 各层激活函数使用；
-	int Aval[] = { 0, 3, 3, 3, 5 };// 各层激活函数使用真值；注意映射关系。
-
-	NStr_ActiFsHidden = intVal2List(N_hidden + 2, Aval, NStr_ActiFsHidden);
-
-	////测试传入正确性
-	//for (int i = 0; i < N_hidden + 2; ++i){
-	//	printf("%d\n", NStr_ActiFsHidden[i]);
-	//}
-
-	int Nstr_LossF = 1;//use CrossEntropy Loss function
-
-	int Style_initWeight = 3;   //kaiming initialization
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-	/*构建神经网络所需空间并初始化所需参数*/
-	//神经网络所需空间变量
-	Mat* P_ActiMat=NULL;			//神经网络激活值矩阵
-	Mat* P_ActiMatPlus = NULL;		//神经网络激活值矩阵加偏置列	
-	Mat* P_SumMat = NULL;			//神经网络求和矩阵				
-	Mat* P_WeightMat = NULL;		//神经网络权值矩阵		
-	Mat* P_WeightBiasMat = NULL;	//神经网络权值偏置矩阵	
-	Mat Mat_oneHot;					//训练数据标签	
-	MatCreate(&Mat_oneHot, N_sample, N_out);
-	Mat Mat_Y;
-	MatCreate(&Mat_Y, N_sample, 1);
-	Mat* P_DeltaMat = NULL;			//反向传播中间变量矩阵			
-
-	//用户输入参数
-	//样本数量			N_sample			int
-	//隐藏层层数		N_hidden			int
-	//各层神经元个数	N_layerNeuron		int*
-	//各层激活函数		NStr_ActiFsHidden	int*
-
-
-	P_ActiMat = SpaceCreateActi(P_ActiMat, N_sample, N_hidden, N_layerNeuron);
-
-	//MatDump(&(P_ActiMat[0]));
-
-	P_ActiMatPlus = SpaceCreateActiPlus(P_ActiMatPlus, N_sample, N_hidden, N_layerNeuron);
-
-	//MatDump(&(P_ActiMatPlus[0]));
-
-	P_SumMat = SpaceCreateSum(P_SumMat, N_sample, N_hidden, N_layerNeuron);
-
-	//MatDump(&P_SumMat[0]);    //P_SumMat[0] 无意义
-
-	P_WeightMat = SpaceCreateWeight(P_WeightMat, N_hidden, N_layerNeuron);
-
-	//MatDump(&P_WeightMat[1]);
-
-	P_WeightBiasMat = SpaceCreateWeightBias(P_WeightBiasMat, N_hidden, N_layerNeuron);
-
-	//MatDump(&P_WeightBiasMat[1]);
-
-	P_DeltaMat = SpaceCreateDelta(P_DeltaMat, N_sample, N_hidden, N_layerNeuron);
-
-	//MatDump(&(P_DeltaMat[1]));
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-	/*初始化神经网络参数*/
-	//输入矩阵 输出矩阵 权值权值矩阵
-	NNinit(P_ActiMat, P_ActiMatPlus, &Mat_Y, &Mat_oneHot, P_WeightMat, P_WeightBiasMat, N_out, N_hidden, Xval, Yval, Style_initWeight);
-
-	MatDump(&P_ActiMat[0]);
-	//MatDump(&P_ActiMatPlus[0]);
-	//MatDump(&Mat_Y);
-	//MatDump(&Mat_oneHot);
-	//MatDump(&P_WeightMat[1]);
-	MatDump(&P_WeightBiasMat[1]);
-
-
-
-
-
-
-
-	float loss = 0.f;
-	/*神经网络前项传播*/
-	loss = NNforward(P_ActiMat, P_ActiMatPlus, P_SumMat, P_WeightBiasMat, Mat_oneHot, N_hidden, NStr_ActiFsHidden, Nstr_LossF);
-	printf("%f\n", loss);
-
-
-
-
-
-
-	return 0;
-}
+//int main(){
+//
+//
+//	/*用户自定义参数输入*/
+//	int N_sample = 16; //样本数量
+//	int D_sample = 4;  //样本维度
+//	int N_out = 2;   //二分类
+//
+//	float Xval[] = {
+//		0.f, 0.f, 0.f, 0.f,
+//		0.f, 0.f, 0.f, 1.f,
+//		0.f, 0.f, 1.f, 0.f,
+//		0.f, 0.f, 1.f, 1.f,
+//		0.f, 1.f, 0.f, 0.f,
+//		0.f, 1.f, 0.f, 1.f,
+//		0.f, 1.f, 1.f, 0.f,
+//		0.f, 1.f, 1.f, 1.f,
+//		1.f, 0.f, 0.f, 0.f,
+//		1.f, 0.f, 0.f, 1.f,
+//		1.f, 0.f, 1.f, 0.f,
+//		1.f, 0.f, 1.f, 1.f,
+//		1.f, 1.f, 0.f, 0.f,
+//		1.f, 1.f, 0.f, 1.f,
+//		1.f, 1.f, 1.f, 0.f,
+//		1.f, 1.f, 1.f, 1.f }; //样本真值
+//
+//	//float Xval[] = {
+//	//	0.4f, 0.4f, 0.4f, 0.4f,
+//	//	0.4f, 0.4f, 0.4f, 0.6f,
+//	//	0.4f, 0.4f, 0.6f, 0.4f,
+//	//	0.4f, 0.4f, 0.6f, 0.6f,
+//	//	0.4f, 0.6f, 0.4f, 0.4f,
+//	//	0.4f, 0.6f, 0.4f, 0.6f,
+//	//	0.4f, 0.6f, 0.6f, 0.4f,
+//	//	0.4f, 0.6f, 0.6f, 0.6f,
+//	//	0.6f, 0.4f, 0.4f, 0.4f,
+//	//	0.6f, 0.4f, 0.4f, 0.6f,
+//	//	0.6f, 0.4f, 0.6f, 0.4f,
+//	//	0.6f, 0.4f, 0.6f, 0.6f,
+//	//	0.6f, 0.6f, 0.4f, 0.4f,
+//	//	0.6f, 0.6f, 0.4f, 0.6f,
+//	//	0.6f, 0.6f, 0.6f, 0.4f,
+//	//	0.6f, 0.6f, 0.6f, 0.6f }; //样本真值
+//
+//	float Yval[] = { 0, 1, 1, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0, 1, 1, 0 };  //样本标签二分类
+//
+//	int N_hidden = 3;//神经网络隐藏层层数
+//
+//	int *N_layerNeuron = NULL; // 各层神经元个数  0(输入层),1,...,N_hidden,N_hidden+1(输出层).
+//	int Nval[] = { 4, 3, 6, 3, 2 };// 各隐藏层神经元个数真值
+//
+//	N_layerNeuron = intVal2List(N_hidden + 2, Nval, N_layerNeuron);
+//	////测试传入正确性
+//	//for (int i = 0; i < N_hidden + 2; ++i){
+//	//	printf("%d\n", N_layerNeuron[i]);
+//	//}
+//
+//	int *NStr_ActiFsHidden = NULL;// 各层激活函数使用；
+//	int Aval[] = { 0, 3, 3, 3, 5 };// 各层激活函数使用真值；注意映射关系。
+//
+//	NStr_ActiFsHidden = intVal2List(N_hidden + 2, Aval, NStr_ActiFsHidden);
+//
+//	////测试传入正确性
+//	//for (int i = 0; i < N_hidden + 2; ++i){
+//	//	printf("%d\n", NStr_ActiFsHidden[i]);
+//	//}
+//
+//	int Nstr_LossF = 1;//use CrossEntropy Loss function
+//
+//	int Style_initWeight = 3;   //kaiming initialization
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//	/*构建神经网络所需空间并初始化所需参数*/
+//	//神经网络所需空间变量
+//	Mat* P_ActiMat=NULL;			//神经网络激活值矩阵
+//	Mat* P_ActiMatPlus = NULL;		//神经网络激活值矩阵加偏置列	
+//	Mat* P_SumMat = NULL;			//神经网络求和矩阵				
+//	Mat* P_WeightMat = NULL;		//神经网络权值矩阵		
+//	Mat* P_WeightBiasMat = NULL;	//神经网络权值偏置矩阵	
+//	Mat Mat_oneHot;					//训练数据标签	
+//	MatCreate(&Mat_oneHot, N_sample, N_out);
+//	Mat Mat_Y;
+//	MatCreate(&Mat_Y, N_sample, 1);
+//	Mat* P_DeltaMat = NULL;			//反向传播中间变量矩阵	
+//	Mat* P_NablaWbMat = NULL;		//反向传播权值偏置导数矩阵
+//
+//	//用户输入参数
+//	//样本数量			N_sample			int
+//	//隐藏层层数		N_hidden			int
+//	//各层神经元个数	N_layerNeuron		int*
+//	//各层激活函数		NStr_ActiFsHidden	int*
+//
+//
+//	P_ActiMat = SpaceCreateActi(P_ActiMat, N_sample, N_hidden, N_layerNeuron);
+//
+//	//MatDump(&(P_ActiMat[0]));
+//
+//	P_ActiMatPlus = SpaceCreateActiPlus(P_ActiMatPlus, N_sample, N_hidden, N_layerNeuron);
+//
+//	//MatDump(&(P_ActiMatPlus[0]));
+//
+//	P_SumMat = SpaceCreateSum(P_SumMat, N_sample, N_hidden, N_layerNeuron);
+//
+//	//MatDump(&P_SumMat[0]);    //P_SumMat[0] 无意义
+//
+//	P_WeightMat = SpaceCreateWeight(P_WeightMat, N_hidden, N_layerNeuron);
+//
+//	//MatDump(&P_WeightMat[1]);
+//
+//	P_WeightBiasMat = SpaceCreateWeightBias(P_WeightBiasMat, N_hidden, N_layerNeuron);
+//
+//	//MatDump(&P_WeightBiasMat[1]);
+//
+//	P_DeltaMat = SpaceCreateDelta(P_DeltaMat, N_sample, N_hidden, N_layerNeuron);
+//
+//	//MatDump(&(P_DeltaMat[1]));
+//
+//
+//	P_NablaWbMat = SpaceCreateNablaWeightBias(P_NablaWbMat, N_hidden, N_layerNeuron);
+//
+//	//printf("Nabla\n");
+//	//MatDump(&(P_NablaWbMat[1]));
+//
+//
+//
+//
+//
+//
+//
+//
+//	/*初始化神经网络参数*/
+//	//输入矩阵 输出矩阵 权值权值矩阵
+//	NNinit(P_ActiMat, P_ActiMatPlus, &Mat_Y, &Mat_oneHot, P_WeightMat, P_WeightBiasMat, N_out, N_hidden, Xval, Yval, Style_initWeight);
+//
+//	//MatDump(&P_ActiMat[0]);
+//	//MatDump(&P_ActiMatPlus[0]);
+//	//MatDump(&Mat_Y);
+//	//MatDump(&Mat_oneHot);
+//	//MatDump(&P_WeightMat[1]);
+//	//MatDump(&P_WeightBiasMat[1]);
+//
+//
+//
+//
+//
+//
+//
+//	float loss = 0.f;
+//	/*神经网络前项传播*/
+//	loss = NNforward(P_ActiMat, P_ActiMatPlus, P_SumMat, P_WeightBiasMat, Mat_oneHot, N_hidden, NStr_ActiFsHidden, Nstr_LossF);
+//	printf("%f\n", loss);
+//
+//
+//	return 0;
+//}
 
 
 
@@ -1882,67 +2078,74 @@ int main(){
 /************************************************************************/
 /*                        激活函数测试主函数                            */
 /************************************************************************/
-//int main() {
-//	//float z = 1.6;
-//
-//	//printf("%f\n", sigmoid(z));
-//	//printf("%f\n", tanh(z));
-//	//printf("%f\n", relu(z));
-//	//printf("%f\n", leakyRelu(z,0.1));
-//
-//
-//	Mat a;
-//	Mat b;
-//	Mat act;
-//	float val[] = {
-//		-0.2f, 1.3f, 0.f,
-//		-1.5f, 2.6f, 3.3f,
-//		0.5f, -2.5f, 6.f
-//	};
-//	MatCreate(&b, 3, 1);
-//	MatCreate(&a, 3, 3);
-//	MatCreate(&act, 3, 3);
-//	MatSetVal(&a, val);
-//
-//	printf("Softmax 激活\n");
-//	printf("原矩阵：\n");
-//	MatDump(&a);
-//	printf("激活后的矩阵：\n");
-//	MatDump(MatSoftmax(&a, &act));
-//	printf("行求和矩阵：\n");
-//	MatDump(MatRowSum(&act, &b));
-//
-//	printf("===================================================\n");
-//	printf("Sigmoid 激活\n");
-//	printf("原矩阵：\n");
-//	MatDump(&a);
-//	printf("激活后的矩阵：\n");
-//	MatDump(MatSigmoid(&a, &act));
-//
-//
-//	printf("===================================================\n");
-//	printf("Tanh 激活\n");
-//	printf("原矩阵：\n");
-//	MatDump(&a);
-//	printf("激活后的矩阵：\n");
-//	MatDump(MatTanh(&a, &act));
-//
-//	printf("===================================================\n");
-//	printf("Relu 激活\n");
-//	printf("原矩阵：\n");
-//	MatDump(&a);
-//	printf("激活后的矩阵：\n");
-//	MatDump(MatRelu(&a, &act));
-//
-//	printf("===================================================\n");
-//	printf("LeakyRelu 激活\n");
-//	printf("原矩阵：\n");
-//	MatDump(&a);
-//	printf("激活后的矩阵：\n");
-//	MatDump(MatLeakyRelu(0.1f, &a, &act));
-//
-//	return 0;
-//}
+int main() {
+	//float z = 1.6;
+
+	//printf("%f\n", sigmoid(z));
+	//printf("%f\n", tanh(z));
+	//printf("%f\n", relu(z));
+	//printf("%f\n", leakyRelu(z,0.1));
+
+
+	Mat a;
+	Mat b;
+	Mat act;
+	float val[] = {
+		-0.2f, 1.3f, 0.f,
+		-1.5f, 2.6f, 3.3f,
+		0.5f, -2.5f, 6.f
+	};
+	MatCreate(&b, 3, 1);
+	MatCreate(&a, 3, 3);
+	MatCreate(&act, 3, 3);
+	MatSetVal(&a, val);
+
+	//printf("Softmax 激活\n");
+	//printf("原矩阵：\n");
+	//MatDump(&a);
+	//printf("激活后的矩阵：\n");
+	//MatDump(MatSoftmax(&a, &act));
+	//printf("行求和矩阵：\n");
+	//MatDump(MatRowSum(&act, &b));
+
+	printf("===================================================\n");
+	printf("Sigmoid 激活\n");
+	printf("原矩阵：\n");
+	MatDump(&a);
+	printf("激活后的矩阵：\n");
+	MatDump(MatSigmoid(&a, &act));
+	printf("求导后的矩阵：\n");
+	MatDump(MatDerivationSigmoid(&a, &act));
+
+	printf("===================================================\n");
+	printf("Tanh 激活\n");
+	printf("原矩阵：\n");
+	MatDump(&a);
+	printf("激活后的矩阵：\n");
+	MatDump(MatTanh(&a, &act));
+	printf("求导后的矩阵：\n");
+	MatDump(MatDerivationTanh(&a, &act));
+
+	printf("===================================================\n");
+	printf("Relu 激活\n");
+	printf("原矩阵：\n");
+	MatDump(&a);
+	printf("激活后的矩阵：\n");
+	MatDump(MatRelu(&a, &act));
+	printf("求导后的矩阵：\n");
+	MatDump(MatDerivationRelu(&a, &act));
+
+	printf("===================================================\n");
+	printf("LeakyRelu 激活\n");
+	printf("原矩阵：\n");
+	MatDump(&a);
+	printf("激活后的矩阵：\n");
+	MatDump(MatLeakyRelu(0.2f, &a, &act));
+	printf("求导后的矩阵：\n");
+	MatDump(MatDerivationLeakyRelu(0.2f, &a, &act));
+
+	return 0;
+}
 
 
 

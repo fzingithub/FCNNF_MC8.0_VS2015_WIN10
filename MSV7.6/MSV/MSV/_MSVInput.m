@@ -1505,6 +1505,267 @@ float **element
      }
      )
      }; 
+  function MatDerivationSoftmax ( Mat *src,Mat *dst,Mat* RValue )
+ {
+     frame(return) and ( 
+     int return<==0 and skip;
+     if(src->row!=dst->row OR src->col!=dst->col) then 
+     {
+         output ("\t\terr check, unmathed matrix for MatDerivationSofmax\t\t\n") and skip;
+         output ("\t\tsrcMatShape:\n\t\t\t") and skip;
+         MatShape(src);
+         output ("\t\tdstMatShape:\n\t\t\t") and skip;
+         MatShape(dst);
+         return<==1 and RValue:=NULL;
+         skip
+         
+     }
+     else 
+     {
+          skip 
+     };
+     if(return=0)   then 
+     {
+         return<==1 and RValue:=dst;
+         skip
+     }
+     else
+     {
+         skip
+     }
+     )
+     }; 
+  function MatDerivationNoneActi ( Mat *src,Mat *dst,Mat* RValue )
+ {
+     frame(MatDerivationNoneActi_row,MatDerivationNoneActi_col,return) and ( 
+     int return<==0 and skip;
+     int MatDerivationNoneActi_row,MatDerivationNoneActi_col and skip;
+     if(src->row!=dst->row OR src->col!=dst->col) then 
+     {
+         output ("\t\terr check, unmathed matrix for MatDerivationNoneActi\t\t\n") and skip;
+         output ("\t\tsrcMatShape:\n\t\t\t") and skip;
+         MatShape(src);
+         output ("\t\tdstMatShape:\n\t\t\t") and skip;
+         MatShape(dst);
+         return<==1 and RValue:=NULL;
+         skip
+         
+     }
+     else 
+     {
+          skip 
+     };
+     if(return=0)   then 
+     {
+         MatDerivationNoneActi_row:=0;
+         
+         while( (MatDerivationNoneActi_row<src->row) )
+         {
+             MatDerivationNoneActi_col:=0;
+             
+             while( (MatDerivationNoneActi_col<src->col) )
+             {
+                 (dst->element[MatDerivationNoneActi_row])[MatDerivationNoneActi_col]:=1.0;
+                 MatDerivationNoneActi_col:=MatDerivationNoneActi_col+1
+                 
+             };
+             MatDerivationNoneActi_row:=MatDerivationNoneActi_row+1
+             
+         };
+         return<==1 and RValue:=dst;
+         skip
+     }
+     else
+     {
+         skip
+     }
+     )
+     }; 
+  function MatDerivationSigmoid ( Mat *src,Mat *dst,Mat* RValue )
+ {
+     frame(MatDerivationSigmoid_temp1Mat,MatDerivationSigmoid_temp2Mat,return) and ( 
+     int return<==0 and skip;
+     if(src->row!=dst->row OR src->col!=dst->col) then 
+     {
+         output ("\t\terr check, unmathed matrix for MatDerivationSigmoid\t\t\n") and skip;
+         output ("\t\tsrcMatShape:\n\t\t\t") and skip;
+         MatShape(src);
+         output ("\t\tdstMatShape:\n\t\t\t") and skip;
+         MatShape(dst);
+         return<==1 and RValue:=NULL;
+         skip
+         
+     }
+     else 
+     {
+          skip 
+     };
+     if(return=0)   then 
+     {
+         Mat MatDerivationSigmoid_temp1Mat and skip;
+         Mat MatDerivationSigmoid_temp2Mat and skip;
+         MatCreate(&MatDerivationSigmoid_temp1Mat,src->row,src->col,RValue);
+         MatCreate(&MatDerivationSigmoid_temp2Mat,src->row,src->col,RValue);
+         MatSigmoid(src,&MatDerivationSigmoid_temp1Mat,RValue);
+         MatNumMul(-1.0,&MatDerivationSigmoid_temp1Mat,&MatDerivationSigmoid_temp2Mat,RValue);
+         MatNumAdd(1.0,&MatDerivationSigmoid_temp2Mat,&MatDerivationSigmoid_temp2Mat,RValue);
+         MatProduct(&MatDerivationSigmoid_temp1Mat,&MatDerivationSigmoid_temp2Mat,dst,RValue);
+         MatDelete(&MatDerivationSigmoid_temp1Mat);
+         MatDelete(&MatDerivationSigmoid_temp2Mat);
+         return<==1 and RValue:=dst;
+         skip
+     }
+     else
+     {
+         skip
+     }
+     )
+     }; 
+  function MatDerivationTanh ( Mat *src,Mat *dst,Mat* RValue )
+ {
+     frame(MatDerivationTanh_tempMat,return) and ( 
+     int return<==0 and skip;
+     if(src->row!=dst->row OR src->col!=dst->col) then 
+     {
+         output ("\t\terr check, unmathed matrix for MatDerivationTanh\t\t\n") and skip;
+         output ("\t\tsrcMatShape:\n\t\t\t") and skip;
+         MatShape(src);
+         output ("\t\tdstMatShape:\n\t\t\t") and skip;
+         MatShape(dst);
+         return<==1 and RValue:=NULL;
+         skip
+         
+     }
+     else 
+     {
+          skip 
+     };
+     if(return=0)   then 
+     {
+         Mat MatDerivationTanh_tempMat and skip;
+         MatCreate(&MatDerivationTanh_tempMat,src->row,src->col,RValue);
+         MatTanh(src,&MatDerivationTanh_tempMat,RValue);
+         MatSquare(&MatDerivationTanh_tempMat,&MatDerivationTanh_tempMat,RValue);
+         MatNumMul(-1.0,&MatDerivationTanh_tempMat,&MatDerivationTanh_tempMat,RValue);
+         MatNumAdd(1.0,&MatDerivationTanh_tempMat,dst,RValue);
+         MatDelete(&MatDerivationTanh_tempMat);
+         return<==1 and RValue:=dst;
+         skip
+     }
+     else
+     {
+         skip
+     }
+     )
+     }; 
+  function MatDerivationRelu ( Mat *src,Mat *dst,Mat* RValue )
+ {
+     frame(MatDerivationRelu_row,MatDerivationRelu_col,return) and ( 
+     int return<==0 and skip;
+     int MatDerivationRelu_row,MatDerivationRelu_col and skip;
+     if(src->row!=dst->row OR src->col!=dst->col) then 
+     {
+         output ("\t\terr check, unmathed matrix for MatDerivationRelu\t\t\n") and skip;
+         output ("\t\tsrcMatShape:\n\t\t\t") and skip;
+         MatShape(src);
+         output ("\t\tdstMatShape:\n\t\t\t") and skip;
+         MatShape(dst);
+         return<==1 and RValue:=NULL;
+         skip
+         
+     }
+     else 
+     {
+          skip 
+     };
+     if(return=0)   then 
+     {
+         MatDerivationRelu_row:=0;
+         
+         while( (MatDerivationRelu_row<src->row) )
+         {
+             MatDerivationRelu_col:=0;
+             
+             while( (MatDerivationRelu_col<src->col) )
+             {
+                 if((src->element[MatDerivationRelu_row])[MatDerivationRelu_col]>0) then 
+                 {
+                     (dst->element[MatDerivationRelu_row])[MatDerivationRelu_col]:=1.0
+                     
+                 }
+                 else
+                 {
+                     (dst->element[MatDerivationRelu_row])[MatDerivationRelu_col]:=0.0
+                 };
+                 MatDerivationRelu_col:=MatDerivationRelu_col+1
+                 
+             };
+             MatDerivationRelu_row:=MatDerivationRelu_row+1
+             
+         };
+         return<==1 and RValue:=dst;
+         skip
+     }
+     else
+     {
+         skip
+     }
+     )
+     }; 
+  function MatDerivationLeakyRelu ( float a,Mat *src,Mat *dst,Mat* RValue )
+ {
+     frame(MatDerivationLeakyRelu_row,MatDerivationLeakyRelu_col,return) and ( 
+     int return<==0 and skip;
+     int MatDerivationLeakyRelu_row,MatDerivationLeakyRelu_col and skip;
+     if(src->row!=dst->row OR src->col!=dst->col) then 
+     {
+         output ("\t\terr check, unmathed matrix for MatDerivationLeakyRelu\t\t\n") and skip;
+         output ("\t\tsrcMatShape:\n\t\t\t") and skip;
+         MatShape(src);
+         output ("\t\tdstMatShape:\n\t\t\t") and skip;
+         MatShape(dst);
+         return<==1 and RValue:=NULL;
+         skip
+         
+     }
+     else 
+     {
+          skip 
+     };
+     if(return=0)   then 
+     {
+         MatDerivationLeakyRelu_row:=0;
+         
+         while( (MatDerivationLeakyRelu_row<src->row) )
+         {
+             MatDerivationLeakyRelu_col:=0;
+             
+             while( (MatDerivationLeakyRelu_col<src->col) )
+             {
+                 if((src->element[MatDerivationLeakyRelu_row])[MatDerivationLeakyRelu_col]>0) then 
+                 {
+                     (dst->element[MatDerivationLeakyRelu_row])[MatDerivationLeakyRelu_col]:=1.0
+                     
+                 }
+                 else
+                 {
+                     (dst->element[MatDerivationLeakyRelu_row])[MatDerivationLeakyRelu_col]:=a
+                 };
+                 MatDerivationLeakyRelu_col:=MatDerivationLeakyRelu_col+1
+                 
+             };
+             MatDerivationLeakyRelu_row:=MatDerivationLeakyRelu_row+1
+             
+         };
+         return<==1 and RValue:=dst;
+         skip
+     }
+     else
+     {
+         skip
+     }
+     )
+     }; 
   function OneHot ( Mat *src,int k,Mat *dst,Mat* RValue )
  {
      frame(OneHot_row,return) and ( 
@@ -1931,6 +2192,28 @@ float **element
      skip
      )
      }; 
+  function SpaceCreateNablaWeightBias ( Mat *P_NablaWbMat,int N_hidden,int *N_layerNeuron,Mat* RValue )
+ {
+     frame(SpaceCreateNablaWeightBias_i,return) and ( 
+     int return<==0 and skip;
+     P_NablaWbMat:=(Mat *)malloc((N_hidden+2)*sizeof(Mat));
+     (P_NablaWbMat[0]).row:=0;
+     (P_NablaWbMat[0]).col:=0;
+     int SpaceCreateNablaWeightBias_i<==1 and skip;
+     
+     while( (SpaceCreateNablaWeightBias_i<N_hidden+2) )
+     {
+         (P_NablaWbMat[SpaceCreateNablaWeightBias_i]).row:=N_layerNeuron[SpaceCreateNablaWeightBias_i-1]+1;
+         (P_NablaWbMat[SpaceCreateNablaWeightBias_i]).col:=N_layerNeuron[SpaceCreateNablaWeightBias_i];
+         MatCreate(&(P_NablaWbMat[SpaceCreateNablaWeightBias_i]),N_layerNeuron[SpaceCreateNablaWeightBias_i-1]+1,N_layerNeuron[SpaceCreateNablaWeightBias_i],RValue);
+         MatInitZero(&(P_NablaWbMat[SpaceCreateNablaWeightBias_i]),RValue);
+         SpaceCreateNablaWeightBias_i:=SpaceCreateNablaWeightBias_i+1
+         
+     };
+     return<==1 and RValue:=P_NablaWbMat;
+     skip
+     )
+     }; 
   function WeightInit_ChooseWay ( Mat *Weight,int Style_initWeight )
  {
      if(Style_initWeight=0) then 
@@ -2055,7 +2338,9 @@ float **element
          }
          else
          {
- output ("error for Nstr_LossF, please check loss function variable!\n") and skip
+ output ("error for Nstr_LossF, please check loss function variable!\n") and skip;
+ return<==1 and RValue:=-1;
+ skip
  }
  }
  )
@@ -2079,7 +2364,6 @@ float **element
          {
               skip 
          };
-         MatDump(&P_ActiMat[NNforward_i+1]);
          NNforward_i:=NNforward_i+1
          
      };
@@ -2089,44 +2373,64 @@ float **element
      }; 
   function main ( int  RValue )
  {
-     frame(main_N_sample,main_D_sample,main_N_out,main_Xval,main_Yval,main_N_hidden,main_N_layerNeuron,main_Nval,main_NStr_ActiFsHidden,main_Aval,main_Nstr_LossF,main_Style_initWeight,main_P_ActiMat,main_P_ActiMatPlus,main_P_SumMat,main_P_WeightMat,main_P_WeightBiasMat,main_Mat_oneHot,main_Mat_Y,main_P_DeltaMat,main_loss,return) and (
+     frame(main_a,main_b,main_act,main_val,main_temp$_1,main_temp$_2,main_temp$_3,main_temp$_4,main_temp$_5,main_temp$_6,main_temp$_7,main_temp$_8,return) and (
      int return<==0 and skip;
-     int main_N_sample<==16 and skip;
-     int main_D_sample<==4 and skip;
-     int main_N_out<==2 and skip;
-     float main_Xval[64]<=={0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,0.0,0.0,1.0,0.0,0.0,0.0,1.0,1.0,0.0,1.0,0.0,0.0,0.0,1.0,0.0,1.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,1.0,0.0,0.0,1.0,1.0,0.0,1.0,0.0,1.0,0.0,1.0,1.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,1.0,1.0,1.0,1.0,0.0,1.0,1.0,1.0,1.0} and skip;
-     float main_Yval[16]<=={0,1,1,0,1,0,0,1,1,0,0,1,0,1,1,0} and skip;
-     int main_N_hidden<==3 and skip;
-     int *main_N_layerNeuron<==NULL and skip;
-     int main_Nval[5]<=={4,3,6,3,2} and skip;
-     main_N_layerNeuron:=intVal2List(main_N_hidden+2,main_Nval,main_N_layerNeuron,RValue);
-     int *main_NStr_ActiFsHidden<==NULL and skip;
-     int main_Aval[5]<=={0,3,3,3,5} and skip;
-     main_NStr_ActiFsHidden:=intVal2List(main_N_hidden+2,main_Aval,main_NStr_ActiFsHidden,RValue);
-     int main_Nstr_LossF<==1 and skip;
-     int main_Style_initWeight<==3 and skip;
-     Mat *main_P_ActiMat<==NULL and skip;
-     Mat *main_P_ActiMatPlus<==NULL and skip;
-     Mat *main_P_SumMat<==NULL and skip;
-     Mat *main_P_WeightMat<==NULL and skip;
-     Mat *main_P_WeightBiasMat<==NULL and skip;
-     Mat main_Mat_oneHot and skip;
-     MatCreate(&main_Mat_oneHot,main_N_sample,main_N_out,RValue);
-     Mat main_Mat_Y and skip;
-     MatCreate(&main_Mat_Y,main_N_sample,1,RValue);
-     Mat *main_P_DeltaMat<==NULL and skip;
-     main_P_ActiMat:=SpaceCreateActi(main_P_ActiMat,main_N_sample,main_N_hidden,main_N_layerNeuron,RValue);
-     main_P_ActiMatPlus:=SpaceCreateActiPlus(main_P_ActiMatPlus,main_N_sample,main_N_hidden,main_N_layerNeuron,RValue);
-     main_P_SumMat:=SpaceCreateSum(main_P_SumMat,main_N_sample,main_N_hidden,main_N_layerNeuron,RValue);
-     main_P_WeightMat:=SpaceCreateWeight(main_P_WeightMat,main_N_hidden,main_N_layerNeuron,RValue);
-     main_P_WeightBiasMat:=SpaceCreateWeightBias(main_P_WeightBiasMat,main_N_hidden,main_N_layerNeuron,RValue);
-     main_P_DeltaMat:=SpaceCreateDelta(main_P_DeltaMat,main_N_sample,main_N_hidden,main_N_layerNeuron,RValue);
-     NNinit(main_P_ActiMat,main_P_ActiMatPlus,&main_Mat_Y,&main_Mat_oneHot,main_P_WeightMat,main_P_WeightBiasMat,main_N_out,main_N_hidden,main_Xval,main_Yval,main_Style_initWeight,RValue);
-     MatDump(&main_P_ActiMat[0]);
-     MatDump(&main_P_WeightBiasMat[1]);
-     float main_loss<==0.0 and skip;
-     main_loss:=NNforward(main_P_ActiMat,main_P_ActiMatPlus,main_P_SumMat,main_P_WeightBiasMat,main_Mat_oneHot,main_N_hidden,main_NStr_ActiFsHidden,main_Nstr_LossF,RValue);
-     output (main_loss,"\n","\n") and skip;
+     Mat main_a and skip;
+     Mat main_b and skip;
+     Mat main_act and skip;
+     float main_val[9]<=={-0.2,1.3,0.0,-1.5,2.6,3.3,0.5,-2.5,6.0} and skip;
+     MatCreate(&main_b,3,1,RValue);
+     MatCreate(&main_a,3,3,RValue);
+     MatCreate(&main_act,3,3,RValue);
+     MatSetVal(&main_a,main_val,RValue);
+     output ("===================================================\n") and skip;
+     output ("Sigmoid 激活\n") and skip;
+     output ("原矩阵：\n") and skip;
+     MatDump(&main_a);
+     output ("激活后的矩阵：\n") and skip;
+     Mat* main_temp$_1 and skip;
+     main_temp$_1:=MatSigmoid(&main_a,&main_act,RValue);
+     MatDump(main_temp$_1);
+     output ("求导后的矩阵：\n") and skip;
+     Mat* main_temp$_2 and skip;
+     main_temp$_2:=MatDerivationSigmoid(&main_a,&main_act,RValue);
+     MatDump(main_temp$_2);
+     output ("===================================================\n") and skip;
+     output ("Tanh 激活\n") and skip;
+     output ("原矩阵：\n") and skip;
+     MatDump(&main_a);
+     output ("激活后的矩阵：\n") and skip;
+     Mat* main_temp$_3 and skip;
+     main_temp$_3:=MatTanh(&main_a,&main_act,RValue);
+     MatDump(main_temp$_3);
+     output ("求导后的矩阵：\n") and skip;
+     Mat* main_temp$_4 and skip;
+     main_temp$_4:=MatDerivationTanh(&main_a,&main_act,RValue);
+     MatDump(main_temp$_4);
+     output ("===================================================\n") and skip;
+     output ("Relu 激活\n") and skip;
+     output ("原矩阵：\n") and skip;
+     MatDump(&main_a);
+     output ("激活后的矩阵：\n") and skip;
+     Mat* main_temp$_5 and skip;
+     main_temp$_5:=MatRelu(&main_a,&main_act,RValue);
+     MatDump(main_temp$_5);
+     output ("求导后的矩阵：\n") and skip;
+     Mat* main_temp$_6 and skip;
+     main_temp$_6:=MatDerivationRelu(&main_a,&main_act,RValue);
+     MatDump(main_temp$_6);
+     output ("===================================================\n") and skip;
+     output ("LeakyRelu 激活\n") and skip;
+     output ("原矩阵：\n") and skip;
+     MatDump(&main_a);
+     output ("激活后的矩阵：\n") and skip;
+     Mat* main_temp$_7 and skip;
+     main_temp$_7:=MatLeakyRelu(0.2,&main_a,&main_act,RValue);
+     MatDump(main_temp$_7);
+     output ("求导后的矩阵：\n") and skip;
+     Mat* main_temp$_8 and skip;
+     main_temp$_8:=MatDerivationLeakyRelu(0.2,&main_a,&main_act,RValue);
+     MatDump(main_temp$_8);
      return<==1 and RValue:=0;
      skip
      )
