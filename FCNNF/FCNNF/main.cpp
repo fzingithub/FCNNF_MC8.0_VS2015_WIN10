@@ -941,6 +941,7 @@ Mat* MatLeakyRelu(float a, Mat *src, Mat *dst)
 //Derivative
 Mat* MatDerivationSoftmax(Mat *src, Mat *dst)
 {
+	int row, col, i;
 #ifdef MAT_LEGAL_CHECKING
 	if (src->row != dst->row || src->col != dst->col) {
 		printf("\t\terr check, unmathed matrix for MatDerivationSofmax\t\t\n");
@@ -951,6 +952,25 @@ Mat* MatDerivationSoftmax(Mat *src, Mat *dst)
 		return NULL;
 	}
 #endif
+
+	MatSoftmax(src, src);
+	MatZeros(dst);
+
+	for (row = 0; row < src->row; row++) {
+		for (col = 0; col < src->col; col++){
+			for (i = 0; i < src->col; i++){
+				if (i == col){
+					(dst->element[row])[col] += (src->element[row])[i] * (1 - (src->element[row])[col]);
+				}
+				else{
+					(dst->element[row])[col] += -(src->element[row])[i] * (src->element[row])[col];
+				}
+				//printf("%f\n", (dst->element[row])[col]);
+			}
+			//printf("sum=%f\n", (dst->element[row])[col]);
+		}
+	}
+
 
 	return dst;
 }
@@ -1207,6 +1227,60 @@ float CrossEntropy(Mat *src, Mat *dst)
 	
 	return loss;
 }
+
+
+//对激活值求导数
+Mat * MSEDerivative(Mat *ActiMat, Mat *DerivativeActiMat, Mat One_hotMat){
+
+#ifdef MAT_LEGAL_CHECKING
+	if (ActiMat->row != DerivativeActiMat->row || ActiMat->col != DerivativeActiMat->col || ActiMat->row != One_hotMat.row || ActiMat->col != One_hotMat.col) {
+		printf("\t\terr check, unmathed matrix for Loss Function MSEDerivative\t\t\n");
+		printf("\t\tActiMatShape:\n\t\t\t");
+		MatShape(ActiMat);
+		printf("\t\tDerivativeActiMatShape:\n\t\t\t");
+		MatShape(DerivativeActiMat);
+		printf("\t\tOne_hotMatShape:\n\t\t\t");
+		MatShape(&One_hotMat);
+		return NULL;     // 参数检查不过关返回 -1；
+	}
+#endif
+
+	//partial L /partial z = z - y 
+	return MatSub(ActiMat, &One_hotMat, DerivativeActiMat);
+
+}
+
+
+Mat * CrossEntropyDerivative(Mat *ActiMat, Mat *DerivativeActiMat, Mat One_hotMat){
+	int row, col;
+#ifdef MAT_LEGAL_CHECKING
+	if (ActiMat->row != DerivativeActiMat->row || ActiMat->col != DerivativeActiMat->col || ActiMat->row != One_hotMat.row || ActiMat->col != One_hotMat.col) {
+		printf("\t\terr check, unmathed matrix for Loss Function CrossEntropyDerivative\t\t\n");
+		printf("\t\tActiMatShape:\n\t\t\t");
+		MatShape(ActiMat);
+		printf("\t\tDerivativeActiMatShape:\n\t\t\t");
+		MatShape(DerivativeActiMat);
+		printf("\t\tOne_hotMatShape:\n\t\t\t");
+		MatShape(&One_hotMat);
+		return NULL;     // 参数检查不过关返回 -1；
+	}
+#endif
+
+	//partial L /partial z = -(y / z)
+	for (row = 0; row < ActiMat->row; row++) {
+		for (col = 0; col < ActiMat->col; col++)
+			//div 0 error 
+			if (equal((ActiMat->element[row])[col], 0.f)==1){
+				(DerivativeActiMat->element[row])[col] = - (One_hotMat.element[row])[col] * 10000000000;
+			}
+			else{
+				(DerivativeActiMat->element[row])[col] = - (One_hotMat.element[row])[col] / (ActiMat->element[row])[col];
+			}
+			}
+			
+	return DerivativeActiMat;
+
+}
 /************************************************************************/
 /*                           损失函数操作                               */
 /************************************************************************/
@@ -1442,7 +1516,7 @@ int* intVal2List(int length, int *src, int* dst){
 //神经网络权值矩阵				P_WeightMat		Mat*		列表索引i = 0(输入层), 1, ..., N hidden，N hidden + 1(输出层)
 														  //i = 0 时输入层求和矩阵行列置零无实际含义
 //神经网络权值偏置矩阵			P_WeightBiasMat	Mat*		列表索引i = 0(输入层), 1, ..., N hidden，N hidden + 1(输出层)
-//i = 0 时输入层求和矩阵行列置零无实际含义
+														  //i = 0 时输入层求和矩阵行列置零无实际含义
 //训练数据标签					Mat_oneHot		Mat			row = N_sample col = N_out
 //反向传播中间变量矩阵			P_DeltaMat		Mat*		列表索引i = 0(输入层), 1, ..., N hidden，N hidden + 1(输出层)
 														  //i = 0 时输入层求和矩阵行列置零无实际含义
@@ -1677,6 +1751,7 @@ int NNinit(Mat *P_ActiMat, Mat *P_ActiMatPlus, Mat *Mat_Y, Mat * Mat_oneHot, Mat
 /*                           神经网络前向传播                           */
 /************************************************************************/
 //所需参数
+//神经网络隐藏层层数:			N_hidden.
 //神经网络激活值矩阵			P_ActiMat		Mat*		列表索引i = 0(输入层), 1, ..., N hidden，N hidden + 1(输出层)
 //神经网络激活值矩阵加偏置列	P_ActiMatPlus	Mat*		列表索引i = 0(输入层), 1, ..., N hidden
 //加偏置列偏置列全部置1.输出层不需要Plus
@@ -1745,7 +1820,7 @@ float NNforward(Mat *P_ActiMat, Mat *P_ActiMatPlus, Mat *P_SumMat, Mat *P_Weight
 /************************************************************************/
 /*                           神经网络前向传播                           */
 /************************************************************************/
-//所需参数
+
 
 
 
@@ -1754,7 +1829,16 @@ float NNforward(Mat *P_ActiMat, Mat *P_ActiMatPlus, Mat *P_SumMat, Mat *P_Weight
 /************************************************************************/
 /*                           神经网络反向传播                           */
 /************************************************************************/
+//所需参数
+//神经网络隐藏层层数:			N_hidden.
+//输入样本的数量：				N_sample.
+//权值偏置矩阵导数变量矩阵		P_NablaWbMat	Mat*		列表索引i = 0(输入层), 1, ..., N hidden，N hidden + 1(输出层)
+															//i = 0 时输入层求和矩阵行列置零无实际含义
+//神经网络激活值矩阵			P_ActiMat		Mat*		列表索引i = 0(输入层), 1, ..., N hidden，N hidden + 1(输出层)
+//神经网络激活值矩阵加偏置列	P_ActiMatPlus	Mat*		列表索引i = 0(输入层), 1, ..., N hidden
 
+
+Mat * NNbackward();
 
 /************************************************************************/
 /*                           神经网络反向传播                           */
@@ -2100,13 +2184,15 @@ int main() {
 	MatCreate(&act, 3, 3);
 	MatSetVal(&a, val);
 
-	//printf("Softmax 激活\n");
-	//printf("原矩阵：\n");
-	//MatDump(&a);
-	//printf("激活后的矩阵：\n");
-	//MatDump(MatSoftmax(&a, &act));
-	//printf("行求和矩阵：\n");
-	//MatDump(MatRowSum(&act, &b));
+	printf("Softmax 激活\n");
+	printf("原矩阵：\n");
+	MatDump(&a);
+	printf("激活后的矩阵：\n");
+	MatDump(MatSoftmax(&a, &act));
+	printf("行求和矩阵：\n");
+	MatDump(MatRowSum(&act, &b));
+	printf("求导后的矩阵：\n");
+	MatDump(MatDerivationSoftmax(&a, &act));
 
 	printf("===================================================\n");
 	printf("Sigmoid 激活\n");
@@ -2163,6 +2249,8 @@ int main() {
 //	Mat Yonehot;
 //	Mat Ytrans;
 //	Mat Sum;
+//	Mat ActiMatDerivative;
+//	MatCreate(&ActiMatDerivative, 5, 4);
 //
 //	float val[5] = { 0, 3, 1, 2, 3};
 //
@@ -2173,14 +2261,13 @@ int main() {
 //	MatCreate(&Sum, 1, 1);
 //
 //	OneHot(&Y, 4, &Yonehot);
-//	//MatDump(&Y);
+//
 //	MatDump(&Yonehot);
 //
-//	MatRowSum(&Yonehot, &Y);
-//	//MatDump(&Y);
-//	MatTrans(&Y, &Ytrans);
+//	//MatRowSum(&Yonehot, &Y);
+//	//MatTrans(&Y, &Ytrans);
 //
-//	MatRowSum(&Ytrans, &Sum);
+//	//MatRowSum(&Ytrans, &Sum);
 //
 //	//MatDump(&Sum);
 //
@@ -2190,7 +2277,7 @@ int main() {
 //
 //	Mat prediction;
 //	MatCreate(&prediction, 5, 4);
-//	float prop[20] = { 0.8f, 0.7f, 0.3f, 0.2f, 1.0f, 1.6f, 0.8f, 0.1f, 0.6f, 0.7f, 0.9f, 0.6f, 0.1f, 0.9f, 1.2f, 1.3f ,0.8f, 6.f, 1.f, 0.7f};
+//	float prop[20] = { 0.0f, 1.7f, 0.0f, 0.0f, 1.0f, 1.6f, 0.8f, 0.1f, 0.6f, 0.7f, 0.9f, 0.6f, 0.1f, 0.9f, 1.2f, 1.3f ,0.8f, 6.f, 1.f, 0.7f};
 //	
 //	MatSetVal(&prediction, prop);
 //	MatDump(&prediction);
@@ -2207,6 +2294,14 @@ int main() {
 //	CEloss = CrossEntropy(&prediction, &Yonehot);
 //
 //	printf("CE loss = %f\n", CEloss);
+//
+//	printf("MSEDerivative \n");
+//	MatDump(MSEDerivative(&prediction, &ActiMatDerivative, Yonehot));
+//
+//	printf("CrossEntropyDerivative \n");
+//	MatDump(CrossEntropyDerivative(&prediction, &ActiMatDerivative, Yonehot));
+//
+//
 //	return 0;
 //}
 

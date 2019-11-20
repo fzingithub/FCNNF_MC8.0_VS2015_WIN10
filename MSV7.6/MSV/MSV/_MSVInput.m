@@ -1507,8 +1507,9 @@ float **element
      }; 
   function MatDerivationSoftmax ( Mat *src,Mat *dst,Mat* RValue )
  {
-     frame(return) and ( 
+     frame(MatDerivationSoftmax_row,MatDerivationSoftmax_col,MatDerivationSoftmax_i,return) and ( 
      int return<==0 and skip;
+     int MatDerivationSoftmax_row,MatDerivationSoftmax_col,MatDerivationSoftmax_i and skip;
      if(src->row!=dst->row OR src->col!=dst->col) then 
      {
          output ("\t\terr check, unmathed matrix for MatDerivationSofmax\t\t\n") and skip;
@@ -1526,6 +1527,38 @@ float **element
      };
      if(return=0)   then 
      {
+         MatSoftmax(src,src,RValue);
+         MatZeros(dst,RValue);
+         MatDerivationSoftmax_row:=0;
+         
+         while( (MatDerivationSoftmax_row<src->row) )
+         {
+             MatDerivationSoftmax_col:=0;
+             
+             while( (MatDerivationSoftmax_col<src->col) )
+             {
+                 MatDerivationSoftmax_i:=0;
+                 
+                 while( (MatDerivationSoftmax_i<src->col) )
+                 {
+                     if(MatDerivationSoftmax_i=MatDerivationSoftmax_col) then 
+                     {
+                         (dst->element[MatDerivationSoftmax_row])[MatDerivationSoftmax_col]:=(dst->element[MatDerivationSoftmax_row])[MatDerivationSoftmax_col]+(src->element[MatDerivationSoftmax_row])[MatDerivationSoftmax_i]*(1-(src->element[MatDerivationSoftmax_row])[MatDerivationSoftmax_col])
+                         
+                     }
+                     else
+                     {
+                         (dst->element[MatDerivationSoftmax_row])[MatDerivationSoftmax_col]:=(dst->element[MatDerivationSoftmax_row])[MatDerivationSoftmax_col]+-(src->element[MatDerivationSoftmax_row])[MatDerivationSoftmax_i]*(src->element[MatDerivationSoftmax_row])[MatDerivationSoftmax_col]
+                     };
+                     MatDerivationSoftmax_i:=MatDerivationSoftmax_i+1
+                     
+                 };
+                 MatDerivationSoftmax_col:=MatDerivationSoftmax_col+1
+                 
+             };
+             MatDerivationSoftmax_row:=MatDerivationSoftmax_row+1
+             
+         };
          return<==1 and RValue:=dst;
          skip
      }
@@ -1898,6 +1931,96 @@ float **element
          };
          CrossEntropy_loss:=CrossEntropy_loss/ (src->row);
          return<==1 and RValue:=CrossEntropy_loss;
+         skip
+     }
+     else
+     {
+         skip
+     }
+     )
+     }; 
+  function MSEDerivative ( Mat *ActiMat,Mat *DerivativeActiMat,Mat One_hotMat,Mat* RValue )
+ {
+     frame(return) and ( 
+     int return<==0 and skip;
+     if(ActiMat->row!=DerivativeActiMat->row OR ActiMat->col!=DerivativeActiMat->col OR ActiMat->row!=One_hotMat.row OR ActiMat->col!=One_hotMat.col) then 
+     {
+         output ("\t\terr check, unmathed matrix for Loss Function MSEDerivative\t\t\n") and skip;
+         output ("\t\tActiMatShape:\n\t\t\t") and skip;
+         MatShape(ActiMat);
+         output ("\t\tDerivativeActiMatShape:\n\t\t\t") and skip;
+         MatShape(DerivativeActiMat);
+         output ("\t\tOne_hotMatShape:\n\t\t\t") and skip;
+         MatShape(&One_hotMat);
+         return<==1 and RValue:=NULL;
+         skip
+         
+     }
+     else 
+     {
+          skip 
+     };
+     if(return=0)   then 
+     {
+         return<==1 and RValue:=MatSub(ActiMat,&One_hotMat,DerivativeActiMat,RValue);
+         skip
+     }
+     else
+     {
+         skip
+     }
+     )
+     }; 
+  function CrossEntropyDerivative ( Mat *ActiMat,Mat *DerivativeActiMat,Mat One_hotMat,Mat* RValue )
+ {
+     frame(CrossEntropyDerivative_row,CrossEntropyDerivative_col,CrossEntropyDerivative_2_3_temp$_1,return) and ( 
+     int return<==0 and skip;
+     int CrossEntropyDerivative_row,CrossEntropyDerivative_col and skip;
+     if(ActiMat->row!=DerivativeActiMat->row OR ActiMat->col!=DerivativeActiMat->col OR ActiMat->row!=One_hotMat.row OR ActiMat->col!=One_hotMat.col) then 
+     {
+         output ("\t\terr check, unmathed matrix for Loss Function CrossEntropyDerivative\t\t\n") and skip;
+         output ("\t\tActiMatShape:\n\t\t\t") and skip;
+         MatShape(ActiMat);
+         output ("\t\tDerivativeActiMatShape:\n\t\t\t") and skip;
+         MatShape(DerivativeActiMat);
+         output ("\t\tOne_hotMatShape:\n\t\t\t") and skip;
+         MatShape(&One_hotMat);
+         return<==1 and RValue:=NULL;
+         skip
+         
+     }
+     else 
+     {
+          skip 
+     };
+     if(return=0)   then 
+     {
+         CrossEntropyDerivative_row:=0;
+         
+         while( (CrossEntropyDerivative_row<ActiMat->row) )
+         {
+             CrossEntropyDerivative_col:=0;
+             
+             while( (CrossEntropyDerivative_col<ActiMat->col) )
+             {
+                 int CrossEntropyDerivative_2_3_temp$_1 and skip;
+                 CrossEntropyDerivative_2_3_temp$_1:=equal((ActiMat->element[CrossEntropyDerivative_row])[CrossEntropyDerivative_col],0.0,RValue);
+                 if(CrossEntropyDerivative_2_3_temp$_1=1) then 
+                 {
+                     (DerivativeActiMat->element[CrossEntropyDerivative_row])[CrossEntropyDerivative_col]:=-(One_hotMat.element[CrossEntropyDerivative_row])[CrossEntropyDerivative_col]*10000000000
+                     
+                 }
+                 else
+                 {
+                     (DerivativeActiMat->element[CrossEntropyDerivative_row])[CrossEntropyDerivative_col]:=-(One_hotMat.element[CrossEntropyDerivative_row])[CrossEntropyDerivative_col]/ (ActiMat->element[CrossEntropyDerivative_row])[CrossEntropyDerivative_col]
+                 };
+                 CrossEntropyDerivative_col:=CrossEntropyDerivative_col+1
+                 
+             };
+             CrossEntropyDerivative_row:=CrossEntropyDerivative_row+1
+             
+         };
+         return<==1 and RValue:=DerivativeActiMat;
          skip
      }
      else
@@ -2373,7 +2496,7 @@ float **element
      }; 
   function main ( int  RValue )
  {
-     frame(main_a,main_b,main_act,main_val,main_temp$_1,main_temp$_2,main_temp$_3,main_temp$_4,main_temp$_5,main_temp$_6,main_temp$_7,main_temp$_8,return) and (
+     frame(main_a,main_b,main_act,main_val,main_temp$_1,main_temp$_2,main_temp$_3,main_temp$_4,main_temp$_5,main_temp$_6,main_temp$_7,main_temp$_8,main_temp$_9,main_temp$_10,main_temp$_11,return) and (
      int return<==0 and skip;
      Mat main_a and skip;
      Mat main_b and skip;
@@ -2383,54 +2506,69 @@ float **element
      MatCreate(&main_a,3,3,RValue);
      MatCreate(&main_act,3,3,RValue);
      MatSetVal(&main_a,main_val,RValue);
+     output ("Softmax 激活\n") and skip;
+     output ("原矩阵：\n") and skip;
+     MatDump(&main_a);
+     output ("激活后的矩阵：\n") and skip;
+     Mat* main_temp$_1 and skip;
+     main_temp$_1:=MatSoftmax(&main_a,&main_act,RValue);
+     MatDump(main_temp$_1);
+     output ("行求和矩阵：\n") and skip;
+     Mat* main_temp$_2 and skip;
+     main_temp$_2:=MatRowSum(&main_act,&main_b,RValue);
+     MatDump(main_temp$_2);
+     output ("求导后的矩阵：\n") and skip;
+     Mat* main_temp$_3 and skip;
+     main_temp$_3:=MatDerivationSoftmax(&main_a,&main_act,RValue);
+     MatDump(main_temp$_3);
      output ("===================================================\n") and skip;
      output ("Sigmoid 激活\n") and skip;
      output ("原矩阵：\n") and skip;
      MatDump(&main_a);
      output ("激活后的矩阵：\n") and skip;
-     Mat* main_temp$_1 and skip;
-     main_temp$_1:=MatSigmoid(&main_a,&main_act,RValue);
-     MatDump(main_temp$_1);
+     Mat* main_temp$_4 and skip;
+     main_temp$_4:=MatSigmoid(&main_a,&main_act,RValue);
+     MatDump(main_temp$_4);
      output ("求导后的矩阵：\n") and skip;
-     Mat* main_temp$_2 and skip;
-     main_temp$_2:=MatDerivationSigmoid(&main_a,&main_act,RValue);
-     MatDump(main_temp$_2);
+     Mat* main_temp$_5 and skip;
+     main_temp$_5:=MatDerivationSigmoid(&main_a,&main_act,RValue);
+     MatDump(main_temp$_5);
      output ("===================================================\n") and skip;
      output ("Tanh 激活\n") and skip;
      output ("原矩阵：\n") and skip;
      MatDump(&main_a);
      output ("激活后的矩阵：\n") and skip;
-     Mat* main_temp$_3 and skip;
-     main_temp$_3:=MatTanh(&main_a,&main_act,RValue);
-     MatDump(main_temp$_3);
+     Mat* main_temp$_6 and skip;
+     main_temp$_6:=MatTanh(&main_a,&main_act,RValue);
+     MatDump(main_temp$_6);
      output ("求导后的矩阵：\n") and skip;
-     Mat* main_temp$_4 and skip;
-     main_temp$_4:=MatDerivationTanh(&main_a,&main_act,RValue);
-     MatDump(main_temp$_4);
+     Mat* main_temp$_7 and skip;
+     main_temp$_7:=MatDerivationTanh(&main_a,&main_act,RValue);
+     MatDump(main_temp$_7);
      output ("===================================================\n") and skip;
      output ("Relu 激活\n") and skip;
      output ("原矩阵：\n") and skip;
      MatDump(&main_a);
      output ("激活后的矩阵：\n") and skip;
-     Mat* main_temp$_5 and skip;
-     main_temp$_5:=MatRelu(&main_a,&main_act,RValue);
-     MatDump(main_temp$_5);
+     Mat* main_temp$_8 and skip;
+     main_temp$_8:=MatRelu(&main_a,&main_act,RValue);
+     MatDump(main_temp$_8);
      output ("求导后的矩阵：\n") and skip;
-     Mat* main_temp$_6 and skip;
-     main_temp$_6:=MatDerivationRelu(&main_a,&main_act,RValue);
-     MatDump(main_temp$_6);
+     Mat* main_temp$_9 and skip;
+     main_temp$_9:=MatDerivationRelu(&main_a,&main_act,RValue);
+     MatDump(main_temp$_9);
      output ("===================================================\n") and skip;
      output ("LeakyRelu 激活\n") and skip;
      output ("原矩阵：\n") and skip;
      MatDump(&main_a);
      output ("激活后的矩阵：\n") and skip;
-     Mat* main_temp$_7 and skip;
-     main_temp$_7:=MatLeakyRelu(0.2,&main_a,&main_act,RValue);
-     MatDump(main_temp$_7);
+     Mat* main_temp$_10 and skip;
+     main_temp$_10:=MatLeakyRelu(0.2,&main_a,&main_act,RValue);
+     MatDump(main_temp$_10);
      output ("求导后的矩阵：\n") and skip;
-     Mat* main_temp$_8 and skip;
-     main_temp$_8:=MatDerivationLeakyRelu(0.2,&main_a,&main_act,RValue);
-     MatDump(main_temp$_8);
+     Mat* main_temp$_11 and skip;
+     main_temp$_11:=MatDerivationLeakyRelu(0.2,&main_a,&main_act,RValue);
+     MatDump(main_temp$_11);
      return<==1 and RValue:=0;
      skip
      )
