@@ -2137,11 +2137,9 @@ float **element
      }; 
   function MatInitHe ( Mat *src,Mat* RValue )
  {
-     frame(MatInitHe_temp$_1,MatInitHe_row,MatInitHe_col,return) and ( 
+     frame(MatInitHe_row,MatInitHe_col,return) and ( 
      int return<==0 and skip;
-     int MatInitHe_temp$_1 and skip;
-     MatInitHe_temp$_1:=time(NULL);
-     srand((unsigned int)MatInitHe_temp$_1) and skip;
+     srand(19950826) and skip;
      int MatInitHe_row,MatInitHe_col and skip;
      MatInitHe_row:=0;
      
@@ -2246,6 +2244,28 @@ float **element
          
      };
      return<==1 and RValue:=P_SumMat;
+     skip
+     )
+     }; 
+  function SpaceCreateActiFunDerivation ( Mat *P_ActiFunDerivation,int N_sample,int N_hidden,int *N_layerNeuron,Mat* RValue )
+ {
+     frame(SpaceCreateActiFunDerivation_i,return) and ( 
+     int return<==0 and skip;
+     P_ActiFunDerivation:=(Mat *)malloc((N_hidden+2)*sizeof(Mat));
+     (P_ActiFunDerivation[0]).row:=0;
+     (P_ActiFunDerivation[0]).col:=0;
+     int SpaceCreateActiFunDerivation_i<==1 and skip;
+     
+     while( (SpaceCreateActiFunDerivation_i<N_hidden+2) )
+     {
+         (P_ActiFunDerivation[SpaceCreateActiFunDerivation_i]).row:=N_sample;
+         (P_ActiFunDerivation[SpaceCreateActiFunDerivation_i]).col:=N_layerNeuron[SpaceCreateActiFunDerivation_i];
+         MatCreate(&(P_ActiFunDerivation[SpaceCreateActiFunDerivation_i]),N_sample,N_layerNeuron[SpaceCreateActiFunDerivation_i],RValue);
+         MatInitZero(&(P_ActiFunDerivation[SpaceCreateActiFunDerivation_i]),RValue);
+         SpaceCreateActiFunDerivation_i:=SpaceCreateActiFunDerivation_i+1
+         
+     };
+     return<==1 and RValue:=P_ActiFunDerivation;
      skip
      )
      }; 
@@ -2494,81 +2514,206 @@ float **element
      skip
      )
      }; 
+  function ActiFunDerivation ( Mat Mat_Sum,Mat *Mat_ActiFunDerivation,int option,Mat* RValue )
+ {
+     frame(return) and ( 
+     int return<==0 and skip;
+     if(option=0) then 
+     {
+         return<==1 and RValue:=MatDerivationNoneActi(&Mat_Sum,Mat_ActiFunDerivation,RValue);
+         skip
+         
+     }
+     else
+     {
+         if(option=1) then 
+         {
+             return<==1 and RValue:=MatDerivationSigmoid(&Mat_Sum,Mat_ActiFunDerivation,RValue);
+             skip
+         }
+         else
+         {
+             if(option=2) then 
+             {
+                 return<==1 and RValue:=MatDerivationTanh(&Mat_Sum,Mat_ActiFunDerivation,RValue);
+                 skip
+             }
+             else
+             {
+                 if(option=3) then 
+                 {
+                     return<==1 and RValue:=MatDerivationRelu(&Mat_Sum,Mat_ActiFunDerivation,RValue);
+                     skip
+                 }
+                 else
+                 {
+                     if(option=4) then 
+                     {
+                         return<==1 and RValue:=MatDerivationLeakyRelu(0.1,&Mat_Sum,Mat_ActiFunDerivation,RValue);
+                         skip
+                     }
+                     else
+                     {
+                         if(option=5) then 
+                         {
+                             return<==1 and RValue:=MatDerivationSoftmax(&Mat_Sum,Mat_ActiFunDerivation,RValue);
+                             skip
+                         }
+                         else
+                         {
+                             output ("error for ActiFunDerivation, please check ActiFsHidden  variable!\n") and skip
+                         }
+                     }
+                 }
+             }
+         }
+     };
+     if(return=0)  then
+     {
+         if(return=0)  then
+         {
+             return<==1 and RValue:=NULL;
+             skip
+         }
+         else
+         {
+             skip
+         }
+     }
+     else
+     {
+         skip
+     }
+     )
+     }; 
+  function LossFunDerivation ( Mat *ActiMat,Mat *DerivativeActiMat,Mat One_hotMat,int option,Mat* RValue )
+ {
+     frame(return) and ( 
+     int return<==0 and skip;
+     if(option=0) then 
+     {
+         return<==1 and RValue:=MSEDerivative(ActiMat,DerivativeActiMat,One_hotMat,RValue);
+         skip
+         
+     }
+     else
+     {
+         if(option=1) then 
+         {
+             return<==1 and RValue:=CrossEntropyDerivative(ActiMat,DerivativeActiMat,One_hotMat,RValue);
+             skip
+         }
+         else
+         {
+             output ("error for LossFunDerivation, please check Nstr_LossF  variable!\n") and skip
+         }
+     };
+     if(return=0)  then
+     {
+         if(return=0)  then
+         {
+             return<==1 and RValue:=NULL;
+             skip
+         }
+         else
+         {
+             skip
+         }
+     }
+     else
+     {
+         skip
+     }
+     )
+     }; 
+  function NNOuputLayerBackward ( int N_hidden,int N_sample,int *N_layerNeuron,int *NStr_ActiFsHidden,int Nstr_LossF,Mat *P_NablaWbMat,Mat *P_ActiMatPlus,Mat *P_SumMat,Mat *P_DeltaMat,Mat *P_ActiMat,Mat *P_ActiFunDerivation,Mat Mat_oneHot,Mat* RValue )
+ {
+     frame(NNOuputLayerBackward_2_tempMat,NNOuputLayerBackward_ActiPlusTrans,return) and ( 
+     int return<==0 and skip;
+     if(NStr_ActiFsHidden[N_hidden+1]=5 AND Nstr_LossF=1) then 
+     {
+         MatSub(&P_ActiMat[N_hidden+1],&Mat_oneHot,&P_DeltaMat[N_hidden+1],RValue)
+         
+     }
+     else
+     {
+         Mat NNOuputLayerBackward_2_tempMat and skip;
+         MatCreate(&NNOuputLayerBackward_2_tempMat,N_sample,N_layerNeuron[N_hidden+1],RValue);
+         LossFunDerivation(&P_ActiMat[N_hidden+1],&NNOuputLayerBackward_2_tempMat,Mat_oneHot,Nstr_LossF,RValue);
+         ActiFunDerivation(P_SumMat[N_hidden+1],&P_ActiFunDerivation[N_hidden+1],NStr_ActiFsHidden[N_hidden+1],RValue);
+         MatProduct(&P_ActiMat[N_hidden+1],&P_ActiFunDerivation[N_hidden+1],&P_DeltaMat[N_hidden+1],RValue);
+         MatDelete(&NNOuputLayerBackward_2_tempMat)
+     };
+     Mat NNOuputLayerBackward_ActiPlusTrans and skip;
+     MatCreate(&NNOuputLayerBackward_ActiPlusTrans,N_layerNeuron[N_hidden]+1,N_sample,RValue);
+     MatTrans(&P_ActiMatPlus[N_hidden],&NNOuputLayerBackward_ActiPlusTrans,RValue);
+     MatMul(&NNOuputLayerBackward_ActiPlusTrans,&P_DeltaMat[N_hidden+1],&P_NablaWbMat[N_hidden+1],RValue);
+     MatNumMul(1.0/ N_sample,&P_NablaWbMat[N_hidden+1],&P_NablaWbMat[N_hidden+1],RValue);
+     return<==1 and RValue:=NULL;
+     skip
+     )
+     }; 
+  function NNBackward ( int N_hidden,int N_sample,int *N_layerNeuron,int *NStr_ActiFsHidden,int Nstr_LossF,Mat *P_NablaWbMat,Mat *P_SumMat,Mat *P_DeltaMat,Mat *P_ActiFunDerivation,Mat *P_ActiMat,Mat *P_ActiMatPlus,Mat Mat_oneHot,Mat* RValue )
+ {
+     frame(NNBackward_i,return) and ( 
+     int return<==0 and skip;
+     output ("NN Start to backward......\n") and skip;
+     NNOuputLayerBackward(N_hidden,N_sample,N_layerNeuron,NStr_ActiFsHidden,Nstr_LossF,P_NablaWbMat,P_ActiMatPlus,P_SumMat,P_DeltaMat,P_ActiMat,P_ActiFunDerivation,Mat_oneHot,RValue);
+     int NNBackward_i<==N_hidden and skip;
+     
+     while( (NNBackward_i>0) )
+     {
+         NNBackward_i:=NNBackward_i-1
+         
+     };
+     return<==1 and RValue:=NULL;
+     skip
+     )
+     }; 
   function main ( int  RValue )
  {
-     frame(main_a,main_b,main_act,main_val,main_temp$_1,main_temp$_2,main_temp$_3,main_temp$_4,main_temp$_5,main_temp$_6,main_temp$_7,main_temp$_8,main_temp$_9,main_temp$_10,main_temp$_11,return) and (
+     frame(main_N_sample,main_D_sample,main_N_out,main_Xval,main_Yval,main_N_hidden,main_N_layerNeuron,main_Nval,main_NStr_ActiFsHidden,main_Aval,main_Nstr_LossF,main_Style_initWeight,main_P_ActiMat,main_P_ActiMatPlus,main_P_SumMat,main_P_WeightMat,main_P_WeightBiasMat,main_Mat_oneHot,main_Mat_Y,main_P_DeltaMat,main_P_NablaWbMat,main_P_ActiFunDerivation,main_loss,return) and (
      int return<==0 and skip;
-     Mat main_a and skip;
-     Mat main_b and skip;
-     Mat main_act and skip;
-     float main_val[9]<=={-0.2,1.3,0.0,-1.5,2.6,3.3,0.5,-2.5,6.0} and skip;
-     MatCreate(&main_b,3,1,RValue);
-     MatCreate(&main_a,3,3,RValue);
-     MatCreate(&main_act,3,3,RValue);
-     MatSetVal(&main_a,main_val,RValue);
-     output ("Softmax 激活\n") and skip;
-     output ("原矩阵：\n") and skip;
-     MatDump(&main_a);
-     output ("激活后的矩阵：\n") and skip;
-     Mat* main_temp$_1 and skip;
-     main_temp$_1:=MatSoftmax(&main_a,&main_act,RValue);
-     MatDump(main_temp$_1);
-     output ("行求和矩阵：\n") and skip;
-     Mat* main_temp$_2 and skip;
-     main_temp$_2:=MatRowSum(&main_act,&main_b,RValue);
-     MatDump(main_temp$_2);
-     output ("求导后的矩阵：\n") and skip;
-     Mat* main_temp$_3 and skip;
-     main_temp$_3:=MatDerivationSoftmax(&main_a,&main_act,RValue);
-     MatDump(main_temp$_3);
-     output ("===================================================\n") and skip;
-     output ("Sigmoid 激活\n") and skip;
-     output ("原矩阵：\n") and skip;
-     MatDump(&main_a);
-     output ("激活后的矩阵：\n") and skip;
-     Mat* main_temp$_4 and skip;
-     main_temp$_4:=MatSigmoid(&main_a,&main_act,RValue);
-     MatDump(main_temp$_4);
-     output ("求导后的矩阵：\n") and skip;
-     Mat* main_temp$_5 and skip;
-     main_temp$_5:=MatDerivationSigmoid(&main_a,&main_act,RValue);
-     MatDump(main_temp$_5);
-     output ("===================================================\n") and skip;
-     output ("Tanh 激活\n") and skip;
-     output ("原矩阵：\n") and skip;
-     MatDump(&main_a);
-     output ("激活后的矩阵：\n") and skip;
-     Mat* main_temp$_6 and skip;
-     main_temp$_6:=MatTanh(&main_a,&main_act,RValue);
-     MatDump(main_temp$_6);
-     output ("求导后的矩阵：\n") and skip;
-     Mat* main_temp$_7 and skip;
-     main_temp$_7:=MatDerivationTanh(&main_a,&main_act,RValue);
-     MatDump(main_temp$_7);
-     output ("===================================================\n") and skip;
-     output ("Relu 激活\n") and skip;
-     output ("原矩阵：\n") and skip;
-     MatDump(&main_a);
-     output ("激活后的矩阵：\n") and skip;
-     Mat* main_temp$_8 and skip;
-     main_temp$_8:=MatRelu(&main_a,&main_act,RValue);
-     MatDump(main_temp$_8);
-     output ("求导后的矩阵：\n") and skip;
-     Mat* main_temp$_9 and skip;
-     main_temp$_9:=MatDerivationRelu(&main_a,&main_act,RValue);
-     MatDump(main_temp$_9);
-     output ("===================================================\n") and skip;
-     output ("LeakyRelu 激活\n") and skip;
-     output ("原矩阵：\n") and skip;
-     MatDump(&main_a);
-     output ("激活后的矩阵：\n") and skip;
-     Mat* main_temp$_10 and skip;
-     main_temp$_10:=MatLeakyRelu(0.2,&main_a,&main_act,RValue);
-     MatDump(main_temp$_10);
-     output ("求导后的矩阵：\n") and skip;
-     Mat* main_temp$_11 and skip;
-     main_temp$_11:=MatDerivationLeakyRelu(0.2,&main_a,&main_act,RValue);
-     MatDump(main_temp$_11);
+     int main_N_sample<==16 and skip;
+     int main_D_sample<==4 and skip;
+     int main_N_out<==2 and skip;
+     float main_Xval[64]<=={0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,0.0,0.0,1.0,0.0,0.0,0.0,1.0,1.0,0.0,1.0,0.0,0.0,0.0,1.0,0.0,1.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,1.0,0.0,0.0,1.0,1.0,0.0,1.0,0.0,1.0,0.0,1.0,1.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,1.0,1.0,1.0,1.0,0.0,1.0,1.0,1.0,1.0} and skip;
+     float main_Yval[16]<=={0,1,1,0,1,0,0,1,1,0,0,1,0,1,1,0} and skip;
+     int main_N_hidden<==3 and skip;
+     int *main_N_layerNeuron<==NULL and skip;
+     int main_Nval[5]<=={4,3,6,3,2} and skip;
+     main_N_layerNeuron:=intVal2List(main_N_hidden+2,main_Nval,main_N_layerNeuron,RValue);
+     int *main_NStr_ActiFsHidden<==NULL and skip;
+     int main_Aval[5]<=={0,3,3,3,5} and skip;
+     main_NStr_ActiFsHidden:=intVal2List(main_N_hidden+2,main_Aval,main_NStr_ActiFsHidden,RValue);
+     int main_Nstr_LossF<==1 and skip;
+     int main_Style_initWeight<==3 and skip;
+     Mat *main_P_ActiMat<==NULL and skip;
+     Mat *main_P_ActiMatPlus<==NULL and skip;
+     Mat *main_P_SumMat<==NULL and skip;
+     Mat *main_P_WeightMat<==NULL and skip;
+     Mat *main_P_WeightBiasMat<==NULL and skip;
+     Mat main_Mat_oneHot and skip;
+     MatCreate(&main_Mat_oneHot,main_N_sample,main_N_out,RValue);
+     Mat main_Mat_Y and skip;
+     MatCreate(&main_Mat_Y,main_N_sample,1,RValue);
+     Mat *main_P_DeltaMat<==NULL and skip;
+     Mat *main_P_NablaWbMat<==NULL and skip;
+     Mat *main_P_ActiFunDerivation<==NULL and skip;
+     main_P_ActiMat:=SpaceCreateActi(main_P_ActiMat,main_N_sample,main_N_hidden,main_N_layerNeuron,RValue);
+     main_P_ActiMatPlus:=SpaceCreateActiPlus(main_P_ActiMatPlus,main_N_sample,main_N_hidden,main_N_layerNeuron,RValue);
+     main_P_SumMat:=SpaceCreateSum(main_P_SumMat,main_N_sample,main_N_hidden,main_N_layerNeuron,RValue);
+     main_P_WeightMat:=SpaceCreateWeight(main_P_WeightMat,main_N_hidden,main_N_layerNeuron,RValue);
+     main_P_WeightBiasMat:=SpaceCreateWeightBias(main_P_WeightBiasMat,main_N_hidden,main_N_layerNeuron,RValue);
+     main_P_DeltaMat:=SpaceCreateDelta(main_P_DeltaMat,main_N_sample,main_N_hidden,main_N_layerNeuron,RValue);
+     main_P_NablaWbMat:=SpaceCreateNablaWeightBias(main_P_NablaWbMat,main_N_hidden,main_N_layerNeuron,RValue);
+     main_P_ActiFunDerivation:=SpaceCreateActiFunDerivation(main_P_ActiFunDerivation,main_N_sample,main_N_hidden,main_N_layerNeuron,RValue);
+     NNinit(main_P_ActiMat,main_P_ActiMatPlus,&main_Mat_Y,&main_Mat_oneHot,main_P_WeightMat,main_P_WeightBiasMat,main_N_out,main_N_hidden,main_Xval,main_Yval,main_Style_initWeight,RValue);
+     float main_loss<==0.0 and skip;
+     main_loss:=NNforward(main_P_ActiMat,main_P_ActiMatPlus,main_P_SumMat,main_P_WeightBiasMat,main_Mat_oneHot,main_N_hidden,main_NStr_ActiFsHidden,main_Nstr_LossF,RValue);
+     output (main_loss,"\n","\n") and skip;
+     NNBackward(main_N_hidden,main_N_sample,main_N_layerNeuron,main_NStr_ActiFsHidden,main_Nstr_LossF,main_P_NablaWbMat,main_P_SumMat,main_P_DeltaMat,main_P_ActiFunDerivation,main_P_ActiMat,main_P_ActiMatPlus,main_Mat_oneHot,RValue);
+     MatDump(&main_P_NablaWbMat[main_N_hidden+1]);
      return<==1 and RValue:=0;
      skip
      )
