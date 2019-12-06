@@ -1852,8 +1852,10 @@ float NNforward(Mat *P_ActiMat, Mat *P_ActiMatPlus, Mat *P_SumMat, Mat *P_Weight
 //所需参数
 //神经网络隐藏层层数:			N_hidden.
 //输入样本的数量：				N_sample.
-//各层神经元个数 :				N_layerNeuron[i], i =0(输入层),1,...,N_hidden,N_hidden+1(输出层).
+//各层神经元个数 :				N_layerNeuron[i],			i =0(输入层),1,...,N_hidden,N_hidden+1(输出层).
 //权值偏置矩阵导数变量矩阵		P_NablaWbMat	Mat*		列表索引i = 0(输入层), 1, ..., N hidden，N hidden + 1(输出层)
+															//i = 0 时输入层求和矩阵行列置零无实际含义
+//神经网络求和矩阵				P_SumMat		Mat*		列表索引i = 0(输入层), 1, ..., N hidden，N hidden + 1(输出层)
 															//i = 0 时输入层求和矩阵行列置零无实际含义
 //神经网络激活值矩阵			P_ActiMat		Mat*		列表索引i = 0(输入层), 1, ..., N hidden，N hidden + 1(输出层)
 //神经网络激活值矩阵加偏置列	P_ActiMatPlus	Mat*		列表索引i = 0(输入层), 1, ..., N hidden
@@ -1872,8 +1874,7 @@ float NNforward(Mat *P_ActiMat, Mat *P_ActiMatPlus, Mat *P_SumMat, Mat *P_Weight
 //训练数据标签					Mat_oneHot		Mat			row = N_sample col = N_out
 //激活函数对求和值导数矩阵      P_ActiFunDerivation	Mat*		列表索引i = 0(输入层), 1, ..., N hidden，N hidden + 1(输出层)
 															//i = 0 时输入层求和矩阵行列置零无实际含义
-//神经网络求和矩阵				P_SumMat		Mat*		列表索引i = 0(输入层), 1, ..., N hidden，N hidden + 1(输出层)
-															//i = 0 时输入层求和矩阵行列置零无实际含义
+
 
 Mat * ActiFunDerivation(Mat Mat_Sum, Mat* Mat_ActiFunDerivation, int option){
 	if (option == 0){
@@ -1913,7 +1914,9 @@ Mat * LossFunDerivation(Mat *ActiMat, Mat *DerivativeActiMat, Mat One_hotMat, in
 	return NULL;
 }
 
-Mat * NNOuputLayerBackward(int N_hidden, int N_sample, int* N_layerNeuron, int *NStr_ActiFsHidden, int Nstr_LossF, Mat* P_NablaWbMat, Mat* P_ActiMatPlus, Mat* P_SumMat, Mat* P_DeltaMat, Mat* P_ActiMat, Mat* P_ActiFunDerivation, Mat Mat_oneHot){
+Mat * NNOuputLayerBackward(int N_hidden, int N_sample, int* N_layerNeuron, int *NStr_ActiFsHidden, 
+	int Nstr_LossF, Mat* P_NablaWbMat, Mat* P_ActiMatPlus, Mat* P_SumMat, Mat* P_DeltaMat, Mat* P_ActiMat, Mat* P_ActiFunDerivation, Mat Mat_oneHot){
+	
 	if (NStr_ActiFsHidden[N_hidden+1] == 5 && Nstr_LossF == 1){//softmax+crossentropy
 		MatSub(&P_ActiMat[N_hidden+1], &Mat_oneHot, &P_DeltaMat[N_hidden + 1]);
 		//MatDump(&P_ActiMat[N_hidden + 1]);
@@ -1946,15 +1949,47 @@ Mat * NNOuputLayerBackward(int N_hidden, int N_sample, int* N_layerNeuron, int *
 
 }
 
-Mat * NNBackward(int N_hidden, int N_sample, int* N_layerNeuron, int *NStr_ActiFsHidden, int Nstr_LossF, Mat* P_NablaWbMat, Mat* P_SumMat, Mat* P_DeltaMat, Mat* P_ActiFunDerivation, Mat* P_ActiMat, Mat* P_ActiMatPlus, Mat Mat_oneHot){
+Mat * NNBackward(int N_hidden, int N_sample, int* N_layerNeuron, int *NStr_ActiFsHidden, int Nstr_LossF, Mat* P_NablaWbMat, Mat* P_SumMat, 
+	Mat* P_DeltaMat, Mat* P_ActiFunDerivation, Mat* P_ActiMat, Mat* P_ActiMatPlus, Mat Mat_oneHot, Mat* P_WeightMat){
 
 	printf("NN Start to backward......\n");
 
-	NNOuputLayerBackward(N_hidden, N_sample, N_layerNeuron, NStr_ActiFsHidden, Nstr_LossF, P_NablaWbMat, P_ActiMatPlus, P_SumMat, P_DeltaMat, P_ActiMat, P_ActiFunDerivation, Mat_oneHot);
+	//输出层反向传播
+	NNOuputLayerBackward(N_hidden, N_sample, N_layerNeuron, NStr_ActiFsHidden, Nstr_LossF, P_NablaWbMat, P_ActiMatPlus, P_SumMat, P_DeltaMat, 
+P_ActiMat, P_ActiFunDerivation, Mat_oneHot);
 
-
+	//MatDump(&P_NablaWbMat[N_hidden + 1]);
+	//隐藏层反向传播
 	for (int i = N_hidden; i > 0; --i){
-		;
+		Mat tempTransW;
+		Mat ActiFuncMat;
+		Mat tempMulMat;
+		Mat tempProdMat;
+		Mat tempTransActi;
+
+		MatCreate(&tempTransW, P_WeightMat[i+1].col, P_WeightMat[i+1].row);
+		MatCreate(&ActiFuncMat, P_SumMat[i].row, P_SumMat[i].col);
+		MatCreate(&tempMulMat, P_DeltaMat[i + 1].row, P_WeightMat[i+1].row);
+		MatCreate(&tempProdMat, P_SumMat[i].row, P_SumMat[i].col);
+		MatCreate(&tempTransActi, P_ActiMatPlus[i - 1].col, P_ActiMatPlus[i - 1].row);
+
+		MatTrans(&P_WeightMat[i+1], &tempTransW);
+		ActiFunDerivation(P_SumMat[i], &ActiFuncMat, i);
+
+		MatMul(&P_DeltaMat[i + 1], &tempTransW, &tempMulMat);
+		MatProduct(&tempMulMat, &ActiFuncMat, &P_DeltaMat[i]);
+
+		MatTrans(&P_ActiMatPlus[i - 1], &tempTransActi);
+		MatMul(&tempTransActi, &P_DeltaMat[i], &P_NablaWbMat[i]);
+		//MatDump(&P_NablaWbMat[i]);
+		MatNumMul(1.f / N_sample, &P_NablaWbMat[i], &P_NablaWbMat[i]);
+		//MatDump(&P_NablaWbMat[i]);
+
+		MatDelete(&tempTransW);
+		MatDelete(&ActiFuncMat);
+		MatDelete(&tempMulMat);
+		MatDelete(&tempProdMat);
+		//break;
 	}
 	return NULL;
 }
@@ -2148,8 +2183,19 @@ int main(){
 	printf("%f\n", loss);
 	//printf("%d\n", isinf(loss));
 
-	NNBackward(N_hidden, N_sample, N_layerNeuron, NStr_ActiFsHidden, Nstr_LossF, P_NablaWbMat, P_SumMat, P_DeltaMat, P_ActiFunDerivation, P_ActiMat, P_ActiMatPlus, Mat_oneHot);
-	MatDump(&P_NablaWbMat[N_hidden + 1]);
+	NNBackward(N_hidden, N_sample, N_layerNeuron, NStr_ActiFsHidden, Nstr_LossF, P_NablaWbMat, P_SumMat, P_DeltaMat, P_ActiFunDerivation, P_ActiMat, P_ActiMatPlus, Mat_oneHot, P_WeightMat);
+	
+	for (int i = 0; i < N_hidden + 2; ++i){
+		printf("Weight Bias:\n");
+		MatDump(&P_WeightBiasMat[i]);
+		printf("Weight Bias Nabla:\n");
+		MatDump(&P_NablaWbMat[i]);
+	}
+	
+
+
+
+
 	
 	return 0;
 }
@@ -2493,14 +2539,3 @@ int main(){
 //	MatDump(&weight);
 //	return 0;
 //}
-
-
-
-
-
-
-
-
-
-
-

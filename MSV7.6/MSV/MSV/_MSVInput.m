@@ -2653,9 +2653,9 @@ float **element
      skip
      )
      }; 
-  function NNBackward ( int N_hidden,int N_sample,int *N_layerNeuron,int *NStr_ActiFsHidden,int Nstr_LossF,Mat *P_NablaWbMat,Mat *P_SumMat,Mat *P_DeltaMat,Mat *P_ActiFunDerivation,Mat *P_ActiMat,Mat *P_ActiMatPlus,Mat Mat_oneHot,Mat* RValue )
+  function NNBackward ( int N_hidden,int N_sample,int *N_layerNeuron,int *NStr_ActiFsHidden,int Nstr_LossF,Mat *P_NablaWbMat,Mat *P_SumMat,Mat *P_DeltaMat,Mat *P_ActiFunDerivation,Mat *P_ActiMat,Mat *P_ActiMatPlus,Mat Mat_oneHot,Mat *P_WeightMat,Mat* RValue )
  {
-     frame(NNBackward_i,return) and ( 
+     frame(NNBackward_i,NNBackward_tempTransW,NNBackward_ActiFuncMat,NNBackward_tempMulMat,NNBackward_tempProdMat,NNBackward_tempTransActi,return) and ( 
      int return<==0 and skip;
      output ("NN Start to backward......\n") and skip;
      NNOuputLayerBackward(N_hidden,N_sample,N_layerNeuron,NStr_ActiFsHidden,Nstr_LossF,P_NablaWbMat,P_ActiMatPlus,P_SumMat,P_DeltaMat,P_ActiMat,P_ActiFunDerivation,Mat_oneHot,RValue);
@@ -2663,6 +2663,27 @@ float **element
      
      while( (NNBackward_i>0) )
      {
+         Mat NNBackward_tempTransW and skip;
+         Mat NNBackward_ActiFuncMat and skip;
+         Mat NNBackward_tempMulMat and skip;
+         Mat NNBackward_tempProdMat and skip;
+         Mat NNBackward_tempTransActi and skip;
+         MatCreate(&NNBackward_tempTransW,P_WeightMat[NNBackward_i+1].col,P_WeightMat[NNBackward_i+1].row,RValue);
+         MatCreate(&NNBackward_ActiFuncMat,P_SumMat[NNBackward_i].row,P_SumMat[NNBackward_i].col,RValue);
+         MatCreate(&NNBackward_tempMulMat,P_DeltaMat[NNBackward_i+1].row,P_WeightMat[NNBackward_i+1].row,RValue);
+         MatCreate(&NNBackward_tempProdMat,P_SumMat[NNBackward_i].row,P_SumMat[NNBackward_i].col,RValue);
+         MatCreate(&NNBackward_tempTransActi,P_ActiMatPlus[NNBackward_i-1].col,P_ActiMatPlus[NNBackward_i-1].row,RValue);
+         MatTrans(&P_WeightMat[NNBackward_i+1],&NNBackward_tempTransW,RValue);
+         ActiFunDerivation(P_SumMat[NNBackward_i],&NNBackward_ActiFuncMat,NNBackward_i,RValue);
+         MatMul(&P_DeltaMat[NNBackward_i+1],&NNBackward_tempTransW,&NNBackward_tempMulMat,RValue);
+         MatProduct(&NNBackward_tempMulMat,&NNBackward_ActiFuncMat,&P_DeltaMat[NNBackward_i],RValue);
+         MatTrans(&P_ActiMatPlus[NNBackward_i-1],&NNBackward_tempTransActi,RValue);
+         MatMul(&NNBackward_tempTransActi,&P_DeltaMat[NNBackward_i],&P_NablaWbMat[NNBackward_i],RValue);
+         MatNumMul(1.0/ N_sample,&P_NablaWbMat[NNBackward_i],&P_NablaWbMat[NNBackward_i],RValue);
+         MatDelete(&NNBackward_tempTransW);
+         MatDelete(&NNBackward_ActiFuncMat);
+         MatDelete(&NNBackward_tempMulMat);
+         MatDelete(&NNBackward_tempProdMat);
          NNBackward_i:=NNBackward_i-1
          
      };
@@ -2672,7 +2693,7 @@ float **element
      }; 
   function main ( int  RValue )
  {
-     frame(main_N_sample,main_D_sample,main_N_out,main_Xval,main_Yval,main_N_hidden,main_N_layerNeuron,main_Nval,main_NStr_ActiFsHidden,main_Aval,main_Nstr_LossF,main_Style_initWeight,main_P_ActiMat,main_P_ActiMatPlus,main_P_SumMat,main_P_WeightMat,main_P_WeightBiasMat,main_Mat_oneHot,main_Mat_Y,main_P_DeltaMat,main_P_NablaWbMat,main_P_ActiFunDerivation,main_loss,return) and (
+     frame(main_N_sample,main_D_sample,main_N_out,main_Xval,main_Yval,main_N_hidden,main_N_layerNeuron,main_Nval,main_NStr_ActiFsHidden,main_Aval,main_Nstr_LossF,main_Style_initWeight,main_P_ActiMat,main_P_ActiMatPlus,main_P_SumMat,main_P_WeightMat,main_P_WeightBiasMat,main_Mat_oneHot,main_Mat_Y,main_P_DeltaMat,main_P_NablaWbMat,main_P_ActiFunDerivation,main_loss,main_i,return) and (
      int return<==0 and skip;
      int main_N_sample<==16 and skip;
      int main_D_sample<==4 and skip;
@@ -2712,8 +2733,18 @@ float **element
      float main_loss<==0.0 and skip;
      main_loss:=NNforward(main_P_ActiMat,main_P_ActiMatPlus,main_P_SumMat,main_P_WeightBiasMat,main_Mat_oneHot,main_N_hidden,main_NStr_ActiFsHidden,main_Nstr_LossF,RValue);
      output (main_loss,"\n","\n") and skip;
-     NNBackward(main_N_hidden,main_N_sample,main_N_layerNeuron,main_NStr_ActiFsHidden,main_Nstr_LossF,main_P_NablaWbMat,main_P_SumMat,main_P_DeltaMat,main_P_ActiFunDerivation,main_P_ActiMat,main_P_ActiMatPlus,main_Mat_oneHot,RValue);
-     MatDump(&main_P_NablaWbMat[main_N_hidden+1]);
+     NNBackward(main_N_hidden,main_N_sample,main_N_layerNeuron,main_NStr_ActiFsHidden,main_Nstr_LossF,main_P_NablaWbMat,main_P_SumMat,main_P_DeltaMat,main_P_ActiFunDerivation,main_P_ActiMat,main_P_ActiMatPlus,main_Mat_oneHot,main_P_WeightMat,RValue);
+     int main_i<==0 and skip;
+     
+     while( (main_i<main_N_hidden+2) )
+     {
+         output ("Weight Bias:\n") and skip;
+         MatDump(&main_P_WeightBiasMat[main_i]);
+         output ("Weight Bias Nabla:\n") and skip;
+         MatDump(&main_P_NablaWbMat[main_i]);
+         main_i:=main_i+1
+         
+     };
      return<==1 and RValue:=0;
      skip
      )
