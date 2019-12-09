@@ -1401,7 +1401,7 @@ Mat* MatInitHe(Mat *src)
 	//weight
 	for (row = 0; row < src->row; ++row){
 		for (col = 0; col < src->col; ++col){
-			(src->element[row])[col] = gaussrand(0.f, 0.1f) * sqrt(2.f / src->row);  // mean stdc
+			(src->element[row])[col] = gaussrand(0.f, 0.9f) * sqrt(2.f / src->row);  // mean stdc
 		}
 	}
 	//set bias row 0
@@ -1834,7 +1834,7 @@ float NNforward(Mat *P_ActiMat, Mat *P_ActiMatPlus, Mat *P_SumMat, Mat *P_Weight
 		//MatDump(&P_ActiMat[i + 1]);
 	}
 	//计算loss
-	return LossFunction(&Mat_oneHot, &P_ActiMat[N_hidden + 1], Nstr_LossF);
+	return LossFunction(&P_ActiMat[N_hidden + 1], &Mat_oneHot, Nstr_LossF);
 }
 
 /************************************************************************/
@@ -1942,7 +1942,7 @@ Mat * NNOuputLayerBackward(int N_hidden, int N_sample, int* N_layerNeuron, int *
 	MatTrans(&P_ActiMatPlus[N_hidden], &ActiPlusTrans);
 	MatMul(&ActiPlusTrans, &P_DeltaMat[N_hidden + 1], &P_NablaWbMat[N_hidden + 1]);
 	//MatDump(&P_NablaWbMat[N_hidden + 1]);
-	MatNumMul(1.f / N_sample, &P_NablaWbMat[N_hidden + 1], &P_NablaWbMat[N_hidden + 1]);
+	MatNumMul(1.f / P_SumMat[1].row, &P_NablaWbMat[N_hidden + 1], &P_NablaWbMat[N_hidden + 1]);
 	//MatDump(&P_NablaWbMat[N_hidden + 1]);
 
 	return NULL;
@@ -1952,7 +1952,7 @@ Mat * NNOuputLayerBackward(int N_hidden, int N_sample, int* N_layerNeuron, int *
 Mat * NNBackward(int N_hidden, int N_sample, int* N_layerNeuron, int *NStr_ActiFsHidden, int Nstr_LossF, Mat* P_NablaWbMat, Mat* P_SumMat, 
 	Mat* P_DeltaMat, Mat* P_ActiFunDerivation, Mat* P_ActiMat, Mat* P_ActiMatPlus, Mat Mat_oneHot, Mat* P_WeightMat){
 
-	printf("NN Start to backward......\n");
+	//printf("NN Start to backward......\n");
 
 	//输出层反向传播
 	NNOuputLayerBackward(N_hidden, N_sample, N_layerNeuron, NStr_ActiFsHidden, Nstr_LossF, P_NablaWbMat, P_ActiMatPlus, P_SumMat, P_DeltaMat, 
@@ -1989,6 +1989,7 @@ P_ActiMat, P_ActiFunDerivation, Mat_oneHot);
 		MatDelete(&ActiFuncMat);
 		MatDelete(&tempMulMat);
 		MatDelete(&tempProdMat);
+		MatDelete(&tempTransActi);
 		//break;
 	}
 	return NULL;
@@ -2008,14 +2009,54 @@ P_ActiMat, P_ActiFunDerivation, Mat_oneHot);
 
 
 
+/************************************************************************/
+/*                           神经网络反向传播                           */
+/************************************************************************/
+
+
+
+
+
 
 
 
 
 
 /************************************************************************/
-/*                          整体框架测试主函数                          */
+/*                           神经网络优化算法                           */
 /************************************************************************/
+//所需参数
+//神经网络隐藏层层数:			N_hidden.
+//权值偏置矩阵导数变量矩阵		P_NablaWbMat	Mat*		列表索引i = 0(输入层), 1, ..., N hidden，N hidden + 1(输出层)
+															//i = 0 时输入层求和矩阵行列置零无实际含义
+//神经网络权值偏置矩阵			P_WeightBiasMat	Mat*		列表索引i = 0(输入层), 1, ..., N hidden，N hidden + 1(输出层)
+															//i = 0 时输入层求和矩阵行列置零无实际含义
+
+
+//批量梯度下降
+Mat * BGD(Mat *P_WeightBiasMat, Mat *P_NablaWbMat, int N_hidden, float alpha){
+	Mat temp;
+	for (int i = 1; i <= N_hidden + 1; ++i){
+		//MatDump(&P_WeightBiasMat[i]);
+		MatCreate(&temp, P_NablaWbMat[i].row, P_NablaWbMat[i].col);
+		MatNumMul(alpha, &P_NablaWbMat[i], &temp);
+		MatSub(&P_WeightBiasMat[i],&temp , &P_WeightBiasMat[i]);
+		MatDelete(&temp);
+	}
+	return P_WeightBiasMat;
+}
+
+
+
+/************************************************************************/
+/*                          神经网络优化算法                          */
+/************************************************************************/
+
+
+
+
+
+
 int main(){
 
 
@@ -2175,28 +2216,34 @@ int main(){
 
 
 
+	for (int i = 1; i <= 50000; ++i){
+		float loss = 0.f;
+		/*神经网络前项传播*/
+		loss = NNforward(P_ActiMat, P_ActiMatPlus, P_SumMat, P_WeightBiasMat, Mat_oneHot, N_hidden, NStr_ActiFsHidden, Nstr_LossF);
+		if (i % 200 == 0){
+			printf("第%d次训练：%f\n", i,loss);
+			//MatDump(&P_ActiMat[N_hidden + 1]);
+			//MatDump(&Mat_oneHot);
+			//printf("%f\n", CrossEntropy(&P_ActiMat[N_hidden + 1], &Mat_oneHot));
+			/*for (int i = 0; i < N_hidden + 2; ++i){
+				printf("Weight Bias:\n");
+				MatDump(&P_WeightBiasMat[i]);*/
+				//printf("Weight Bias Nabla:\n");
+				//MatDump(&P_NablaWbMat[i]);
+			//}
+		}
+		
+		//printf("%d\n", isinf(loss));
+
+		NNBackward(N_hidden, N_sample, N_layerNeuron, NStr_ActiFsHidden, Nstr_LossF, P_NablaWbMat, P_SumMat, P_DeltaMat, P_ActiFunDerivation, P_ActiMat, P_ActiMatPlus, Mat_oneHot, P_WeightMat);
 
 
-	float loss = 0.f;
-	/*神经网络前项传播*/
-	loss = NNforward(P_ActiMat, P_ActiMatPlus, P_SumMat, P_WeightBiasMat, Mat_oneHot, N_hidden, NStr_ActiFsHidden, Nstr_LossF);
-	printf("%f\n", loss);
-	//printf("%d\n", isinf(loss));
 
-	NNBackward(N_hidden, N_sample, N_layerNeuron, NStr_ActiFsHidden, Nstr_LossF, P_NablaWbMat, P_SumMat, P_DeltaMat, P_ActiFunDerivation, P_ActiMat, P_ActiMatPlus, Mat_oneHot, P_WeightMat);
-	
-	for (int i = 0; i < N_hidden + 2; ++i){
-		printf("Weight Bias:\n");
-		MatDump(&P_WeightBiasMat[i]);
-		printf("Weight Bias Nabla:\n");
-		MatDump(&P_NablaWbMat[i]);
+		BGD(P_WeightBiasMat, P_NablaWbMat, N_hidden, 0.1f);
+
 	}
-	
-
-
-
-
-	
+	MatDump(&P_ActiMat[N_hidden + 1]);
+	MatDump(&Mat_oneHot);
 	return 0;
 }
 
