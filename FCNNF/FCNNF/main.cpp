@@ -11,7 +11,75 @@ typedef struct {
 	float** element;
 }Mat;
 
+typedef struct{
+	Mat ActiMat;
+	Mat ActiMatPlus;
+	Mat SumMat;
+	Mat WeightMat;
+	Mat WeightBiasMat;
+	Mat DeltaMat;
+	Mat NablaWbMat;
+	Mat ActiFunDerivation;
 
+	int NeuronNum;
+	int AcitFuncNum;
+}FCLayer;
+
+
+typedef struct{
+	int SampleNum;
+	int SampleDimensionNum;
+	int HiddenLayerNum;
+	int WeightInitWayNum;
+
+	FCLayer *Layer;
+	Mat OnehotMat;
+
+	int ClassificationNum;
+	int LossFuncNum;
+}FCNN;
+
+
+
+typedef struct{
+	int SampleNum;
+	int SampleDimensionNum;
+	int HiddenLayerNum;
+	int WeightInitWayNum;
+	float *XValArray;
+	float *YValArray;
+	int *NeuronNumArray;
+	int *AcitFuncNumArray;
+	int ClassificationNum;
+	int LossFuncNum;
+}Custom;
+
+
+//typedef struct{
+//	// 用户自定义参数
+//	int N_sample;
+//	int D_sample;
+//	float *Xval;
+//	float *Yval;
+//	int Style_initWeight;
+//	int N_hidden;
+//	int * N_layerNeuron;
+//	int * Nstr_ActiFsHidden;
+//	int N_out;
+//	int Nstr_LossF;
+//
+//	// 神经网络运算所需空间变量
+//	Mat* P_ActiMat;			//神经网络激活值矩阵
+//	Mat* P_ActiMatPlus;		//神经网络激活值矩阵加偏置列	
+//	Mat* P_SumMat;			//神经网络求和矩阵				
+//	Mat* P_WeightMat;		//神经网络权值矩阵		
+//	Mat* P_WeightBiasMat;	//神经网络权值偏置矩阵	
+//	Mat Mat_oneHot;					//训练数据标签	
+//	Mat* P_DeltaMat;			//反向传播中间变量矩阵	
+//	Mat* P_NablaWbMat;		//反向传播权值偏置导数矩阵
+//	Mat* P_ActiFunDerivation; //激活函数对求和值求导数矩阵
+//
+//}FCNN;
 
 /************************************************************************/
 /*                            辅助函数                                  */
@@ -2009,12 +2077,6 @@ P_ActiMat, P_ActiFunDerivation, Mat_oneHot);
 
 
 
-/************************************************************************/
-/*                           神经网络反向传播                           */
-/************************************************************************/
-
-
-
 
 
 
@@ -2106,7 +2168,7 @@ int main(){
 	int N_hidden = 3;//神经网络隐藏层层数
 
 	int *N_layerNeuron = NULL; // 各层神经元个数  0(输入层),1,...,N_hidden,N_hidden+1(输出层).
-	int Nval[] = { 4, 3, 6, 3, 2 };// 各隐藏层神经元个数真值
+	int Nval[] = { 4, 5, 6, 5, 2 };// 各隐藏层神经元个数真值
 
 	N_layerNeuron = intVal2List(N_hidden + 2, Nval, N_layerNeuron);
 	////测试传入正确性
@@ -2114,10 +2176,10 @@ int main(){
 	//	printf("%d\n", N_layerNeuron[i]);
 	//}
 
-	int *NStr_ActiFsHidden = NULL;// 各层激活函数使用；
+	int *Nstr_ActiFsHidden = NULL;// 各层激活函数使用；
 	int Aval[] = { 0, 3, 3, 3, 5 };// 各层激活函数使用真值；注意映射关系。
 
-	NStr_ActiFsHidden = intVal2List(N_hidden + 2, Aval, NStr_ActiFsHidden);
+	Nstr_ActiFsHidden = intVal2List(N_hidden + 2, Aval, Nstr_ActiFsHidden);
 
 	////测试传入正确性
 	//for (int i = 0; i < N_hidden + 2; ++i){
@@ -2215,12 +2277,16 @@ int main(){
 
 
 
-
-	for (int i = 1; i <= 50000; ++i){
+	
+	for (int i = 0; i <= 100000; ++i){
 		float loss = 0.f;
 		/*神经网络前项传播*/
-		loss = NNforward(P_ActiMat, P_ActiMatPlus, P_SumMat, P_WeightBiasMat, Mat_oneHot, N_hidden, NStr_ActiFsHidden, Nstr_LossF);
-		if (i % 200 == 0){
+		loss = NNforward(P_ActiMat, P_ActiMatPlus, P_SumMat, P_WeightBiasMat, Mat_oneHot, N_hidden, Nstr_ActiFsHidden, Nstr_LossF);
+		if (i == 0){
+			MatDump(&P_ActiMat[N_hidden + 1]);
+			MatDump(&Mat_oneHot);
+		}
+		if (i % 2000 == 0){
 			printf("第%d次训练：%f\n", i,loss);
 			//MatDump(&P_ActiMat[N_hidden + 1]);
 			//MatDump(&Mat_oneHot);
@@ -2235,7 +2301,7 @@ int main(){
 		
 		//printf("%d\n", isinf(loss));
 
-		NNBackward(N_hidden, N_sample, N_layerNeuron, NStr_ActiFsHidden, Nstr_LossF, P_NablaWbMat, P_SumMat, P_DeltaMat, P_ActiFunDerivation, P_ActiMat, P_ActiMatPlus, Mat_oneHot, P_WeightMat);
+		NNBackward(N_hidden, N_sample, N_layerNeuron, Nstr_ActiFsHidden, Nstr_LossF, P_NablaWbMat, P_SumMat, P_DeltaMat, P_ActiFunDerivation, P_ActiMat, P_ActiMatPlus, Mat_oneHot, P_WeightMat);
 
 
 
