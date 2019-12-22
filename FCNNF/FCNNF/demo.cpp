@@ -7,70 +7,11 @@
 //#undef MAT_LEGAL_CHECKING
 
 typedef struct {
-	int row, col;      // rowNum and columnNum [int]
-	float** element;   // element, two dimensions
+	int row, col;
+	float** element;
 }Mat;
 
-typedef struct{
-	Mat ActiMat;               // active value Matrix without bias column
-	Mat ActiMatPlus;           // active value Matrix with bias column
-	Mat SumMat;                // sum value Matrix 
-	Mat WeightMat;             // weight value Matrix without bias row
-	Mat WeightBiasMat;         // weight value Matrix with bias row
-	Mat DeltaMat;              // backtrack temporary variable Matrix
-	Mat NablaWbMat;            // gradient Matrix for weight with bias 
-	Mat ActiFunDerivationMat;  // active Function Dervation Matrix
 
-	int NeuronNum;             // number of neuron [int]
-	int AcitFuncNum;           // active function [int]
-}FCLayer;
-
-
-typedef struct{
-	int SampleNum;             // number of samples [int]
-	int SampleDimensionNum;    // dimensions(features) of sample [int]
-	int HiddenLayerNum;        // number of hidden layer [int]
-	int WeightInitWayNum;      // weight initialization mode [int]
-
-	FCLayer *Layer;            // layers of FCNN
-	Mat OnehotMat;             // onehot code Matrix
-
-	int ClassificationNum;     // Number of categories classified [int]
-	int LossFuncNum;           // loss function [int]
-}FCNN;
-
-
-
-typedef struct{
-	int TrainSampleNum;			// number of training samples [int]
-	int TestSampleNum;			// number of test samples [int]
-	int ValidationNum;			// number of validation samples [int]
-	int SampleDimensionNum;    // dimensions(features) of sample [int]
-	int HiddenLayerNum;        // number of hidden layer [int]
-	int WeightInitWayNum;      // weight initialization mode [int]
-	float *XValArray;          // samples features value [float*]
-	float *YValArray;          // samples labels value [float*]
-	int *NeuronNumArray;       // numbers of every layers Neuron [int*]  
-	int *ActiFuncNumArray;     // activate functions of every layers [int*]
-	int ClassificationNum;     // Number of categories classified [int]
-	int LossFuncNum;           // loss function [int]
-}Custom;
-
-
-typedef struct{
-	Mat CompleteFeatureDataSet;	// complete featrue Mat for FCNN
-	Mat CompleteLabelDataSet;	// complete label Mat without onehot
-	Mat CompleteTrainFeature;	// complete featrue Mat for FCNN training
-	Mat CompleteTrainLabel;		// complete label Mat without onehot
-	Mat *BatchTrainFeature;		// batch featrue Mat for FCNN training [three dimensions]
-	Mat *BatchTrainLabel;		// batch label Mat without onehot [three dimensions]
-	Mat TestFeature;			// featrue Mat for FCNN test
-	Mat TestLabel;				// label Mat without onehot
-	Mat ValidationFeature;		// featrue Mat for FCNN Validation
-	Mat ValidationLabel;		// label Mat withoutone
-	
-	int BatchSize;				// batch size for dataset
-}Dateset;
 
 /************************************************************************/
 /*                            辅助函数                                  */
@@ -1525,149 +1466,19 @@ Mat* MatInitHe(Mat *src)
 								//0  -> MSE
 								//1  -> CE
 
-int InitCustom(Custom *userDefine){
-	userDefine->TrainSampleNum = -1;
-	userDefine->TestSampleNum = -1;
-	userDefine->ValidationNum = -1;
-	userDefine->SampleDimensionNum = -1;
-	userDefine->HiddenLayerNum = -1;
-	userDefine->WeightInitWayNum = -1;
-	userDefine->XValArray = NULL;
-	userDefine->YValArray = NULL;
-	userDefine->NeuronNumArray = NULL;
-	userDefine->ActiFuncNumArray = NULL;
-	userDefine->ClassificationNum = -1;
-	userDefine->LossFuncNum = -1;
-
+//伪填充
+int ParaPassedIn(void){
 	return 0;
 }
 
-void DumpFloatArray(float* array, int n){
-	char str[40];
-	for (int i = 0; i < n; ++i){
-		printf("%s", F2S(array[i], str));
-		printf("\t");
-	}
-	printf("\n");
-}
-
-void DumpIntArray(int* array, int n){
-	for (int i = 0; i < n; ++i){
-		printf("%d\t", array[i]);
-	}
-	printf("\n");
-}
-
 //建立长度为 length 的整形数组，并传入值。
-int* IntVal2List(int length, int *src, int* dst){
+int* intVal2List(int length, int *src, int* dst){
 	dst = (int*)malloc(length*sizeof(int));
 	for (int i = 0; i < length; ++i){
 		dst[i] = src[i];
 	}
 	return dst;
 }
-
-float* FloatVal2List(int length, float *src, float* dst){
-	dst = (float*)malloc(length*sizeof(float));
-	for (int i = 0; i < length; ++i){
-		dst[i] = src[i];
-	}
-	return dst;
-}
-int DumpCustom(Custom UserDefine){
-	printf("==================================================================== Custom Dump =====================================================================\n");
-	if (UserDefine.TrainSampleNum == -1){
-		printf("\t\t\tCustom parameter 'TrainSampleNum' uninitialized!!!\n");
-		return -1;
-	}
-	printf("TrainSampleNum:\t\t%d\n", UserDefine.TrainSampleNum);
-
-	if (UserDefine.TestSampleNum == -1){
-		printf("\t\t\tCustom parameter 'TestSampleNum' uninitialized!!!\n");
-		return -1;
-	}
-	printf("TestSampleNum:\t\t%d\n", UserDefine.TestSampleNum);
-
-	if (UserDefine.ValidationNum == -1){
-		printf("\t\t\tCustom parameter 'ValidationNum' uninitialized!!!\n");
-		return -1;
-	}
-	printf("ValidationNum:\t\t%d\n", UserDefine.ValidationNum);
-
-	if (UserDefine.SampleDimensionNum == -1){
-		printf("\t\t\tCustom parameter 'SampleDimensionNum' uninitialized!!!\n");
-		return -1;
-	}
-	printf("SampleDimensionNum:\t%d\n", UserDefine.SampleDimensionNum);
-
-	if (UserDefine.HiddenLayerNum == -1){
-		printf("\t\t\tCustom parameter 'HiddenLayerNum' uninitialized!!!\n");
-		return -1;
-	}
-	printf("HiddenLayerNum:\t\t%d\n", UserDefine.HiddenLayerNum);
-
-	if (UserDefine.WeightInitWayNum == -1){
-		printf("\t\t\tCustom parameter 'WeightInitWayNum' uninitialized!!!\n");
-		return -1;
-	}
-	printf("WeightInitWayNum:\t%d\n", UserDefine.WeightInitWayNum);
-
-	if (UserDefine.ClassificationNum == -1){
-		printf("\t\t\tCustom parameter 'ClassificationNum' uninitialized!!!\n");
-		return -1;
-	}
-	printf("ClassificationNum:\t%d\n", UserDefine.ClassificationNum);
-
-	if (UserDefine.LossFuncNum == -1){
-		printf("\t\t\tCustom parameter 'LossFuncNum' uninitialized!!!\n");
-		return -1;
-	}
-	printf("LossFuncNum:\t\t%d\n", UserDefine.LossFuncNum);
-
-	if (UserDefine.XValArray == NULL){
-		printf("\t\t\tCustom parameter 'XValArray' uninitialized!!!\n");
-		return -1;
-	}
-	printf("XValArray:\t\n");
-	DumpFloatArray(UserDefine.XValArray, (UserDefine.TrainSampleNum*UserDefine.SampleDimensionNum));
-
-	if (UserDefine.YValArray == NULL){
-		printf("\t\t\tCustom parameter 'YValArray' uninitialized!!!\n");
-		return -1;
-	}
-	printf("XValArray:\t\n");
-	DumpFloatArray(UserDefine.YValArray, UserDefine.TrainSampleNum);
-
-	if (UserDefine.NeuronNumArray == NULL){
-		printf("\t\t\tCustom parameter 'NeuronNumArray' uninitialized!!!\n");
-		return -1;
-	}
-	printf("NeuronNumArray:\t\n");
-	DumpIntArray(UserDefine.NeuronNumArray, UserDefine.HiddenLayerNum);
-
-	if (UserDefine.ActiFuncNumArray == NULL){
-		printf("\t\t\tCustom parameter 'ActiFuncNumArray' uninitialized!!!\n");
-		return -1;
-	}
-	printf("ActiFuncNumArray:\t\n");
-	DumpIntArray(UserDefine.ActiFuncNumArray, UserDefine.HiddenLayerNum);
-
-	printf("================================================================= Custom Dump finish =================================================================\n");
-
-}
-
-
-
-
-//伪填充
-void ParaArray2Custom(Custom *userDefine, float *Xval, float *Yval, int *NeuronNumArray, int *ActiFuncNumArray){
-	userDefine->XValArray = FloatVal2List(userDefine->TrainSampleNum*userDefine->SampleDimensionNum, Xval, userDefine->XValArray);
-	userDefine->YValArray = FloatVal2List(userDefine->TrainSampleNum, Xval, userDefine->YValArray);
-	userDefine->NeuronNumArray = IntVal2List(userDefine->HiddenLayerNum, NeuronNumArray, userDefine->NeuronNumArray);
-	userDefine->ActiFuncNumArray = IntVal2List(userDefine->HiddenLayerNum, ActiFuncNumArray, userDefine->ActiFuncNumArray);
-}
-
-
 /************************************************************************/
 /*                     用户输入参数列表及传入函数                       */
 /************************************************************************/
@@ -2241,19 +2052,12 @@ Mat * BGD(Mat *P_WeightBiasMat, Mat *P_NablaWbMat, int N_hidden, float alpha){
 
 
 int main(){
-	
-	/*用户自定义参数输入*/
-	Custom userDefine;
-	InitCustom(&userDefine);   // custom initial
 
-	userDefine.TrainSampleNum = 12;
-	userDefine.TestSampleNum = 4;
-	userDefine.ValidationNum = 0;
-	userDefine.SampleDimensionNum = 4;
-	userDefine.HiddenLayerNum = 3;
-	userDefine.ClassificationNum = 2;
-	userDefine.LossFuncNum = 1; // CE
-	userDefine.WeightInitWayNum = 3; // KaiMing
+
+	/*用户自定义参数输入*/
+	int N_sample = 16; //样本数量
+	int D_sample = 4;  //样本维度
+	int N_out = 2;   //二分类
 
 	float Xval[] = {
 		0.f, 0.f, 0.f, 0.f,
@@ -2273,231 +2077,173 @@ int main(){
 		1.f, 1.f, 1.f, 0.f,
 		1.f, 1.f, 1.f, 1.f }; //样本真值
 
+	//float Xval[] = {
+	//	0.4f, 0.4f, 0.4f, 0.4f,
+	//	0.4f, 0.4f, 0.4f, 0.6f,
+	//	0.4f, 0.4f, 0.6f, 0.4f,
+	//	0.4f, 0.4f, 0.6f, 0.6f,
+	//	0.4f, 0.6f, 0.4f, 0.4f,
+	//	0.4f, 0.6f, 0.4f, 0.6f,
+	//	0.4f, 0.6f, 0.6f, 0.4f,
+	//	0.4f, 0.6f, 0.6f, 0.6f,
+	//	0.6f, 0.4f, 0.4f, 0.4f,
+	//	0.6f, 0.4f, 0.4f, 0.6f,
+	//	0.6f, 0.4f, 0.6f, 0.4f,
+	//	0.6f, 0.4f, 0.6f, 0.6f,
+	//	0.6f, 0.6f, 0.4f, 0.4f,
+	//	0.6f, 0.6f, 0.4f, 0.6f,
+	//	0.6f, 0.6f, 0.6f, 0.4f,
+	//	0.6f, 0.6f, 0.6f, 0.6f }; //样本真值
 
-	float Yval[] = { 0.f, 1.f, 1.f, 0.f, 1.f, 0.f, 0.f, 1.f, 1.f, 0.f, 0.f, 1.f, 0., 1.f, 1.f, 0.f };  //样本标签二分类
-	int NueronNumArray[] = {5, 6, 5};// 各隐藏层神经元个数真值
-	int ActiFuncArray[] = {3, 3, 3};// 各层激活函数使用真值；注意映射关系。
+	float Yval[] = { 0, 1, 1, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0, 1, 1, 0 };  //样本标签二分类
 
-	ParaArray2Custom(&userDefine, Xval, Yval, NueronNumArray, ActiFuncArray);
+	int N_hidden = 3;//神经网络隐藏层层数
 
-	DumpCustom(userDefine);
+	int *N_layerNeuron = NULL; // 各层神经元个数  0(输入层),1,...,N_hidden,N_hidden+1(输出层).
+	int Nval[] = { 4, 5, 6, 5, 2 };// 各隐藏层神经元个数真值
+
+	N_layerNeuron = intVal2List(N_hidden + 2, Nval, N_layerNeuron);
+	////测试传入正确性
+	//for (int i = 0; i < N_hidden + 2; ++i){
+	//	printf("%d\n", N_layerNeuron[i]);
+	//}
+
+	int *Nstr_ActiFsHidden = NULL;// 各层激活函数使用；
+	int Aval[] = { 0, 3, 3, 3, 5 };// 各层激活函数使用真值；注意映射关系。
+
+	Nstr_ActiFsHidden = intVal2List(N_hidden + 2, Aval, Nstr_ActiFsHidden);
+
+	////测试传入正确性
+	//for (int i = 0; i < N_hidden + 2; ++i){
+	//	printf("%d\n", NStr_ActiFsHidden[i]);
+	//}
+
+	int Nstr_LossF = 1;//use CrossEntropy Loss function
+
+	int Style_initWeight = 3;   //kaiming initialization
 
 
 
 
-	//N_layerNeuron = intVal2List(N_hidden + 2, Nval, N_layerNeuron);
-	//////测试传入正确性
-	////for (int i = 0; i < N_hidden + 2; ++i){
-	////	printf("%d\n", N_layerNeuron[i]);
-	////}
 
-	//int *Nstr_ActiFsHidden = NULL;// 各层激活函数使用；
+
+
+
+
+
+
+
+
+
+	/*构建神经网络所需空间并初始化所需参数*/
+	//神经网络所需空间变量
+	Mat* P_ActiMat=NULL;			//神经网络激活值矩阵
+	Mat* P_ActiMatPlus = NULL;		//神经网络激活值矩阵加偏置列	
+	Mat* P_SumMat = NULL;			//神经网络求和矩阵				
+	Mat* P_WeightMat = NULL;		//神经网络权值矩阵		
+	Mat* P_WeightBiasMat = NULL;	//神经网络权值偏置矩阵	
+	Mat Mat_oneHot;					//训练数据标签	
+	MatCreate(&Mat_oneHot, N_sample, N_out);
+	Mat Mat_Y;
+	MatCreate(&Mat_Y, N_sample, 1);
+	Mat* P_DeltaMat = NULL;			//反向传播中间变量矩阵	
+	Mat* P_NablaWbMat = NULL;		//反向传播权值偏置导数矩阵
+	Mat* P_ActiFunDerivation = NULL; //激活函数对求和值求导数矩阵
+
+	//用户输入参数
+	//样本数量			N_sample			int
+	//隐藏层层数		N_hidden			int
+	//各层神经元个数	N_layerNeuron		int*
+	//各层激活函数		NStr_ActiFsHidden	int*
+
+
+	P_ActiMat = SpaceCreateActi(P_ActiMat, N_sample, N_hidden, N_layerNeuron);
+
+	//MatDump(&(P_ActiMat[0]));
+
+	P_ActiMatPlus = SpaceCreateActiPlus(P_ActiMatPlus, N_sample, N_hidden, N_layerNeuron);
+
+	//MatDump(&(P_ActiMatPlus[0]));
+
+	P_SumMat = SpaceCreateSum(P_SumMat, N_sample, N_hidden, N_layerNeuron);
+
+	//MatDump(&P_SumMat[0]);    //P_SumMat[0] 无意义
+
+	P_WeightMat = SpaceCreateWeight(P_WeightMat, N_hidden, N_layerNeuron);
+
+	//MatDump(&P_WeightMat[1]);
+
+	P_WeightBiasMat = SpaceCreateWeightBias(P_WeightBiasMat, N_hidden, N_layerNeuron);
+
+	//MatDump(&P_WeightBiasMat[1]);
+
+	P_DeltaMat = SpaceCreateDelta(P_DeltaMat, N_sample, N_hidden, N_layerNeuron);
+
+	//MatDump(&(P_DeltaMat[1]));
+
+
+	P_NablaWbMat = SpaceCreateNablaWeightBias(P_NablaWbMat, N_hidden, N_layerNeuron);
+
+	P_ActiFunDerivation = SpaceCreateActiFunDerivation(P_ActiFunDerivation, N_sample, N_hidden, N_layerNeuron);
+	//printf("Nabla\n");
+	//MatDump(&(P_NablaWbMat[1]));
+
+
+
+
+
+
+
+
+	/*初始化神经网络参数*/
+	//输入矩阵 输出矩阵 权值权值矩阵
+	NNinit(P_ActiMat, P_ActiMatPlus, &Mat_Y, &Mat_oneHot, P_WeightMat, P_WeightBiasMat, N_out, N_hidden, Xval, Yval, Style_initWeight);
+
+	//MatDump(&P_ActiMat[0]);
+	//MatDump(&P_ActiMatPlus[0]);
+	//MatDump(&Mat_Y);
+	//MatDump(&Mat_oneHot);
+	//MatDump(&P_WeightMat[1]);
+	//MatDump(&P_WeightBiasMat[1]);
+
+
+
+
 	
+	for (int i = 0; i <= 100000; ++i){
+		float loss = 0.f;
+		/*神经网络前项传播*/
+		loss = NNforward(P_ActiMat, P_ActiMatPlus, P_SumMat, P_WeightBiasMat, Mat_oneHot, N_hidden, Nstr_ActiFsHidden, Nstr_LossF);
+		if (i == 0){
+			MatDump(&P_ActiMat[N_hidden + 1]);
+			MatDump(&Mat_oneHot);
+		}
+		if (i % 2000 == 0){
+			printf("第%d次训练：%f\n", i,loss);
+			//MatDump(&P_ActiMat[N_hidden + 1]);
+			//MatDump(&Mat_oneHot);
+			//printf("%f\n", CrossEntropy(&P_ActiMat[N_hidden + 1], &Mat_oneHot));
+			/*for (int i = 0; i < N_hidden + 2; ++i){
+				printf("Weight Bias:\n");
+				MatDump(&P_WeightBiasMat[i]);*/
+				//printf("Weight Bias Nabla:\n");
+				//MatDump(&P_NablaWbMat[i]);
+			//}
+		}
+		
+		//printf("%d\n", isinf(loss));
 
-	//Nstr_ActiFsHidden = intVal2List(N_hidden + 2, Aval, Nstr_ActiFsHidden);
+		NNBackward(N_hidden, N_sample, N_layerNeuron, Nstr_ActiFsHidden, Nstr_LossF, P_NablaWbMat, P_SumMat, P_DeltaMat, P_ActiFunDerivation, P_ActiMat, P_ActiMatPlus, Mat_oneHot, P_WeightMat);
 
 
 
+		BGD(P_WeightBiasMat, P_NablaWbMat, N_hidden, 0.1f);
 
+	}
+	MatDump(&P_ActiMat[N_hidden + 1]);
+	MatDump(&Mat_oneHot);
+	return 0;
 }
-
-
-
-
-
-//int main(){
-//
-//
-//	/*用户自定义参数输入*/
-//	int N_sample = 16; //样本数量
-//	int D_sample = 4;  //样本维度
-//	int N_out = 2;   //二分类
-//
-//	float Xval[] = {
-//		0.f, 0.f, 0.f, 0.f,
-//		0.f, 0.f, 0.f, 1.f,
-//		0.f, 0.f, 1.f, 0.f,
-//		0.f, 0.f, 1.f, 1.f,
-//		0.f, 1.f, 0.f, 0.f,
-//		0.f, 1.f, 0.f, 1.f,
-//		0.f, 1.f, 1.f, 0.f,
-//		0.f, 1.f, 1.f, 1.f,
-//		1.f, 0.f, 0.f, 0.f,
-//		1.f, 0.f, 0.f, 1.f,
-//		1.f, 0.f, 1.f, 0.f,
-//		1.f, 0.f, 1.f, 1.f,
-//		1.f, 1.f, 0.f, 0.f,
-//		1.f, 1.f, 0.f, 1.f,
-//		1.f, 1.f, 1.f, 0.f,
-//		1.f, 1.f, 1.f, 1.f }; //样本真值
-//
-//	//float Xval[] = {
-//	//	0.4f, 0.4f, 0.4f, 0.4f,
-//	//	0.4f, 0.4f, 0.4f, 0.6f,
-//	//	0.4f, 0.4f, 0.6f, 0.4f,
-//	//	0.4f, 0.4f, 0.6f, 0.6f,
-//	//	0.4f, 0.6f, 0.4f, 0.4f,
-//	//	0.4f, 0.6f, 0.4f, 0.6f,
-//	//	0.4f, 0.6f, 0.6f, 0.4f,
-//	//	0.4f, 0.6f, 0.6f, 0.6f,
-//	//	0.6f, 0.4f, 0.4f, 0.4f,
-//	//	0.6f, 0.4f, 0.4f, 0.6f,
-//	//	0.6f, 0.4f, 0.6f, 0.4f,
-//	//	0.6f, 0.4f, 0.6f, 0.6f,
-//	//	0.6f, 0.6f, 0.4f, 0.4f,
-//	//	0.6f, 0.6f, 0.4f, 0.6f,
-//	//	0.6f, 0.6f, 0.6f, 0.4f,
-//	//	0.6f, 0.6f, 0.6f, 0.6f }; //样本真值
-//
-//	float Yval[] = { 0, 1, 1, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0, 1, 1, 0 };  //样本标签二分类
-//
-//	int N_hidden = 3;//神经网络隐藏层层数
-//
-//	int *N_layerNeuron = NULL; // 各层神经元个数  0(输入层),1,...,N_hidden,N_hidden+1(输出层).
-//	int Nval[] = { 4, 5, 6, 5, 2 };// 各隐藏层神经元个数真值
-//
-//	N_layerNeuron = intVal2List(N_hidden + 2, Nval, N_layerNeuron);
-//	////测试传入正确性
-//	//for (int i = 0; i < N_hidden + 2; ++i){
-//	//	printf("%d\n", N_layerNeuron[i]);
-//	//}
-//
-//	int *Nstr_ActiFsHidden = NULL;// 各层激活函数使用；
-//	int Aval[] = { 0, 3, 3, 3, 5 };// 各层激活函数使用真值；注意映射关系。
-//
-//	Nstr_ActiFsHidden = intVal2List(N_hidden + 2, Aval, Nstr_ActiFsHidden);
-//
-//	////测试传入正确性
-//	//for (int i = 0; i < N_hidden + 2; ++i){
-//	//	printf("%d\n", NStr_ActiFsHidden[i]);
-//	//}
-//
-//	int Nstr_LossF = 1;//use CrossEntropy Loss function
-//
-//	int Style_initWeight = 3;   //kaiming initialization
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//	/*构建神经网络所需空间并初始化所需参数*/
-//	//神经网络所需空间变量
-//	Mat* P_ActiMat=NULL;			//神经网络激活值矩阵
-//	Mat* P_ActiMatPlus = NULL;		//神经网络激活值矩阵加偏置列	
-//	Mat* P_SumMat = NULL;			//神经网络求和矩阵				
-//	Mat* P_WeightMat = NULL;		//神经网络权值矩阵		
-//	Mat* P_WeightBiasMat = NULL;	//神经网络权值偏置矩阵	
-//	Mat Mat_oneHot;					//训练数据标签	
-//	MatCreate(&Mat_oneHot, N_sample, N_out);
-//	Mat Mat_Y;
-//	MatCreate(&Mat_Y, N_sample, 1);
-//	Mat* P_DeltaMat = NULL;			//反向传播中间变量矩阵	
-//	Mat* P_NablaWbMat = NULL;		//反向传播权值偏置导数矩阵
-//	Mat* P_ActiFunDerivation = NULL; //激活函数对求和值求导数矩阵
-//
-//	//用户输入参数
-//	//样本数量			N_sample			int
-//	//隐藏层层数		N_hidden			int
-//	//各层神经元个数	N_layerNeuron		int*
-//	//各层激活函数		NStr_ActiFsHidden	int*
-//
-//
-//	P_ActiMat = SpaceCreateActi(P_ActiMat, N_sample, N_hidden, N_layerNeuron);
-//
-//	//MatDump(&(P_ActiMat[0]));
-//
-//	P_ActiMatPlus = SpaceCreateActiPlus(P_ActiMatPlus, N_sample, N_hidden, N_layerNeuron);
-//
-//	//MatDump(&(P_ActiMatPlus[0]));
-//
-//	P_SumMat = SpaceCreateSum(P_SumMat, N_sample, N_hidden, N_layerNeuron);
-//
-//	//MatDump(&P_SumMat[0]);    //P_SumMat[0] 无意义
-//
-//	P_WeightMat = SpaceCreateWeight(P_WeightMat, N_hidden, N_layerNeuron);
-//
-//	//MatDump(&P_WeightMat[1]);
-//
-//	P_WeightBiasMat = SpaceCreateWeightBias(P_WeightBiasMat, N_hidden, N_layerNeuron);
-//
-//	//MatDump(&P_WeightBiasMat[1]);
-//
-//	P_DeltaMat = SpaceCreateDelta(P_DeltaMat, N_sample, N_hidden, N_layerNeuron);
-//
-//	//MatDump(&(P_DeltaMat[1]));
-//
-//
-//	P_NablaWbMat = SpaceCreateNablaWeightBias(P_NablaWbMat, N_hidden, N_layerNeuron);
-//
-//	P_ActiFunDerivation = SpaceCreateActiFunDerivation(P_ActiFunDerivation, N_sample, N_hidden, N_layerNeuron);
-//	//printf("Nabla\n");
-//	//MatDump(&(P_NablaWbMat[1]));
-//
-//
-//
-//
-//
-//
-//
-//
-//	/*初始化神经网络参数*/
-//	//输入矩阵 输出矩阵 权值权值矩阵
-//	NNinit(P_ActiMat, P_ActiMatPlus, &Mat_Y, &Mat_oneHot, P_WeightMat, P_WeightBiasMat, N_out, N_hidden, Xval, Yval, Style_initWeight);
-//
-//	//MatDump(&P_ActiMat[0]);
-//	//MatDump(&P_ActiMatPlus[0]);
-//	//MatDump(&Mat_Y);
-//	//MatDump(&Mat_oneHot);
-//	//MatDump(&P_WeightMat[1]);
-//	//MatDump(&P_WeightBiasMat[1]);
-//
-//
-//
-//
-//	
-//	for (int i = 0; i <= 100000; ++i){
-//		float loss = 0.f;
-//		/*神经网络前项传播*/
-//		loss = NNforward(P_ActiMat, P_ActiMatPlus, P_SumMat, P_WeightBiasMat, Mat_oneHot, N_hidden, Nstr_ActiFsHidden, Nstr_LossF);
-//		if (i == 0){
-//			MatDump(&P_ActiMat[N_hidden + 1]);
-//			MatDump(&Mat_oneHot);
-//		}
-//		if (i % 2000 == 0){
-//			printf("第%d次训练：%f\n", i,loss);
-//			//MatDump(&P_ActiMat[N_hidden + 1]);
-//			//MatDump(&Mat_oneHot);
-//			//printf("%f\n", CrossEntropy(&P_ActiMat[N_hidden + 1], &Mat_oneHot));
-//			/*for (int i = 0; i < N_hidden + 2; ++i){
-//				printf("Weight Bias:\n");
-//				MatDump(&P_WeightBiasMat[i]);*/
-//				//printf("Weight Bias Nabla:\n");
-//				//MatDump(&P_NablaWbMat[i]);
-//			//}
-//		}
-//		
-//		//printf("%d\n", isinf(loss));
-//
-//		NNBackward(N_hidden, N_sample, N_layerNeuron, Nstr_ActiFsHidden, Nstr_LossF, P_NablaWbMat, P_SumMat, P_DeltaMat, P_ActiFunDerivation, P_ActiMat, P_ActiMatPlus, Mat_oneHot, P_WeightMat);
-//
-//
-//
-//		BGD(P_WeightBiasMat, P_NablaWbMat, N_hidden, 0.1f);
-//
-//	}
-//	MatDump(&P_ActiMat[N_hidden + 1]);
-//	MatDump(&Mat_oneHot);
-//	return 0;
-//}
 
 
 

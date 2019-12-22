@@ -2,6 +2,55 @@ struct Mat {
 int row,col and 
 float **element 
 };
+struct FCLayer {
+Mat ActiMat and 
+Mat ActiMatPlus and 
+Mat SumMat and 
+Mat WeightMat and 
+Mat WeightBiasMat and 
+Mat DeltaMat and 
+Mat NablaWbMat and 
+Mat ActiFunDerivationMat and 
+int NeuronNum and 
+int AcitFuncNum 
+};
+struct FCNN {
+int SampleNum and 
+int SampleDimensionNum and 
+int HiddenLayerNum and 
+int WeightInitWayNum and 
+FCLayer *Layer and 
+Mat OnehotMat and 
+int ClassificationNum and 
+int LossFuncNum 
+};
+struct Custom {
+int TrainSampleNum and 
+int TestSampleNum and 
+int ValidationNum and 
+int SampleDimensionNum and 
+int HiddenLayerNum and 
+int WeightInitWayNum and 
+float *XValArray and 
+float *YValArray and 
+int *NeuronNumArray and 
+int *ActiFuncNumArray and 
+int ClassificationNum and 
+int LossFuncNum 
+};
+struct Dateset {
+Mat CompleteFeatureDataSet and 
+Mat CompleteLabelDataSet and 
+Mat CompleteTrainFeature and 
+Mat CompleteTrainLabel and 
+Mat *BatchTrainFeature and 
+Mat *BatchTrainLabel and 
+Mat TestFeature and 
+Mat TestLabel and 
+Mat ValidationFeature and 
+Mat ValidationLabel and 
+int BatchSize 
+};
  function absolute ( float a,float RValue )
  {
      frame(return) and ( 
@@ -2160,32 +2209,339 @@ float **element
      skip
      )
      }; 
-  function ParaPassedIn ( int  RValue )
+  function InitCustom ( Custom *userDefine,int RValue )
  {
      frame(return) and ( 
      int return<==0 and skip;
+     userDefine->TrainSampleNum:=-1;
+     userDefine->TestSampleNum:=-1;
+     userDefine->ValidationNum:=-1;
+     userDefine->SampleDimensionNum:=-1;
+     userDefine->HiddenLayerNum:=-1;
+     userDefine->WeightInitWayNum:=-1;
+     userDefine->XValArray:=NULL;
+     userDefine->YValArray:=NULL;
+     userDefine->NeuronNumArray:=NULL;
+     userDefine->ActiFuncNumArray:=NULL;
+     userDefine->ClassificationNum:=-1;
+     userDefine->LossFuncNum:=-1;
      return<==1 and RValue:=0;
      skip
      )
      }; 
-  function intVal2List ( int length,int *src,int *dst,int* RValue )
+  function DumpFloatArray ( float *array,int n )
  {
-     frame(intVal2List_i,return) and ( 
+     frame(DumpFloatArray_str,DumpFloatArray_i) and ( 
+     char DumpFloatArray_str[40] and skip;
+     int DumpFloatArray_i<==0 and skip;
+     
+     while( (DumpFloatArray_i<n) )
+     {
+         output (F2S(array[DumpFloatArray_i],DumpFloatArray_str,RValue)) and skip;
+         output ("\t") and skip;
+         DumpFloatArray_i:=DumpFloatArray_i+1
+         
+     };
+     output ("\n") and skip
+     )
+     }; 
+  function DumpIntArray ( int *array,int n )
+ {
+     frame(DumpIntArray_i) and ( 
+     int DumpIntArray_i<==0 and skip;
+     
+     while( (DumpIntArray_i<n) )
+     {
+         output (array[DumpIntArray_i],"\t","\t") and skip;
+         DumpIntArray_i:=DumpIntArray_i+1
+         
+     };
+     output ("\n") and skip
+     )
+     }; 
+  function IntVal2List ( int length,int *src,int *dst,int* RValue )
+ {
+     frame(IntVal2List_i,return) and ( 
      int return<==0 and skip;
      dst:=(int *)malloc(length*sizeof(int));
-     int intVal2List_i<==0 and skip;
+     int IntVal2List_i<==0 and skip;
      
-     while( (intVal2List_i<length) )
+     while( (IntVal2List_i<length) )
      {
-         dst[intVal2List_i]:=src[intVal2List_i];
-         intVal2List_i:=intVal2List_i+1
+         dst[IntVal2List_i]:=src[IntVal2List_i];
+         IntVal2List_i:=IntVal2List_i+1
          
      };
      return<==1 and RValue:=dst;
      skip
      )
      }; 
-  function SpaceCreateActi ( Mat *P_ActiMat,int N_sample,int N_hidden,int *N_layerNeuron,Mat* RValue )
+  function FloatVal2List ( int length,float *src,float *dst,float* RValue )
+ {
+     frame(FloatVal2List_i,return) and ( 
+     int return<==0 and skip;
+     dst:=(float *)malloc(length*sizeof(float));
+     int FloatVal2List_i<==0 and skip;
+     
+     while( (FloatVal2List_i<length) )
+     {
+         dst[FloatVal2List_i]:=src[FloatVal2List_i];
+         FloatVal2List_i:=FloatVal2List_i+1
+         
+     };
+     return<==1 and RValue:=dst;
+     skip
+     )
+     }; 
+  function DumpCustom ( Custom UserDefine,int RValue )
+ {
+     frame(return) and ( 
+     int return<==0 and skip;
+     output ("==================================================================== Custom Dump =====================================================================\n") and skip;
+     if(UserDefine.TrainSampleNum=-1) then 
+     {
+         output ("\t\t\tCustom parameter 'TrainSampleNum' uninitialized!!!\n") and skip;
+         return<==1 and RValue:=-1;
+         skip
+         
+     }
+     else 
+     {
+          skip 
+     };
+     if(return=0)   then 
+     {
+         output ("TrainSampleNum:\t\t",UserDefine.TrainSampleNum,"\n") and skip;
+         if(UserDefine.TestSampleNum=-1) then 
+         {
+             output ("\t\t\tCustom parameter 'TestSampleNum' uninitialized!!!\n") and skip;
+             return<==1 and RValue:=-1;
+             skip
+             
+         }
+         else 
+         {
+              skip 
+         };
+         if(return=0)   then 
+         {
+             output ("TestSampleNum:\t\t",UserDefine.TestSampleNum,"\n") and skip;
+             if(UserDefine.ValidationNum=-1) then 
+             {
+                 output ("\t\t\tCustom parameter 'ValidationNum' uninitialized!!!\n") and skip;
+                 return<==1 and RValue:=-1;
+                 skip
+                 
+             }
+             else 
+             {
+                  skip 
+             };
+             if(return=0)   then 
+             {
+                 output ("ValidationNum:\t\t",UserDefine.ValidationNum,"\n") and skip;
+                 if(UserDefine.SampleDimensionNum=-1) then 
+                 {
+                     output ("\t\t\tCustom parameter 'SampleDimensionNum' uninitialized!!!\n") and skip;
+                     return<==1 and RValue:=-1;
+                     skip
+                     
+                 }
+                 else 
+                 {
+                      skip 
+                 };
+                 if(return=0)   then 
+                 {
+                     output ("SampleDimensionNum:\t",UserDefine.SampleDimensionNum,"\n") and skip;
+                     if(UserDefine.HiddenLayerNum=-1) then 
+                     {
+                         output ("\t\t\tCustom parameter 'HiddenLayerNum' uninitialized!!!\n") and skip;
+                         return<==1 and RValue:=-1;
+                         skip
+                         
+                     }
+                     else 
+                     {
+                          skip 
+                     };
+                     if(return=0)   then 
+                     {
+                         output ("HiddenLayerNum:\t\t",UserDefine.HiddenLayerNum,"\n") and skip;
+                         if(UserDefine.WeightInitWayNum=-1) then 
+                         {
+                             output ("\t\t\tCustom parameter 'WeightInitWayNum' uninitialized!!!\n") and skip;
+                             return<==1 and RValue:=-1;
+                             skip
+                             
+                         }
+                         else 
+                         {
+                              skip 
+                         };
+                         if(return=0)   then 
+                         {
+                             output ("WeightInitWayNum:\t",UserDefine.WeightInitWayNum,"\n") and skip;
+                             if(UserDefine.ClassificationNum=-1) then 
+                             {
+                                 output ("\t\t\tCustom parameter 'ClassificationNum' uninitialized!!!\n") and skip;
+                                 return<==1 and RValue:=-1;
+                                 skip
+                                 
+                             }
+                             else 
+                             {
+                                  skip 
+                             };
+                             if(return=0)   then 
+                             {
+                                 output ("ClassificationNum:\t",UserDefine.ClassificationNum,"\n") and skip;
+                                 if(UserDefine.LossFuncNum=-1) then 
+                                 {
+                                     output ("\t\t\tCustom parameter 'LossFuncNum' uninitialized!!!\n") and skip;
+                                     return<==1 and RValue:=-1;
+                                     skip
+                                     
+                                 }
+                                 else 
+                                 {
+                                      skip 
+                                 };
+                                 if(return=0)   then 
+                                 {
+                                     output ("LossFuncNum:\t\t",UserDefine.LossFuncNum,"\n") and skip;
+                                     if(UserDefine.XValArray=NULL) then 
+                                     {
+                                         output ("\t\t\tCustom parameter 'XValArray' uninitialized!!!\n") and skip;
+                                         return<==1 and RValue:=-1;
+                                         skip
+                                         
+                                     }
+                                     else 
+                                     {
+                                          skip 
+                                     };
+                                     if(return=0)   then 
+                                     {
+                                         output ("XValArray:\t\n") and skip;
+                                         DumpFloatArray(UserDefine.XValArray,(UserDefine.TrainSampleNum*UserDefine.SampleDimensionNum));
+                                         if(UserDefine.YValArray=NULL) then 
+                                         {
+                                             output ("\t\t\tCustom parameter 'YValArray' uninitialized!!!\n") and skip;
+                                             return<==1 and RValue:=-1;
+                                             skip
+                                             
+                                         }
+                                         else 
+                                         {
+                                              skip 
+                                         };
+                                         if(return=0)   then 
+                                         {
+                                             output ("XValArray:\t\n") and skip;
+                                             DumpFloatArray(UserDefine.YValArray,UserDefine.TrainSampleNum);
+                                             if(UserDefine.NeuronNumArray=NULL) then 
+                                             {
+                                                 output ("\t\t\tCustom parameter 'NeuronNumArray' uninitialized!!!\n") and skip;
+                                                 return<==1 and RValue:=-1;
+                                                 skip
+                                                 
+                                             }
+                                             else 
+                                             {
+                                                  skip 
+                                             };
+                                             if(return=0)   then 
+                                             {
+                                                 output ("NeuronNumArray:\t\n") and skip;
+                                                 DumpIntArray(UserDefine.NeuronNumArray,UserDefine.HiddenLayerNum);
+                                                 if(UserDefine.ActiFuncNumArray=NULL) then 
+                                                 {
+                                                     output ("\t\t\tCustom parameter 'ActiFuncNumArray' uninitialized!!!\n") and skip;
+                                                     return<==1 and RValue:=-1;
+                                                     skip
+                                                     
+                                                 }
+                                                 else 
+                                                 {
+                                                      skip 
+                                                 };
+                                                 if(return=0)   then 
+                                                 {
+                                                     output ("ActiFuncNumArray:\t\n") and skip;
+                                                     DumpIntArray(UserDefine.ActiFuncNumArray,UserDefine.HiddenLayerNum);
+                                                     output ("================================================================= Custom Dump finish =================================================================\n") and skip
+                                                 }
+                                                 else
+                                                 {
+                                                     skip
+                                                 }
+                                             }
+                                             else
+                                             {
+                                                 skip
+                                             }
+                                         }
+                                         else
+                                         {
+                                             skip
+                                         }
+                                     }
+                                     else
+                                     {
+                                         skip
+                                     }
+                                 }
+                                 else
+                                 {
+                                     skip
+                                 }
+                             }
+                             else
+                             {
+                                 skip
+                             }
+                         }
+                         else
+                         {
+                             skip
+                         }
+                     }
+                     else
+                     {
+                         skip
+                     }
+                 }
+                 else
+                 {
+                     skip
+                 }
+             }
+             else
+             {
+                 skip
+             }
+         }
+         else
+         {
+             skip
+         }
+     }
+     else
+     {
+         skip
+     }
+     )
+     }; 
+  function ParaArray2Custom ( Custom *userDefine,float *Xval,float *Yval,int *NeuronNumArray,int *ActiFuncNumArray )
+ {
+     userDefine->XValArray:=FloatVal2List(userDefine->TrainSampleNum*userDefine->SampleDimensionNum,Xval,userDefine->XValArray,RValue);
+     userDefine->YValArray:=FloatVal2List(userDefine->TrainSampleNum,Xval,userDefine->YValArray,RValue);
+     userDefine->NeuronNumArray:=IntVal2List(userDefine->HiddenLayerNum,NeuronNumArray,userDefine->NeuronNumArray,RValue);
+     userDefine->ActiFuncNumArray:=IntVal2List(userDefine->HiddenLayerNum,ActiFuncNumArray,userDefine->ActiFuncNumArray,RValue)
+     
+ };
+ function SpaceCreateActi ( Mat *P_ActiMat,int N_sample,int N_hidden,int *N_layerNeuron,Mat* RValue )
  {
      frame(SpaceCreateActi_i,return) and ( 
      int return<==0 and skip;
@@ -2713,77 +3069,23 @@ float **element
      }; 
   function main ( int  RValue )
  {
-     frame(main_N_sample,main_D_sample,main_N_out,main_Xval,main_Yval,main_N_hidden,main_N_layerNeuron,main_Nval,main_Nstr_ActiFsHidden,main_Aval,main_Nstr_LossF,main_Style_initWeight,main_P_ActiMat,main_P_ActiMatPlus,main_P_SumMat,main_P_WeightMat,main_P_WeightBiasMat,main_Mat_oneHot,main_Mat_Y,main_P_DeltaMat,main_P_NablaWbMat,main_P_ActiFunDerivation,main_i,main_loss,return) and (
-     int return<==0 and skip;
-     int main_N_sample<==16 and skip;
-     int main_D_sample<==4 and skip;
-     int main_N_out<==2 and skip;
+     frame(main_userDefine,main_Xval,main_Yval,main_NueronNumArray,main_ActiFuncArray) and (
+     Custom main_userDefine and skip;
+     InitCustom(&main_userDefine,RValue);
+     main_userDefine.TrainSampleNum:=12;
+     main_userDefine.TestSampleNum:=4;
+     main_userDefine.ValidationNum:=0;
+     main_userDefine.SampleDimensionNum:=4;
+     main_userDefine.HiddenLayerNum:=3;
+     main_userDefine.ClassificationNum:=2;
+     main_userDefine.LossFuncNum:=1;
+     main_userDefine.WeightInitWayNum:=3;
      float main_Xval[64]<=={0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,0.0,0.0,1.0,0.0,0.0,0.0,1.0,1.0,0.0,1.0,0.0,0.0,0.0,1.0,0.0,1.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,1.0,0.0,0.0,1.0,1.0,0.0,1.0,0.0,1.0,0.0,1.0,1.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,1.0,1.0,1.0,1.0,0.0,1.0,1.0,1.0,1.0} and skip;
-     float main_Yval[16]<=={0,1,1,0,1,0,0,1,1,0,0,1,0,1,1,0} and skip;
-     int main_N_hidden<==3 and skip;
-     int *main_N_layerNeuron<==NULL and skip;
-     int main_Nval[5]<=={4,5,6,5,2} and skip;
-     main_N_layerNeuron:=intVal2List(main_N_hidden+2,main_Nval,main_N_layerNeuron,RValue);
-     int *main_Nstr_ActiFsHidden<==NULL and skip;
-     int main_Aval[5]<=={0,3,3,3,5} and skip;
-     main_Nstr_ActiFsHidden:=intVal2List(main_N_hidden+2,main_Aval,main_Nstr_ActiFsHidden,RValue);
-     int main_Nstr_LossF<==1 and skip;
-     int main_Style_initWeight<==3 and skip;
-     Mat *main_P_ActiMat<==NULL and skip;
-     Mat *main_P_ActiMatPlus<==NULL and skip;
-     Mat *main_P_SumMat<==NULL and skip;
-     Mat *main_P_WeightMat<==NULL and skip;
-     Mat *main_P_WeightBiasMat<==NULL and skip;
-     Mat main_Mat_oneHot and skip;
-     MatCreate(&main_Mat_oneHot,main_N_sample,main_N_out,RValue);
-     Mat main_Mat_Y and skip;
-     MatCreate(&main_Mat_Y,main_N_sample,1,RValue);
-     Mat *main_P_DeltaMat<==NULL and skip;
-     Mat *main_P_NablaWbMat<==NULL and skip;
-     Mat *main_P_ActiFunDerivation<==NULL and skip;
-     main_P_ActiMat:=SpaceCreateActi(main_P_ActiMat,main_N_sample,main_N_hidden,main_N_layerNeuron,RValue);
-     main_P_ActiMatPlus:=SpaceCreateActiPlus(main_P_ActiMatPlus,main_N_sample,main_N_hidden,main_N_layerNeuron,RValue);
-     main_P_SumMat:=SpaceCreateSum(main_P_SumMat,main_N_sample,main_N_hidden,main_N_layerNeuron,RValue);
-     main_P_WeightMat:=SpaceCreateWeight(main_P_WeightMat,main_N_hidden,main_N_layerNeuron,RValue);
-     main_P_WeightBiasMat:=SpaceCreateWeightBias(main_P_WeightBiasMat,main_N_hidden,main_N_layerNeuron,RValue);
-     main_P_DeltaMat:=SpaceCreateDelta(main_P_DeltaMat,main_N_sample,main_N_hidden,main_N_layerNeuron,RValue);
-     main_P_NablaWbMat:=SpaceCreateNablaWeightBias(main_P_NablaWbMat,main_N_hidden,main_N_layerNeuron,RValue);
-     main_P_ActiFunDerivation:=SpaceCreateActiFunDerivation(main_P_ActiFunDerivation,main_N_sample,main_N_hidden,main_N_layerNeuron,RValue);
-     NNinit(main_P_ActiMat,main_P_ActiMatPlus,&main_Mat_Y,&main_Mat_oneHot,main_P_WeightMat,main_P_WeightBiasMat,main_N_out,main_N_hidden,main_Xval,main_Yval,main_Style_initWeight,RValue);
-     int main_i<==0 and skip;
-     
-     while( (main_i<=200000) )
-     {
-         float main_loss<==0.0 and skip;
-         main_loss:=NNforward(main_P_ActiMat,main_P_ActiMatPlus,main_P_SumMat,main_P_WeightBiasMat,main_Mat_oneHot,main_N_hidden,main_Nstr_ActiFsHidden,main_Nstr_LossF,RValue);
-         if(main_i=0) then 
-         {
-             MatDump(&main_P_ActiMat[main_N_hidden+1]);
-             MatDump(&main_Mat_oneHot)
-             
-         }
-         else 
-         {
-              skip 
-         };
-         if(main_i % 2000=0) then 
-         {
-             output ("µÚ",main_i,"´ÎÑµÁ·£º",main_loss,"\n") and skip
-             
-         }
-         else 
-         {
-              skip 
-         };
-         NNBackward(main_N_hidden,main_N_sample,main_N_layerNeuron,main_Nstr_ActiFsHidden,main_Nstr_LossF,main_P_NablaWbMat,main_P_SumMat,main_P_DeltaMat,main_P_ActiFunDerivation,main_P_ActiMat,main_P_ActiMatPlus,main_Mat_oneHot,main_P_WeightMat,RValue);
-         BGD(main_P_WeightBiasMat,main_P_NablaWbMat,main_N_hidden,0.1,RValue);
-         main_i:=main_i+1
-         
-     };
-     MatDump(&main_P_ActiMat[main_N_hidden+1]);
-     MatDump(&main_Mat_oneHot);
-     return<==1 and RValue:=0;
-     skip
+     float main_Yval[16]<=={0.0,1.0,1.0,0.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,0.0,1.0,1.0,0.0} and skip;
+     int main_NueronNumArray[3]<=={5,6,5} and skip;
+     int main_ActiFuncArray[3]<=={3,3,3} and skip;
+     ParaArray2Custom(&main_userDefine,main_Xval,main_Yval,main_NueronNumArray,main_ActiFuncArray);
+     DumpCustom(main_userDefine,RValue)
      )
  };
   main(RValue)
