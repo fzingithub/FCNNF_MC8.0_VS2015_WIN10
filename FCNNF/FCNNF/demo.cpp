@@ -2055,27 +2055,43 @@ int main(){
 
 
 	/*用户自定义参数输入*/
-	int N_sample = 16; //样本数量
-	int D_sample = 4;  //样本维度
+	int N_sample = 32; //样本数量
+	int D_sample = 5;  //样本维度
 	int N_out = 2;   //二分类
 
 	float Xval[] = {
-		0.f, 0.f, 0.f, 0.f,
-		0.f, 0.f, 0.f, 1.f,
-		0.f, 0.f, 1.f, 0.f,
-		0.f, 0.f, 1.f, 1.f,
-		0.f, 1.f, 0.f, 0.f,
-		0.f, 1.f, 0.f, 1.f,
-		0.f, 1.f, 1.f, 0.f,
-		0.f, 1.f, 1.f, 1.f,
-		1.f, 0.f, 0.f, 0.f,
-		1.f, 0.f, 0.f, 1.f,
-		1.f, 0.f, 1.f, 0.f,
-		1.f, 0.f, 1.f, 1.f,
-		1.f, 1.f, 0.f, 0.f,
-		1.f, 1.f, 0.f, 1.f,
-		1.f, 1.f, 1.f, 0.f,
-		1.f, 1.f, 1.f, 1.f }; //样本真值
+		0.f, 0.f, 0.f, 0.f, 0.f,
+		0.f, 0.f, 0.f, 0.f, 1.f, 
+		0.f, 0.f, 0.f, 1.f, 0.f,
+		0.f, 0.f, 0.f, 1.f, 1.f,
+		0.f, 0.f, 1.f, 0.f, 0.f,
+		0.f, 0.f, 1.f, 0.f, 1.f,
+		0.f, 0.f, 1.f, 1.f, 0.f,
+		0.f, 0.f, 1.f, 1.f, 1.f,
+		0.f, 1.f, 0.f, 0.f, 0.f,
+		0.f, 1.f, 0.f, 0.f, 1.f,
+		0.f, 1.f, 0.f, 1.f, 0.f,
+		0.f, 1.f, 0.f, 1.f, 1.f,
+		0.f, 1.f, 1.f, 0.f, 0.f,
+		0.f, 1.f, 1.f, 0.f, 1.f,
+		0.f, 1.f, 1.f, 1.f, 0.f,
+		0.f, 1.f, 1.f, 1.f, 1.f,
+		1.f, 0.f, 0.f, 0.f, 0.f,
+		1.f, 0.f, 0.f, 0.f, 1.f,
+		1.f, 0.f, 0.f, 1.f, 0.f,
+		1.f, 0.f, 0.f, 1.f, 1.f,
+		1.f, 0.f, 1.f, 0.f, 0.f,
+		1.f, 0.f, 1.f, 0.f, 1.f,
+		1.f, 0.f, 1.f, 1.f, 0.f,
+		1.f, 0.f, 1.f, 1.f, 1.f,
+		1.f, 1.f, 0.f, 0.f, 0.f,
+		1.f, 1.f, 0.f, 0.f, 1.f,
+		1.f, 1.f, 0.f, 1.f, 0.f,
+		1.f, 1.f, 0.f, 1.f, 1.f,
+		1.f, 1.f, 1.f, 0.f, 0.f,
+		1.f, 1.f, 1.f, 0.f, 1.f,
+		1.f, 1.f, 1.f, 1.f, 0.f,
+		1.f, 1.f, 1.f, 1.f, 1.f }; //样本真值
 
 	//float Xval[] = {
 	//	0.4f, 0.4f, 0.4f, 0.4f,
@@ -2095,12 +2111,12 @@ int main(){
 	//	0.6f, 0.6f, 0.6f, 0.4f,
 	//	0.6f, 0.6f, 0.6f, 0.6f }; //样本真值
 
-	float Yval[] = { 0, 1, 1, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0, 1, 1, 0 };  //样本标签二分类
+	float Yval[] = { 0, 1, 1, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0, 1, 1, 0, 1, 0, 0, 1, 0, 1, 1, 0, 0, 1, 1, 0, 1, 0, 0, 1 };  //样本标签二分类
 
 	int N_hidden = 3;//神经网络隐藏层层数
 
 	int *N_layerNeuron = NULL; // 各层神经元个数  0(输入层),1,...,N_hidden,N_hidden+1(输出层).
-	int Nval[] = { 4, 5, 6, 5, 2 };// 各隐藏层神经元个数真值
+	int Nval[] = { 5, 8, 12, 6, 2 };// 各隐藏层神经元个数真值
 
 	N_layerNeuron = intVal2List(N_hidden + 2, Nval, N_layerNeuron);
 	////测试传入正确性
@@ -2210,7 +2226,7 @@ int main(){
 
 
 	
-	for (int i = 0; i <= 100000; ++i){
+	for (int i = 0; i <= 200000; ++i){
 		float loss = 0.f;
 		/*神经网络前项传播*/
 		loss = NNforward(P_ActiMat, P_ActiMatPlus, P_SumMat, P_WeightBiasMat, Mat_oneHot, N_hidden, Nstr_ActiFsHidden, Nstr_LossF);

@@ -2,58 +2,6 @@ struct Mat {
 int row,col and 
 float **element 
 };
-struct FCLayer {
-Mat ActiMat and 
-Mat ActiMatPlus and 
-Mat SumMat and 
-Mat WeightMat and 
-Mat WeightBiasMat and 
-Mat DeltaMat and 
-Mat NablaWbMat and 
-Mat ActiFunDerivationMat and 
-int NeuronNum and 
-int AcitFuncNum 
-};
-struct FCNN {
-int SampleNum and 
-int SampleDimensionNum and 
-int HiddenLayerNum and 
-int WeightInitWayNum and 
-FCLayer *Layer and 
-Mat OnehotMat and 
-int ClassificationNum and 
-int LossFuncNum 
-};
-struct Custom {
-int CompleteSampleNum and 
-int TrainSampleNum and 
-int TestSampleNum and 
-int SampleDimensionNum and 
-int HiddenLayerNum and 
-int WeightInitWayNum and 
-float *XValArray and 
-float *YValArray and 
-int *NeuronNumArray and 
-int *ActiFuncNumArray and 
-int ClassificationNum and 
-int LossFuncNum and 
-int BatchSize 
-};
-struct DataSet {
-Mat CompleteFeatureDataSet and 
-Mat CompleteLabelDataSet and 
-Mat CompleteTrainFeature and 
-Mat CompleteTrainLabel and 
-Mat *BatchTrainFeature and 
-Mat *BatchTrainLabel and 
-Mat TestFeature and 
-Mat TestLabel and 
-int CompleteSampleNum and 
-int TrainSampleNum and 
-int TestSampleNum and 
-int SampleDimensionNum and 
-int BatchSize 
-};
  function absolute ( float a,float RValue )
  {
      frame(return) and ( 
@@ -2212,465 +2160,32 @@ int BatchSize
      skip
      )
      }; 
-  function InitCustom ( Custom *userDefine,int RValue )
+  function ParaPassedIn ( int  RValue )
  {
      frame(return) and ( 
      int return<==0 and skip;
-     userDefine->CompleteSampleNum:=-1;
-     userDefine->TrainSampleNum:=-1;
-     userDefine->TestSampleNum:=-1;
-     userDefine->SampleDimensionNum:=-1;
-     userDefine->HiddenLayerNum:=-1;
-     userDefine->WeightInitWayNum:=-1;
-     userDefine->XValArray:=NULL;
-     userDefine->YValArray:=NULL;
-     userDefine->NeuronNumArray:=NULL;
-     userDefine->ActiFuncNumArray:=NULL;
-     userDefine->ClassificationNum:=-1;
-     userDefine->LossFuncNum:=-1;
-     userDefine->BatchSize:=-1;
      return<==1 and RValue:=0;
      skip
      )
      }; 
-  function DumpFloatArray ( float *array,int n )
+  function intVal2List ( int length,int *src,int *dst,int* RValue )
  {
-     frame(DumpFloatArray_str,DumpFloatArray_i) and ( 
-     char DumpFloatArray_str[40] and skip;
-     int DumpFloatArray_i<==0 and skip;
-     
-     while( (DumpFloatArray_i<n) )
-     {
-         output (F2S(array[DumpFloatArray_i],DumpFloatArray_str,RValue)) and skip;
-         output ("\t") and skip;
-         DumpFloatArray_i:=DumpFloatArray_i+1
-         
-     };
-     output ("\n") and skip
-     )
-     }; 
-  function DumpIntArray ( int *array,int n )
- {
-     frame(DumpIntArray_i) and ( 
-     int DumpIntArray_i<==0 and skip;
-     
-     while( (DumpIntArray_i<n) )
-     {
-         output (array[DumpIntArray_i],"\t","\t") and skip;
-         DumpIntArray_i:=DumpIntArray_i+1
-         
-     };
-     output ("\n") and skip
-     )
-     }; 
-  function DumpCustom ( Custom UserDefine,int RValue )
- {
-     frame(return) and ( 
+     frame(intVal2List_i,return) and ( 
      int return<==0 and skip;
-     output ("==================================================================== Custom Dump =====================================================================\n") and skip;
-     if(UserDefine.CompleteSampleNum=-1) then 
-     {
-         output ("\t\t\tCustom parameter 'TrainSampleNum' uninitialized!!!\n") and skip;
-         return<==1 and RValue:=-1;
-         skip
-         
-     }
-     else 
-     {
-          skip 
-     };
-     if(return=0)   then 
-     {
-         output ("CompleteSampleNum:\t",UserDefine.CompleteSampleNum,"\n") and skip;
-         if(UserDefine.TrainSampleNum=-1) then 
-         {
-             output ("\t\t\tCustom parameter 'TrainSampleNum' uninitialized!!!\n") and skip;
-             return<==1 and RValue:=-1;
-             skip
-             
-         }
-         else 
-         {
-              skip 
-         };
-         if(return=0)   then 
-         {
-             output ("TrainSampleNum:\t\t",UserDefine.TrainSampleNum,"\n") and skip;
-             if(UserDefine.TestSampleNum=-1) then 
-             {
-                 output ("\t\t\tCustom parameter 'TestSampleNum' uninitialized!!!\n") and skip;
-                 return<==1 and RValue:=-1;
-                 skip
-                 
-             }
-             else 
-             {
-                  skip 
-             };
-             if(return=0)   then 
-             {
-                 output ("TestSampleNum:\t\t",UserDefine.TestSampleNum,"\n") and skip;
-                 if(UserDefine.SampleDimensionNum=-1) then 
-                 {
-                     output ("\t\t\tCustom parameter 'SampleDimensionNum' uninitialized!!!\n") and skip;
-                     return<==1 and RValue:=-1;
-                     skip
-                     
-                 }
-                 else 
-                 {
-                      skip 
-                 };
-                 if(return=0)   then 
-                 {
-                     output ("SampleDimensionNum:\t",UserDefine.SampleDimensionNum,"\n") and skip;
-                     if(UserDefine.HiddenLayerNum=-1) then 
-                     {
-                         output ("\t\t\tCustom parameter 'HiddenLayerNum' uninitialized!!!\n") and skip;
-                         return<==1 and RValue:=-1;
-                         skip
-                         
-                     }
-                     else 
-                     {
-                          skip 
-                     };
-                     if(return=0)   then 
-                     {
-                         output ("HiddenLayerNum:\t\t",UserDefine.HiddenLayerNum,"\n") and skip;
-                         if(UserDefine.WeightInitWayNum=-1) then 
-                         {
-                             output ("\t\t\tCustom parameter 'WeightInitWayNum' uninitialized!!!\n") and skip;
-                             return<==1 and RValue:=-1;
-                             skip
-                             
-                         }
-                         else 
-                         {
-                              skip 
-                         };
-                         if(return=0)   then 
-                         {
-                             output ("WeightInitWayNum:\t",UserDefine.WeightInitWayNum,"\n") and skip;
-                             if(UserDefine.ClassificationNum=-1) then 
-                             {
-                                 output ("\t\t\tCustom parameter 'ClassificationNum' uninitialized!!!\n") and skip;
-                                 return<==1 and RValue:=-1;
-                                 skip
-                                 
-                             }
-                             else 
-                             {
-                                  skip 
-                             };
-                             if(return=0)   then 
-                             {
-                                 output ("ClassificationNum:\t",UserDefine.ClassificationNum,"\n") and skip;
-                                 if(UserDefine.LossFuncNum=-1) then 
-                                 {
-                                     output ("\t\t\tCustom parameter 'LossFuncNum' uninitialized!!!\n") and skip;
-                                     return<==1 and RValue:=-1;
-                                     skip
-                                     
-                                 }
-                                 else 
-                                 {
-                                      skip 
-                                 };
-                                 if(return=0)   then 
-                                 {
-                                     output ("LossFuncNum:\t\t",UserDefine.LossFuncNum,"\n") and skip;
-                                     if(UserDefine.BatchSize=-1) then 
-                                     {
-                                         output ("\t\t\tCustom parameter 'BatchSize' uninitialized!!!\n") and skip;
-                                         return<==1 and RValue:=-1;
-                                         skip
-                                         
-                                     }
-                                     else 
-                                     {
-                                          skip 
-                                     };
-                                     if(return=0)   then 
-                                     {
-                                         output ("BatchSize:\t\t",UserDefine.BatchSize,"\n") and skip;
-                                         if(UserDefine.XValArray=NULL) then 
-                                         {
-                                             output ("\t\t\tCustom parameter 'XValArray' uninitialized!!!\n") and skip;
-                                             return<==1 and RValue:=-1;
-                                             skip
-                                             
-                                         }
-                                         else 
-                                         {
-                                              skip 
-                                         };
-                                         if(return=0)   then 
-                                         {
-                                             output ("XValArray:(length = ",UserDefine.CompleteSampleNum*UserDefine.SampleDimensionNum,")\t\n") and skip;
-                                             DumpFloatArray(UserDefine.XValArray,UserDefine.CompleteSampleNum*UserDefine.SampleDimensionNum);
-                                             if(UserDefine.YValArray=NULL) then 
-                                             {
-                                                 output ("\t\t\tCustom parameter 'YValArray' uninitialized!!!\n") and skip;
-                                                 return<==1 and RValue:=-1;
-                                                 skip
-                                                 
-                                             }
-                                             else 
-                                             {
-                                                  skip 
-                                             };
-                                             if(return=0)   then 
-                                             {
-                                                 output ("YValArray:(length = ",UserDefine.CompleteSampleNum,")\t\n") and skip;
-                                                 DumpFloatArray(UserDefine.YValArray,UserDefine.CompleteSampleNum);
-                                                 if(UserDefine.NeuronNumArray=NULL) then 
-                                                 {
-                                                     output ("\t\t\tCustom parameter 'NeuronNumArray' uninitialized!!!\n") and skip;
-                                                     return<==1 and RValue:=-1;
-                                                     skip
-                                                     
-                                                 }
-                                                 else 
-                                                 {
-                                                      skip 
-                                                 };
-                                                 if(return=0)   then 
-                                                 {
-                                                     output ("NeuronNumArray:\t\n") and skip;
-                                                     DumpIntArray(UserDefine.NeuronNumArray,UserDefine.HiddenLayerNum);
-                                                     if(UserDefine.ActiFuncNumArray=NULL) then 
-                                                     {
-                                                         output ("\t\t\tCustom parameter 'ActiFuncNumArray' uninitialized!!!\n") and skip;
-                                                         return<==1 and RValue:=-1;
-                                                         skip
-                                                         
-                                                     }
-                                                     else 
-                                                     {
-                                                          skip 
-                                                     };
-                                                     if(return=0)   then 
-                                                     {
-                                                         output ("ActiFuncNumArray:£¨include output layer Acti-Function£©\t\n") and skip;
-                                                         DumpIntArray(UserDefine.ActiFuncNumArray,UserDefine.HiddenLayerNum+1);
-                                                         output ("================================================================= Custom Dump finish =================================================================\n") and skip;
-                                                         return<==1 and RValue:=0;
-                                                         skip
-                                                     }
-                                                     else
-                                                     {
-                                                         skip
-                                                     }
-                                                 }
-                                                 else
-                                                 {
-                                                     skip
-                                                 }
-                                             }
-                                             else
-                                             {
-                                                 skip
-                                             }
-                                         }
-                                         else
-                                         {
-                                             skip
-                                         }
-                                     }
-                                     else
-                                     {
-                                         skip
-                                     }
-                                 }
-                                 else
-                                 {
-                                     skip
-                                 }
-                             }
-                             else
-                             {
-                                 skip
-                             }
-                         }
-                         else
-                         {
-                             skip
-                         }
-                     }
-                     else
-                     {
-                         skip
-                     }
-                 }
-                 else
-                 {
-                     skip
-                 }
-             }
-             else
-             {
-                 skip
-             }
-         }
-         else
-         {
-             skip
-         }
-     }
-     else
-     {
-         skip
-     }
-     )
-     }; 
-  function LoadParaFromCustom ( Custom userDefine,DataSet *dataSet )
- {
-     dataSet->BatchSize:=userDefine.BatchSize;
-     dataSet->CompleteSampleNum:=userDefine.CompleteSampleNum;
-     dataSet->SampleDimensionNum:=userDefine.SampleDimensionNum;
-     dataSet->TrainSampleNum:=userDefine.TrainSampleNum;
-     dataSet->TestSampleNum:=userDefine.TestSampleNum
+     dst:=(int *)malloc(length*sizeof(int));
+     int intVal2List_i<==0 and skip;
      
- };
- function InitDataSet ( DataSet *dataSet,int RValue )
- {
-     frame(return) and ( 
-     int return<==0 and skip;
-     dataSet->CompleteFeatureDataSet.element:=NULL;
-     dataSet->CompleteLabelDataSet.element:=NULL;
-     dataSet->CompleteTrainFeature.element:=NULL;
-     dataSet->CompleteTrainLabel.element:=NULL;
-     dataSet->BatchTrainFeature:=NULL;
-     dataSet->BatchTrainLabel:=NULL;
-     dataSet->TestFeature.element:=NULL;
-     dataSet->TestLabel.element:=NULL;
-     dataSet->CompleteSampleNum:=-1;
-     dataSet->TrainSampleNum:=-1;
-     dataSet->TestSampleNum:=-1;
-     dataSet->SampleDimensionNum:=-1;
-     dataSet->BatchSize:=-1;
-     return<==1 and RValue:=0;
+     while( (intVal2List_i<length) )
+     {
+         dst[intVal2List_i]:=src[intVal2List_i];
+         intVal2List_i:=intVal2List_i+1
+         
+     };
+     return<==1 and RValue:=dst;
      skip
      )
      }; 
-  function CreateDataSetSpace ( DataSet *dataSet )
- {
-     frame(CreateDataSetSpace_batchNum,CreateDataSetSpace_remainder,CreateDataSetSpace_i) and ( 
-     dataSet->CompleteFeatureDataSet.row:=dataSet->CompleteSampleNum;
-     dataSet->CompleteFeatureDataSet.col:=dataSet->SampleDimensionNum;
-     MatCreate(&dataSet->CompleteFeatureDataSet,dataSet->CompleteFeatureDataSet.row,dataSet->CompleteFeatureDataSet.col,RValue);
-     MatZeros(&dataSet->CompleteFeatureDataSet,RValue);
-     dataSet->CompleteLabelDataSet.row:=dataSet->CompleteSampleNum;
-     dataSet->CompleteLabelDataSet.col:=1;
-     MatCreate(&dataSet->CompleteLabelDataSet,dataSet->CompleteLabelDataSet.row,dataSet->CompleteLabelDataSet.col,RValue);
-     MatZeros(&dataSet->CompleteLabelDataSet,RValue);
-     dataSet->CompleteTrainFeature.row:=dataSet->TrainSampleNum;
-     dataSet->CompleteTrainFeature.col:=dataSet->SampleDimensionNum;
-     MatCreate(&dataSet->CompleteTrainFeature,dataSet->CompleteTrainFeature.row,dataSet->CompleteTrainFeature.col,RValue);
-     MatZeros(&dataSet->CompleteTrainFeature,RValue);
-     dataSet->CompleteTrainLabel.row:=dataSet->TrainSampleNum;
-     dataSet->CompleteTrainLabel.col:=1;
-     MatCreate(&dataSet->CompleteTrainLabel,dataSet->CompleteTrainLabel.row,dataSet->CompleteTrainLabel.col,RValue);
-     MatZeros(&dataSet->CompleteTrainLabel,RValue);
-     int CreateDataSetSpace_batchNum<==0 and skip;
-     int CreateDataSetSpace_remainder<==0 and skip;
-     CreateDataSetSpace_batchNum:=dataSet->TrainSampleNum/ dataSet->BatchSize;
-     CreateDataSetSpace_remainder:=dataSet->TrainSampleNum % dataSet->BatchSize;
-     if(CreateDataSetSpace_remainder!=0) then 
-     {
-         CreateDataSetSpace_batchNum:=CreateDataSetSpace_batchNum+1
-         
-     }
-     else 
-     {
-          skip 
-     };
-     dataSet->BatchTrainFeature:=(Mat *)malloc(CreateDataSetSpace_batchNum*sizeof(Mat));
-     dataSet->BatchTrainLabel:=(Mat *)malloc(CreateDataSetSpace_batchNum*sizeof(Mat));
-     int CreateDataSetSpace_i<==0 and skip;
-     
-     while( (CreateDataSetSpace_i<CreateDataSetSpace_batchNum) )
-     {
-         if(CreateDataSetSpace_remainder!=0 AND CreateDataSetSpace_i=CreateDataSetSpace_batchNum-1) then 
-         {
-             (dataSet->BatchTrainFeature)[CreateDataSetSpace_i].row:=CreateDataSetSpace_remainder;
-             (dataSet->BatchTrainFeature)[CreateDataSetSpace_i].col:=dataSet->SampleDimensionNum;
-             MatCreate(&(dataSet->BatchTrainFeature)[CreateDataSetSpace_i],(dataSet->BatchTrainFeature)[CreateDataSetSpace_i].row,(dataSet->BatchTrainFeature)[CreateDataSetSpace_i].col,RValue);
-             MatZeros(&(dataSet->BatchTrainFeature)[CreateDataSetSpace_i],RValue);
-             (dataSet->BatchTrainLabel)[CreateDataSetSpace_i].row:=CreateDataSetSpace_remainder;
-             (dataSet->BatchTrainLabel)[CreateDataSetSpace_i].col:=1;
-             MatCreate(&(dataSet->BatchTrainLabel)[CreateDataSetSpace_i],(dataSet->BatchTrainLabel)[CreateDataSetSpace_i].row,(dataSet->BatchTrainLabel)[CreateDataSetSpace_i].col,RValue);
-             MatZeros(&(dataSet->BatchTrainLabel)[CreateDataSetSpace_i],RValue)
-             
-         }
-         else
-         {
-             (dataSet->BatchTrainFeature)[CreateDataSetSpace_i].row:=dataSet->BatchSize;
-             (dataSet->BatchTrainFeature)[CreateDataSetSpace_i].col:=dataSet->SampleDimensionNum;
-             MatCreate(&(dataSet->BatchTrainFeature)[CreateDataSetSpace_i],(dataSet->BatchTrainFeature)[CreateDataSetSpace_i].row,(dataSet->BatchTrainFeature)[CreateDataSetSpace_i].col,RValue);
-             MatZeros(&(dataSet->BatchTrainFeature)[CreateDataSetSpace_i],RValue);
-             (dataSet->BatchTrainLabel)[CreateDataSetSpace_i].row:=dataSet->BatchSize;
-             (dataSet->BatchTrainLabel)[CreateDataSetSpace_i].col:=1;
-             MatCreate(&(dataSet->BatchTrainLabel)[CreateDataSetSpace_i],(dataSet->BatchTrainLabel)[CreateDataSetSpace_i].row,(dataSet->BatchTrainLabel)[CreateDataSetSpace_i].col,RValue);
-             MatZeros(&(dataSet->BatchTrainLabel)[CreateDataSetSpace_i],RValue)
-         };
-         CreateDataSetSpace_i:=CreateDataSetSpace_i+1
-         
-     };
-     dataSet->TestFeature.row:=dataSet->TestSampleNum;
-     dataSet->TestFeature.col:=dataSet->SampleDimensionNum;
-     MatCreate(&dataSet->TestFeature,dataSet->TestFeature.row,dataSet->TestFeature.col,RValue);
-     MatZeros(&dataSet->TestFeature,RValue);
-     dataSet->TestLabel.row:=dataSet->TestSampleNum;
-     dataSet->TestLabel.col:=1;
-     MatCreate(&dataSet->TestLabel,dataSet->TestLabel.row,dataSet->TestLabel.col,RValue);
-     MatZeros(&dataSet->TestLabel,RValue)
-     )
-     }; 
-  function DataLoading ( Custom userDefine,DataSet *dataSet,int RValue )
- {
-     frame(DataLoading_batchNum,DataLoading_remainder,DataLoading_i,return) and ( 
-     int return<==0 and skip;
-     MatSetVal(&dataSet->CompleteFeatureDataSet,userDefine.XValArray,RValue);
-     MatSetVal(&dataSet->CompleteLabelDataSet,userDefine.YValArray,RValue);
-     MatSetVal(&dataSet->CompleteTrainFeature,userDefine.XValArray,RValue);
-     MatSetVal(&dataSet->CompleteTrainLabel,userDefine.YValArray,RValue);
-     int DataLoading_batchNum<==0 and skip;
-     int DataLoading_remainder<==0 and skip;
-     DataLoading_batchNum:=dataSet->TrainSampleNum/ dataSet->BatchSize;
-     DataLoading_remainder:=dataSet->TrainSampleNum % dataSet->BatchSize;
-     if(DataLoading_remainder!=0) then 
-     {
-         DataLoading_batchNum:=DataLoading_batchNum+1
-         
-     }
-     else 
-     {
-          skip 
-     };
-     int DataLoading_i<==0 and skip;
-     
-     while( (DataLoading_i<DataLoading_batchNum) )
-     {
-         MatSetVal(&dataSet->BatchTrainFeature[DataLoading_i],&userDefine.XValArray[DataLoading_i*dataSet->BatchSize*dataSet->SampleDimensionNum],RValue);
-         MatSetVal(&dataSet->BatchTrainLabel[DataLoading_i],&userDefine.YValArray[DataLoading_i*dataSet->BatchSize],RValue);
-         DataLoading_i:=DataLoading_i+1
-         
-     };
-     MatSetVal(&dataSet->TestFeature,&userDefine.XValArray[dataSet->TrainSampleNum*dataSet->SampleDimensionNum],RValue);
-     MatSetVal(&dataSet->TestLabel,&userDefine.YValArray[dataSet->TrainSampleNum],RValue);
-     return<==1 and RValue:=0;
-     skip
-     )
-     }; 
-  function DatasetConstruction ( Custom userDefine,DataSet *dataSet )
- {
-     CreateDataSetSpace(dataSet);
-     DataLoading(userDefine,dataSet,RValue)
-     
- };
- function SpaceCreateActi ( Mat *P_ActiMat,int N_sample,int N_hidden,int *N_layerNeuron,Mat* RValue )
+  function SpaceCreateActi ( Mat *P_ActiMat,int N_sample,int N_hidden,int *N_layerNeuron,Mat* RValue )
  {
      frame(SpaceCreateActi_i,return) and ( 
      int return<==0 and skip;
@@ -3198,60 +2713,77 @@ int BatchSize
      }; 
   function main ( int  RValue )
  {
-     frame(main_Xval,main_Yval,main_NueronNumArray,main_ActiFuncNumArray,main_userDefine,main_dataSet,main_batchNum,main_remainder,main_i) and (
-     float main_Xval[160]<=={0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,0.0,0.0,0.0,1.0,0.0,0.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,0.0,0.0,0.0,0.0,1.0,0.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,1.0,0.0,1.0,0.0,0.0,0.0,0.0,1.0,0.0,0.0,1.0,0.0,1.0,0.0,1.0,0.0,0.0,1.0,0.0,1.0,1.0,0.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,0.0,1.0,0.0,1.0,1.0,1.0,0.0,0.0,1.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,1.0,0.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,0.0,1.0,0.0,0.0,1.0,1.0,1.0,0.0,1.0,0.0,0.0,1.0,0.0,1.0,0.0,1.0,1.0,0.0,1.0,1.0,0.0,1.0,0.0,1.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,1.0,0.0,1.0,0.0,1.0,1.0,0.0,1.0,1.0,1.0,1.0,1.0,0.0,0.0,1.0,1.0,1.0,0.0,1.0,1.0,1.0,1.0,1.0,0.0,1.0,1.0,1.0,1.0,1.0} and skip;
-     float main_Yval[32]<=={0.0,1.0,1.0,0.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,0.0,1.0,1.0,0.0,1.0,0.0,0.0,1.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,1.0,0.0,0.0,1.0} and skip;
-     int main_NueronNumArray[3]<=={8,12,8} and skip;
-     int main_ActiFuncNumArray[4]<=={3,3,3,5} and skip;
-     Custom main_userDefine and skip;
-     DataSet main_dataSet and skip;
-     InitCustom(&main_userDefine,RValue);
-     InitDataSet(&main_dataSet,RValue);
-     main_userDefine.CompleteSampleNum:=32;
-     main_userDefine.TrainSampleNum:=24;
-     main_userDefine.TestSampleNum:=8;
-     main_userDefine.SampleDimensionNum:=5;
-     main_userDefine.HiddenLayerNum:=3;
-     main_userDefine.ClassificationNum:=2;
-     main_userDefine.LossFuncNum:=1;
-     main_userDefine.WeightInitWayNum:=3;
-     main_userDefine.BatchSize:=5;
-     main_userDefine.XValArray:=main_Xval;
-     main_userDefine.YValArray:=main_Yval;
-     main_userDefine.NeuronNumArray:=main_NueronNumArray;
-     main_userDefine.ActiFuncNumArray:=main_ActiFuncNumArray;
-     DumpCustom(main_userDefine,RValue);
-     LoadParaFromCustom(main_userDefine,&main_dataSet);
-     DatasetConstruction(main_userDefine,&main_dataSet);
-     MatDump(&main_dataSet.CompleteFeatureDataSet);
-     MatDump(&main_dataSet.CompleteLabelDataSet);
-     MatDump(&main_dataSet.CompleteTrainFeature);
-     MatDump(&main_dataSet.CompleteTrainLabel);
-     int main_batchNum<==0 and skip;
-     int main_remainder<==0 and skip;
-     main_batchNum:=main_dataSet.TrainSampleNum/ main_dataSet.BatchSize;
-     main_remainder:=main_dataSet.TrainSampleNum % main_dataSet.BatchSize;
-     if(main_remainder!=0) then 
-     {
-         main_batchNum:=main_batchNum+1
-         
-     }
-     else 
-     {
-          skip 
-     };
-     output (main_batchNum,"\t",main_remainder,"\n","\n") and skip;
+     frame(main_N_sample,main_D_sample,main_N_out,main_Xval,main_Yval,main_N_hidden,main_N_layerNeuron,main_Nval,main_Nstr_ActiFsHidden,main_Aval,main_Nstr_LossF,main_Style_initWeight,main_P_ActiMat,main_P_ActiMatPlus,main_P_SumMat,main_P_WeightMat,main_P_WeightBiasMat,main_Mat_oneHot,main_Mat_Y,main_P_DeltaMat,main_P_NablaWbMat,main_P_ActiFunDerivation,main_i,main_loss,return) and (
+     int return<==0 and skip;
+     int main_N_sample<==16 and skip;
+     int main_D_sample<==4 and skip;
+     int main_N_out<==2 and skip;
+     float main_Xval[64]<=={0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,0.0,0.0,1.0,0.0,0.0,0.0,1.0,1.0,0.0,1.0,0.0,0.0,0.0,1.0,0.0,1.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,1.0,0.0,0.0,1.0,1.0,0.0,1.0,0.0,1.0,0.0,1.0,1.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,1.0,1.0,1.0,1.0,0.0,1.0,1.0,1.0,1.0} and skip;
+     float main_Yval[16]<=={0,1,1,0,1,0,0,1,1,0,0,1,0,1,1,0} and skip;
+     int main_N_hidden<==3 and skip;
+     int *main_N_layerNeuron<==NULL and skip;
+     int main_Nval[5]<=={4,5,6,5,2} and skip;
+     main_N_layerNeuron:=intVal2List(main_N_hidden+2,main_Nval,main_N_layerNeuron,RValue);
+     int *main_Nstr_ActiFsHidden<==NULL and skip;
+     int main_Aval[5]<=={0,3,3,3,5} and skip;
+     main_Nstr_ActiFsHidden:=intVal2List(main_N_hidden+2,main_Aval,main_Nstr_ActiFsHidden,RValue);
+     int main_Nstr_LossF<==0 and skip;
+     int main_Style_initWeight<==3 and skip;
+     Mat *main_P_ActiMat<==NULL and skip;
+     Mat *main_P_ActiMatPlus<==NULL and skip;
+     Mat *main_P_SumMat<==NULL and skip;
+     Mat *main_P_WeightMat<==NULL and skip;
+     Mat *main_P_WeightBiasMat<==NULL and skip;
+     Mat main_Mat_oneHot and skip;
+     MatCreate(&main_Mat_oneHot,main_N_sample,main_N_out,RValue);
+     Mat main_Mat_Y and skip;
+     MatCreate(&main_Mat_Y,main_N_sample,1,RValue);
+     Mat *main_P_DeltaMat<==NULL and skip;
+     Mat *main_P_NablaWbMat<==NULL and skip;
+     Mat *main_P_ActiFunDerivation<==NULL and skip;
+     main_P_ActiMat:=SpaceCreateActi(main_P_ActiMat,main_N_sample,main_N_hidden,main_N_layerNeuron,RValue);
+     main_P_ActiMatPlus:=SpaceCreateActiPlus(main_P_ActiMatPlus,main_N_sample,main_N_hidden,main_N_layerNeuron,RValue);
+     main_P_SumMat:=SpaceCreateSum(main_P_SumMat,main_N_sample,main_N_hidden,main_N_layerNeuron,RValue);
+     main_P_WeightMat:=SpaceCreateWeight(main_P_WeightMat,main_N_hidden,main_N_layerNeuron,RValue);
+     main_P_WeightBiasMat:=SpaceCreateWeightBias(main_P_WeightBiasMat,main_N_hidden,main_N_layerNeuron,RValue);
+     main_P_DeltaMat:=SpaceCreateDelta(main_P_DeltaMat,main_N_sample,main_N_hidden,main_N_layerNeuron,RValue);
+     main_P_NablaWbMat:=SpaceCreateNablaWeightBias(main_P_NablaWbMat,main_N_hidden,main_N_layerNeuron,RValue);
+     main_P_ActiFunDerivation:=SpaceCreateActiFunDerivation(main_P_ActiFunDerivation,main_N_sample,main_N_hidden,main_N_layerNeuron,RValue);
+     NNinit(main_P_ActiMat,main_P_ActiMatPlus,&main_Mat_Y,&main_Mat_oneHot,main_P_WeightMat,main_P_WeightBiasMat,main_N_out,main_N_hidden,main_Xval,main_Yval,main_Style_initWeight,RValue);
      int main_i<==0 and skip;
      
-     while( (main_i<main_batchNum) )
+     while( (main_i<=200000) )
      {
-         MatDump(&(main_dataSet.BatchTrainFeature)[main_i]);
-         MatDump(&(main_dataSet.BatchTrainLabel)[main_i]);
+         float main_loss<==0.0 and skip;
+         main_loss:=NNforward(main_P_ActiMat,main_P_ActiMatPlus,main_P_SumMat,main_P_WeightBiasMat,main_Mat_oneHot,main_N_hidden,main_Nstr_ActiFsHidden,main_Nstr_LossF,RValue);
+         if(main_i=0) then 
+         {
+             MatDump(&main_P_ActiMat[main_N_hidden+1]);
+             MatDump(&main_Mat_oneHot)
+             
+         }
+         else 
+         {
+              skip 
+         };
+         if(main_i % 2000=0) then 
+         {
+             output ("µÚ",main_i,"´ÎÑµÁ·£º",main_loss,"\n") and skip
+             
+         }
+         else 
+         {
+              skip 
+         };
+         NNBackward(main_N_hidden,main_N_sample,main_N_layerNeuron,main_Nstr_ActiFsHidden,main_Nstr_LossF,main_P_NablaWbMat,main_P_SumMat,main_P_DeltaMat,main_P_ActiFunDerivation,main_P_ActiMat,main_P_ActiMatPlus,main_Mat_oneHot,main_P_WeightMat,RValue);
+         BGD(main_P_WeightBiasMat,main_P_NablaWbMat,main_N_hidden,0.1,RValue);
          main_i:=main_i+1
          
      };
-     MatDump(&main_dataSet.TestFeature);
-     MatDump(&main_dataSet.TestLabel)
+     MatDump(&main_P_ActiMat[main_N_hidden+1]);
+     MatDump(&main_Mat_oneHot);
+     return<==1 and RValue:=0;
+     skip
      )
  };
   main(RValue)

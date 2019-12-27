@@ -42,9 +42,10 @@ typedef struct{
 
 
 typedef struct{
+	int CompleteSampleNum;		// number of all samples [int]
 	int TrainSampleNum;			// number of training samples [int]
 	int TestSampleNum;			// number of test samples [int]
-	int ValidationNum;			// number of validation samples [int]
+	//int ValidationNum;			// number of validation samples [int]
 	int SampleDimensionNum;    // dimensions(features) of sample [int]
 	int HiddenLayerNum;        // number of hidden layer [int]
 	int WeightInitWayNum;      // weight initialization mode [int]
@@ -54,6 +55,7 @@ typedef struct{
 	int *ActiFuncNumArray;     // activate functions of every layers [int*]
 	int ClassificationNum;     // Number of categories classified [int]
 	int LossFuncNum;           // loss function [int]
+	int BatchSize;			   // batch size for optimization 
 }Custom;
 
 
@@ -66,11 +68,16 @@ typedef struct{
 	Mat *BatchTrainLabel;		// batch label Mat without onehot [three dimensions]
 	Mat TestFeature;			// featrue Mat for FCNN test
 	Mat TestLabel;				// label Mat without onehot
-	Mat ValidationFeature;		// featrue Mat for FCNN Validation
-	Mat ValidationLabel;		// label Mat withoutone
+	//Mat ValidationFeature;		// featrue Mat for FCNN Validation
+	//Mat ValidationLabel;		// label Mat withoutone
 	
+	int CompleteSampleNum;		// number of all samples [int]
+	int TrainSampleNum;			// number of training samples [int]
+	int TestSampleNum;			// number of test samples [int]
+	//int ValidationNum;			// number of validation samples [int]
+	int SampleDimensionNum;    // dimensions(features) of sample [int]
 	int BatchSize;				// batch size for dataset
-}Dateset;
+}DataSet;
 
 /************************************************************************/
 /*                            辅助函数                                  */
@@ -1498,37 +1505,29 @@ Mat* MatInitHe(Mat *src)
 /************************************************************************/
 /*                     用户输入参数列表及传入函数                       */
 /************************************************************************/
-//用户输入参数列表
-//输入样本的数量：			N_sample.
-//单一样本的维度：			D_sample.
-//样本真值：				Xval = [], length = N_sample * D_sample.
-//样本标签：				Yval = [], length = N_sample.
-//权值初始化方式			Style_initWeight. 
-						  //0  -> 全0初始化
-						  //1  -> 随机初始化
-						  //2  -> Xavier初始化
-						  //3  -> 何凯明初始化
+//typedef struct{
+//	int CompleteSampleNum;		// number of all samples [int]
+//	int TrainSampleNum;			// number of training samples [int]
+//	int TestSampleNum;			// number of test samples [int]
+//	int ValidationNum;			// number of validation samples [int]
+//	int SampleDimensionNum;    // dimensions(features) of sample [int]
+//	int HiddenLayerNum;        // number of hidden layer [int]
+//	int WeightInitWayNum;      // weight initialization mode [int]
+//	float *XValArray;          // samples features value [float*]
+//	float *YValArray;          // samples labels value [float*]
+//	int *NeuronNumArray;       // numbers of every layers Neuron [int*]  
+//	int *ActiFuncNumArray;     // activate functions of every layers [int*]
+//	int ClassificationNum;     // Number of categories classified [int]
+//	int LossFuncNum;           // loss function [int]
+//	int BatchSize;			   // batch size for optimization 
+//}Custom;
 
-
-//神经网络隐藏层层数:		N_hidden.
-//各层神经元个数 :			N_layerNeuron[i], i =0(输入层),1,...,N_hidden,N_hidden+1(输出层).
-//各层激活函数：			NStr_ActiFsHidden[i], i=0,1,...,N_hidden,N_hidden+1(输出层).
-								//0  -> no activation
-								//1  -> sigmoid
-								//2  -> tanh
-								//3  -> relu
-								//4  -> leaky relu
-								//5  -> softmax (output layer)
-
-//输出层维度（分类类别数）：N_out
-//输出层损失函数：			Nstr_LossF 
-								//0  -> MSE
-								//1  -> CE
 
 int InitCustom(Custom *userDefine){
+	userDefine->CompleteSampleNum = -1;
 	userDefine->TrainSampleNum = -1;
 	userDefine->TestSampleNum = -1;
-	userDefine->ValidationNum = -1;
+	//userDefine->ValidationNum = -1;
 	userDefine->SampleDimensionNum = -1;
 	userDefine->HiddenLayerNum = -1;
 	userDefine->WeightInitWayNum = -1;
@@ -1538,6 +1537,7 @@ int InitCustom(Custom *userDefine){
 	userDefine->ActiFuncNumArray = NULL;
 	userDefine->ClassificationNum = -1;
 	userDefine->LossFuncNum = -1;
+	userDefine->BatchSize = -1;
 
 	return 0;
 }
@@ -1558,24 +1558,14 @@ void DumpIntArray(int* array, int n){
 	printf("\n");
 }
 
-//建立长度为 length 的整形数组，并传入值。
-int* IntVal2List(int length, int *src, int* dst){
-	dst = (int*)malloc(length*sizeof(int));
-	for (int i = 0; i < length; ++i){
-		dst[i] = src[i];
-	}
-	return dst;
-}
-
-float* FloatVal2List(int length, float *src, float* dst){
-	dst = (float*)malloc(length*sizeof(float));
-	for (int i = 0; i < length; ++i){
-		dst[i] = src[i];
-	}
-	return dst;
-}
 int DumpCustom(Custom UserDefine){
 	printf("==================================================================== Custom Dump =====================================================================\n");
+	if (UserDefine.CompleteSampleNum == -1){
+		printf("\t\t\tCustom parameter 'TrainSampleNum' uninitialized!!!\n");
+		return -1;
+	}
+	printf("CompleteSampleNum:\t%d\n", UserDefine.CompleteSampleNum);
+
 	if (UserDefine.TrainSampleNum == -1){
 		printf("\t\t\tCustom parameter 'TrainSampleNum' uninitialized!!!\n");
 		return -1;
@@ -1588,11 +1578,11 @@ int DumpCustom(Custom UserDefine){
 	}
 	printf("TestSampleNum:\t\t%d\n", UserDefine.TestSampleNum);
 
-	if (UserDefine.ValidationNum == -1){
-		printf("\t\t\tCustom parameter 'ValidationNum' uninitialized!!!\n");
-		return -1;
-	}
-	printf("ValidationNum:\t\t%d\n", UserDefine.ValidationNum);
+	//if (UserDefine.ValidationNum == -1){
+	//	printf("\t\t\tCustom parameter 'ValidationNum' uninitialized!!!\n");
+	//	return -1;
+	//}
+	//printf("ValidationNum:\t\t%d\n", UserDefine.ValidationNum);
 
 	if (UserDefine.SampleDimensionNum == -1){
 		printf("\t\t\tCustom parameter 'SampleDimensionNum' uninitialized!!!\n");
@@ -1624,19 +1614,26 @@ int DumpCustom(Custom UserDefine){
 	}
 	printf("LossFuncNum:\t\t%d\n", UserDefine.LossFuncNum);
 
+	if (UserDefine.BatchSize == -1){
+		printf("\t\t\tCustom parameter 'BatchSize' uninitialized!!!\n");
+		return -1;
+	}
+	printf("BatchSize:\t\t%d\n", UserDefine.BatchSize);
+
+
 	if (UserDefine.XValArray == NULL){
 		printf("\t\t\tCustom parameter 'XValArray' uninitialized!!!\n");
 		return -1;
 	}
-	printf("XValArray:\t\n");
-	DumpFloatArray(UserDefine.XValArray, (UserDefine.TrainSampleNum*UserDefine.SampleDimensionNum));
+	printf("XValArray:(length = %d)\t\n", UserDefine.CompleteSampleNum*UserDefine.SampleDimensionNum);
+	DumpFloatArray(UserDefine.XValArray, UserDefine.CompleteSampleNum*UserDefine.SampleDimensionNum);
 
 	if (UserDefine.YValArray == NULL){
 		printf("\t\t\tCustom parameter 'YValArray' uninitialized!!!\n");
 		return -1;
 	}
-	printf("XValArray:\t\n");
-	DumpFloatArray(UserDefine.YValArray, UserDefine.TrainSampleNum);
+	printf("YValArray:(length = %d)\t\n", UserDefine.CompleteSampleNum);
+	DumpFloatArray(UserDefine.YValArray, UserDefine.CompleteSampleNum);
 
 	if (UserDefine.NeuronNumArray == NULL){
 		printf("\t\t\tCustom parameter 'NeuronNumArray' uninitialized!!!\n");
@@ -1649,24 +1646,22 @@ int DumpCustom(Custom UserDefine){
 		printf("\t\t\tCustom parameter 'ActiFuncNumArray' uninitialized!!!\n");
 		return -1;
 	}
-	printf("ActiFuncNumArray:\t\n");
-	DumpIntArray(UserDefine.ActiFuncNumArray, UserDefine.HiddenLayerNum);
+	printf("ActiFuncNumArray:（include output layer Acti-Function）\t\n");
+	DumpIntArray(UserDefine.ActiFuncNumArray, UserDefine.HiddenLayerNum+1);
 
 	printf("================================================================= Custom Dump finish =================================================================\n");
 
+	return 0;
 }
 
-
-
-
-//伪填充
-void ParaArray2Custom(Custom *userDefine, float *Xval, float *Yval, int *NeuronNumArray, int *ActiFuncNumArray){
-	userDefine->XValArray = FloatVal2List(userDefine->TrainSampleNum*userDefine->SampleDimensionNum, Xval, userDefine->XValArray);
-	userDefine->YValArray = FloatVal2List(userDefine->TrainSampleNum, Xval, userDefine->YValArray);
-	userDefine->NeuronNumArray = IntVal2List(userDefine->HiddenLayerNum, NeuronNumArray, userDefine->NeuronNumArray);
-	userDefine->ActiFuncNumArray = IntVal2List(userDefine->HiddenLayerNum, ActiFuncNumArray, userDefine->ActiFuncNumArray);
+void LoadParaFromCustom(Custom userDefine, DataSet *dataSet){
+	// Custom ==>> DataSet
+	dataSet->BatchSize = userDefine.BatchSize;
+	dataSet->CompleteSampleNum = userDefine.CompleteSampleNum;
+	dataSet->SampleDimensionNum = userDefine.SampleDimensionNum;
+	dataSet->TrainSampleNum = userDefine.TrainSampleNum;
+	dataSet->TestSampleNum = userDefine.TestSampleNum;
 }
-
 
 /************************************************************************/
 /*                     用户输入参数列表及传入函数                       */
@@ -1676,11 +1671,168 @@ void ParaArray2Custom(Custom *userDefine, float *Xval, float *Yval, int *NeuronN
 
 
 
+/************************************************************************/
+/*                         神经网络数据集构建                           */
+/************************************************************************/
+//typedef struct{
+//	Mat CompleteFeatureDataSet;	// complete featrue Mat for FCNN
+//	Mat CompleteLabelDataSet;	// complete label Mat without onehot
+//	Mat CompleteTrainFeature;	// complete featrue Mat for FCNN training
+//	Mat CompleteTrainLabel;		// complete label Mat without onehot
+//	Mat *BatchTrainFeature;		// batch featrue Mat for FCNN training [three dimensions]
+//	Mat *BatchTrainLabel;		// batch label Mat without onehot [three dimensions]
+//	Mat TestFeature;			// featrue Mat for FCNN test
+//	Mat TestLabel;				// label Mat without onehot
+//	//Mat ValidationFeature;		// featrue Mat for FCNN Validation
+//	//Mat ValidationLabel;		// label Mat withoutone
+//
+//	int CompleteSampleNum;		// number of all samples [int]
+//	int TrainSampleNum;			// number of training samples [int]
+//	int TestSampleNum;			// number of test samples [int]
+//	//int ValidationNum;			// number of validation samples [int]
+//	int SampleDimensionNum;    // dimensions(features) of sample [int]
+//	int BatchSize;				// batch size for dataset
+//}DataSet;
+
+int InitDataSet(DataSet *dataSet){
+	dataSet->CompleteFeatureDataSet.element = NULL;
+	dataSet->CompleteLabelDataSet.element = NULL;
+	dataSet->CompleteTrainFeature.element = NULL;
+	dataSet->CompleteTrainLabel.element = NULL;
+
+	dataSet->BatchTrainFeature = NULL;
+	dataSet->BatchTrainLabel = NULL;
+	dataSet->TestFeature.element = NULL;
+	dataSet->TestLabel.element = NULL;
+	//dataSet->ValidationFeature.element = NULL;
+	//dataSet->ValidationLabel.element = NULL;
+
+	dataSet->CompleteSampleNum = -1;
+	dataSet->TrainSampleNum = -1;
+	dataSet->TestSampleNum = -1;
+	dataSet->SampleDimensionNum = -1;
+	dataSet->BatchSize = -1;
+
+	return 0;
+}
+
+void CreateDataSetSpace(DataSet *dataSet){
+	// init Complete dataset
+	dataSet->CompleteFeatureDataSet.row = dataSet->CompleteSampleNum;
+	dataSet->CompleteFeatureDataSet.col = dataSet->SampleDimensionNum;
+	MatCreate(&dataSet->CompleteFeatureDataSet, dataSet->CompleteFeatureDataSet.row, dataSet->CompleteFeatureDataSet.col);
+	MatZeros(&dataSet->CompleteFeatureDataSet);
+
+	dataSet->CompleteLabelDataSet.row = dataSet->CompleteSampleNum;
+	dataSet->CompleteLabelDataSet.col = 1;
+	MatCreate(&dataSet->CompleteLabelDataSet, dataSet->CompleteLabelDataSet.row, dataSet->CompleteLabelDataSet.col);
+	MatZeros(&dataSet->CompleteLabelDataSet);
+
+	// init Training dataset
+	dataSet->CompleteTrainFeature.row = dataSet->TrainSampleNum;
+	dataSet->CompleteTrainFeature.col = dataSet->SampleDimensionNum;
+	MatCreate(&dataSet->CompleteTrainFeature, dataSet->CompleteTrainFeature.row, dataSet->CompleteTrainFeature.col);
+	MatZeros(&dataSet->CompleteTrainFeature);
+
+	dataSet->CompleteTrainLabel.row = dataSet->TrainSampleNum;
+	dataSet->CompleteTrainLabel.col = 1;
+	MatCreate(&dataSet->CompleteTrainLabel, dataSet->CompleteTrainLabel.row, dataSet->CompleteTrainLabel.col);
+	MatZeros(&dataSet->CompleteTrainLabel);
+
+	// init train batch 
+	int batchNum = 0;
+	int remainder = 0;
+	batchNum = dataSet->TrainSampleNum / dataSet->BatchSize;
+	remainder = dataSet->TrainSampleNum % dataSet->BatchSize;
+	if (remainder != 0){
+		batchNum = batchNum + 1;
+	}
+	//printf("%d\t%d\n", batchNum, remainder);
+	dataSet->BatchTrainFeature = (Mat*)malloc(batchNum*sizeof(Mat));
+	dataSet->BatchTrainLabel = (Mat*)malloc(batchNum*sizeof(Mat));
+
+	for (int i = 0; i < batchNum; ++i){
+		if (remainder != 0 && i == batchNum - 1){
+			(dataSet->BatchTrainFeature)[i].row = remainder;
+			(dataSet->BatchTrainFeature)[i].col = dataSet->SampleDimensionNum;
+			MatCreate(&(dataSet->BatchTrainFeature)[i], (dataSet->BatchTrainFeature)[i].row, (dataSet->BatchTrainFeature)[i].col);
+			MatZeros(&(dataSet->BatchTrainFeature)[i]);
+
+			(dataSet->BatchTrainLabel)[i].row = remainder;
+			(dataSet->BatchTrainLabel)[i].col = 1;
+			MatCreate(&(dataSet->BatchTrainLabel)[i], (dataSet->BatchTrainLabel)[i].row, (dataSet->BatchTrainLabel)[i].col);
+			MatZeros(&(dataSet->BatchTrainLabel)[i]);
+		}
+		else{
+			(dataSet->BatchTrainFeature)[i].row = dataSet->BatchSize;
+			(dataSet->BatchTrainFeature)[i].col = dataSet->SampleDimensionNum;
+			MatCreate(&(dataSet->BatchTrainFeature)[i], (dataSet->BatchTrainFeature)[i].row, (dataSet->BatchTrainFeature)[i].col);
+			MatZeros(&(dataSet->BatchTrainFeature)[i]);
+
+			(dataSet->BatchTrainLabel)[i].row = dataSet->BatchSize;
+			(dataSet->BatchTrainLabel)[i].col = 1;
+			MatCreate(&(dataSet->BatchTrainLabel)[i], (dataSet->BatchTrainLabel)[i].row, (dataSet->BatchTrainLabel)[i].col);
+			MatZeros(&(dataSet->BatchTrainLabel)[i]);
+		}
+
+	}
 
 
 
+	// init Training dataset
+	dataSet->TestFeature.row = dataSet->TestSampleNum;
+	dataSet->TestFeature.col = dataSet->SampleDimensionNum;
+	MatCreate(&dataSet->TestFeature, dataSet->TestFeature.row, dataSet->TestFeature.col);
+	MatZeros(&dataSet->TestFeature);
+
+	dataSet->TestLabel.row = dataSet->TestSampleNum;
+	dataSet->TestLabel.col = 1;
+	MatCreate(&dataSet->TestLabel, dataSet->TestLabel.row, dataSet->TestLabel.col);
+	MatZeros(&dataSet->TestLabel);
+}
 
 
+
+int DataLoading(Custom userDefine, DataSet *dataSet){
+	// complete data loading
+	MatSetVal(&dataSet->CompleteFeatureDataSet, userDefine.XValArray);
+	MatSetVal(&dataSet->CompleteLabelDataSet, userDefine.YValArray);
+
+	// complete train data loading
+	MatSetVal(&dataSet->CompleteTrainFeature, userDefine.XValArray);
+	MatSetVal(&dataSet->CompleteTrainLabel, userDefine.YValArray);
+
+	// init batch train data loading
+	int batchNum = 0;
+	int remainder = 0;
+	batchNum = dataSet->TrainSampleNum / dataSet->BatchSize;
+	remainder = dataSet->TrainSampleNum % dataSet->BatchSize;
+	if (remainder != 0){
+		batchNum = batchNum + 1;
+	}
+
+	for (int i = 0; i < batchNum; ++i){
+		MatSetVal(&dataSet->BatchTrainFeature[i], &userDefine.XValArray[i*dataSet->BatchSize*dataSet->SampleDimensionNum]);
+		MatSetVal(&dataSet->BatchTrainLabel[i], &userDefine.YValArray[i*dataSet->BatchSize]);
+	}
+
+
+	//test data loading
+	MatSetVal(&dataSet->TestFeature, &userDefine.XValArray[dataSet->TrainSampleNum*dataSet->SampleDimensionNum]);
+	MatSetVal(&dataSet->TestLabel, &userDefine.YValArray[dataSet->TrainSampleNum]);
+
+
+	return 0;
+}
+
+
+void DatasetConstruction(Custom userDefine, DataSet *dataSet){
+	CreateDataSetSpace(dataSet);
+	DataLoading(userDefine, dataSet);
+}
+/************************************************************************/
+/*                         神经网络数据集构建                           */
+/************************************************************************/
 
 
 
@@ -2242,59 +2394,122 @@ Mat * BGD(Mat *P_WeightBiasMat, Mat *P_NablaWbMat, int N_hidden, float alpha){
 
 int main(){
 	
+
+	/*用户自定义相关数据录入*/
+	float Xval[] = {
+		0.f, 0.f, 0.f, 0.f, 0.f,
+		0.f, 0.f, 0.f, 0.f, 1.f,
+		0.f, 0.f, 0.f, 1.f, 0.f,
+		0.f, 0.f, 0.f, 1.f, 1.f,
+		0.f, 0.f, 1.f, 0.f, 0.f,
+		0.f, 0.f, 1.f, 0.f, 1.f,
+		0.f, 0.f, 1.f, 1.f, 0.f,
+		0.f, 0.f, 1.f, 1.f, 1.f,
+		0.f, 1.f, 0.f, 0.f, 0.f,
+		0.f, 1.f, 0.f, 0.f, 1.f,
+		0.f, 1.f, 0.f, 1.f, 0.f,
+		0.f, 1.f, 0.f, 1.f, 1.f,
+		0.f, 1.f, 1.f, 0.f, 0.f,
+		0.f, 1.f, 1.f, 0.f, 1.f,
+		0.f, 1.f, 1.f, 1.f, 0.f,
+		0.f, 1.f, 1.f, 1.f, 1.f,
+		1.f, 0.f, 0.f, 0.f, 0.f,
+		1.f, 0.f, 0.f, 0.f, 1.f,
+		1.f, 0.f, 0.f, 1.f, 0.f,
+		1.f, 0.f, 0.f, 1.f, 1.f,
+		1.f, 0.f, 1.f, 0.f, 0.f,
+		1.f, 0.f, 1.f, 0.f, 1.f,
+		1.f, 0.f, 1.f, 1.f, 0.f,
+		1.f, 0.f, 1.f, 1.f, 1.f,
+		1.f, 1.f, 0.f, 0.f, 0.f,
+		1.f, 1.f, 0.f, 0.f, 1.f,
+		1.f, 1.f, 0.f, 1.f, 0.f,
+		1.f, 1.f, 0.f, 1.f, 1.f,
+		1.f, 1.f, 1.f, 0.f, 0.f,
+		1.f, 1.f, 1.f, 0.f, 1.f,
+		1.f, 1.f, 1.f, 1.f, 0.f,
+		1.f, 1.f, 1.f, 1.f, 1.f }; //样本真值
+
+
+	float Yval[] = { 0.f, 1.f, 1.f, 0.f, 1.f, 0.f, 0.f, 1.f, 1.f, 0.f, 0.f, 1.f, 0.f, 1.f, 1.f, 0.f, 1.f, 0.f, 0.f, 1.f, 0.f, 1.f, 1.f, 0.f, 0.f, 1.f, 1.f, 0.f, 1.f, 0.f, 0.f, 1.f };  //样本标签二分类
+	int NueronNumArray[] = { 8, 12, 8 };
+	int ActiFuncNumArray[] = { 3, 3, 3, 5 };// 各层激活函数使用真值；注意映射关系。 最后一层表示输出层激活函数SoftMax
+
+
 	/*用户自定义参数输入*/
 	Custom userDefine;
+	DataSet dataSet;
 	InitCustom(&userDefine);   // custom initial
+	InitDataSet(&dataSet);
 
-	userDefine.TrainSampleNum = 12;
-	userDefine.TestSampleNum = 4;
-	userDefine.ValidationNum = 0;
-	userDefine.SampleDimensionNum = 4;
+	userDefine.CompleteSampleNum = 32;
+	userDefine.TrainSampleNum = 24;
+	userDefine.TestSampleNum = 8;
+	//userDefine.ValidationNum = 0;
+	userDefine.SampleDimensionNum = 5;
 	userDefine.HiddenLayerNum = 3;
 	userDefine.ClassificationNum = 2;
 	userDefine.LossFuncNum = 1; // CE
 	userDefine.WeightInitWayNum = 3; // KaiMing
+	userDefine.BatchSize = 5;
+	userDefine.XValArray = Xval;
+	userDefine.YValArray = Yval;
+	userDefine.NeuronNumArray = NueronNumArray;
+	userDefine.ActiFuncNumArray = ActiFuncNumArray;
 
-	float Xval[] = {
-		0.f, 0.f, 0.f, 0.f,
-		0.f, 0.f, 0.f, 1.f,
-		0.f, 0.f, 1.f, 0.f,
-		0.f, 0.f, 1.f, 1.f,
-		0.f, 1.f, 0.f, 0.f,
-		0.f, 1.f, 0.f, 1.f,
-		0.f, 1.f, 1.f, 0.f,
-		0.f, 1.f, 1.f, 1.f,
-		1.f, 0.f, 0.f, 0.f,
-		1.f, 0.f, 0.f, 1.f,
-		1.f, 0.f, 1.f, 0.f,
-		1.f, 0.f, 1.f, 1.f,
-		1.f, 1.f, 0.f, 0.f,
-		1.f, 1.f, 0.f, 1.f,
-		1.f, 1.f, 1.f, 0.f,
-		1.f, 1.f, 1.f, 1.f }; //样本真值
+	DumpCustom(userDefine); // print
+
+	// 从Custon传入参数到各个结构体
+	LoadParaFromCustom(userDefine, &dataSet);
 
 
-	float Yval[] = { 0.f, 1.f, 1.f, 0.f, 1.f, 0.f, 0.f, 1.f, 1.f, 0.f, 0.f, 1.f, 0., 1.f, 1.f, 0.f };  //样本标签二分类
-	int NueronNumArray[] = {5, 6, 5};// 各隐藏层神经元个数真值
-	int ActiFuncArray[] = {3, 3, 3};// 各层激活函数使用真值；注意映射关系。
+	//CreateDataSetSpace(&dataSet);
 
-	ParaArray2Custom(&userDefine, Xval, Yval, NueronNumArray, ActiFuncArray);
+	////MatDump(&dataSet.CompleteFeatureDataSet);
+	////MatDump(&dataSet.CompleteLabelDataSet);
 
-	DumpCustom(userDefine);
+	////MatDump(&dataSet.CompleteTrainFeature);
+	////MatDump(&dataSet.CompleteTrainLabel);
 
-
-
-
-	//N_layerNeuron = intVal2List(N_hidden + 2, Nval, N_layerNeuron);
-	//////测试传入正确性
-	////for (int i = 0; i < N_hidden + 2; ++i){
-	////	printf("%d\n", N_layerNeuron[i]);
+	////MatDump(&dataSet.TestFeature);
+	////MatDump(&dataSet.TestLabel);
+	////int batchNum = 0;
+	////int remainder = 0;
+	////batchNum = dataSet.TrainSampleNum / dataSet.BatchSize;
+	////remainder = dataSet.TrainSampleNum % dataSet.BatchSize;
+	////if (remainder != 0){
+	////	batchNum = batchNum + 1;
 	////}
+	////printf("%d\t%d\n", batchNum, remainder);
 
-	//int *Nstr_ActiFsHidden = NULL;// 各层激活函数使用；
-	
+	////for (int i = 0; i < batchNum; ++i){
+	////	MatDump(&(dataSet.BatchTrainFeature)[i]);
+	////}
+	//
+	//DataLoading(userDefine, &dataSet);
 
-	//Nstr_ActiFsHidden = intVal2List(N_hidden + 2, Aval, Nstr_ActiFsHidden);
+	DatasetConstruction(userDefine, &dataSet);
+
+	MatDump(&dataSet.CompleteFeatureDataSet);
+	MatDump(&dataSet.CompleteLabelDataSet);
+
+	MatDump(&dataSet.CompleteTrainFeature);
+	MatDump(&dataSet.CompleteTrainLabel);
+	int batchNum = 0;
+	int remainder = 0;
+	batchNum = dataSet.TrainSampleNum / dataSet.BatchSize;
+	remainder = dataSet.TrainSampleNum % dataSet.BatchSize;
+	if (remainder != 0){
+		batchNum = batchNum + 1;
+	}
+	printf("%d\t%d\n", batchNum, remainder);
+
+	for (int i = 0; i < batchNum; ++i){
+		MatDump(&(dataSet.BatchTrainFeature)[i]);
+		MatDump(&(dataSet.BatchTrainLabel)[i]);
+	}
+	MatDump(&dataSet.TestFeature);
+	MatDump(&dataSet.TestLabel);
 
 
 
