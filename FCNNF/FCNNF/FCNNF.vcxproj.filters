@@ -21,8 +21,5 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="ClassDiagram.cd" />
-    <None Include="C2MSVL_FCNN.bat">
-      <Filter>资源文件</Filter>
-    </None>
   </ItemGroup>
 </Project>
