@@ -2513,7 +2513,7 @@ int main(){
 
 
 
-
+	printf("Change the platform succesfully!\n");
 }
 
 

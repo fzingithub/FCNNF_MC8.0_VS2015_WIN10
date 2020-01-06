@@ -3251,9 +3251,8 @@ int BatchSize
          
      };
      MatDump(&main_dataSet.TestFeature);
-     MatDump(&main_dataSet.TestLabel)
+     MatDump(&main_dataSet.TestLabel);
+     output ("Change the platform succesfully!\n") and skip
      )
  };
   main(RValue)
-
-  123
