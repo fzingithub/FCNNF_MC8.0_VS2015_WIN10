@@ -1,0 +1,145 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="源文件">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="头文件">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="资源文件">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="content.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="function.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="IR.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="IRStruct.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="mctypes.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="parse.cpp.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Setting.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Symbol.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="SymbolTable.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="SyntaxNode.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="SyntaxTree.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="MSVCompiler.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="content.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="function.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="IR.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="IRStruct.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="main.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="MSVCompiler.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="parse.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Setting.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Symbol.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="SymbolTable.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="SyntaxNode.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="SyntaxTree.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="lex.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="external.s">
+      <Filter>资源文件</Filter>
+    </None>
+    <None Include="_MSVInput.m">
+      <Filter>资源文件</Filter>
+    </None>
+    <None Include="a.bc">
+      <Filter>资源文件</Filter>
+    </None>
+    <None Include="decode.m">
+      <Filter>资源文件</Filter>
+    </None>
+    <None Include="dekker.m">
+      <Filter>资源文件</Filter>
+    </None>
+    <None Include="frogjump.m">
+      <Filter>资源文件</Filter>
+    </None>
+    <None Include="magicSquare.m">
+      <Filter>资源文件</Filter>
+    </None>
+    <None Include="philosopher.m">
+      <Filter>资源文件</Filter>
+    </None>
+    <None Include="mcf.m">
+      <Filter>资源文件</Filter>
+    </None>
+    <None Include="tripartite.m">
+      <Filter>资源文件</Filter>
+    </None>
+    <None Include="wolfSheepCabbage.m">
+      <Filter>资源文件</Filter>
+    </None>
+    <None Include="bzip.m">
+      <Filter>资源文件</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="MSV.l">
+      <Filter>资源文件</Filter>
+    </CustomBuild>
+    <CustomBuild Include="MSV.y">
+      <Filter>资源文件</Filter>
+    </CustomBuild>
+    <CustomBuild Include="external.c">
+      <Filter>资源文件</Filter>
+    </CustomBuild>
+  </ItemGroup>
+</Project>
