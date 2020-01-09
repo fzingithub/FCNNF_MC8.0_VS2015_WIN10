@@ -2502,7 +2502,7 @@ int main(){
 	if (remainder != 0){
 		batchNum = batchNum + 1;
 	}
-	printf("%d\t%d\n", batchNum, remainder);
+	/*printf("%d\t%d\n", batchNum, remainder);*/
 
 	for (int i = 0; i < batchNum; ++i){
 		MatDump(&(dataSet.BatchTrainFeature)[i]);
@@ -2512,8 +2512,12 @@ int main(){
 	MatDump(&dataSet.TestLabel);
 
 
-
 	printf("Change the platform succesfully!\n");
+
+
+
+
+
 }
 
 
