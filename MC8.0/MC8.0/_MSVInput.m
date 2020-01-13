@@ -2719,77 +2719,77 @@ int BatchSize
      skip
      )
      }; 
-  function SpaceCreateActi ( FCNN *fcnn,Custom userDefine )
+  function SpaceCreateActi ( FCNN *fcnn )
  {
      frame(SpaceCreateActi_i) and ( 
      int SpaceCreateActi_i<==0 and skip;
      
      while( (SpaceCreateActi_i<fcnn->HiddenLayerNum+2) )
      {
-         MatCreate(&fcnn->Layer[SpaceCreateActi_i].ActiMat,userDefine.BatchSize,userDefine.NeuronNumArray[SpaceCreateActi_i],RValue);
+         MatCreate(&fcnn->Layer[SpaceCreateActi_i].ActiMat,fcnn->CurrentSampleNum,fcnn->Layer[SpaceCreateActi_i].NeuronNum,RValue);
          MatZeros(&fcnn->Layer[SpaceCreateActi_i].ActiMat,RValue);
          SpaceCreateActi_i:=SpaceCreateActi_i+1
          
      }
      )
      }; 
-  function SpaceCreateActiPlus ( FCNN *fcnn,Custom userDefine )
+  function SpaceCreateActiPlus ( FCNN *fcnn )
  {
      frame(SpaceCreateActiPlus_i) and ( 
      int SpaceCreateActiPlus_i<==0 and skip;
      
      while( (SpaceCreateActiPlus_i<fcnn->HiddenLayerNum+2) )
      {
-         MatCreate(&fcnn->Layer[SpaceCreateActiPlus_i].ActiMatPlus,userDefine.BatchSize,userDefine.NeuronNumArray[SpaceCreateActiPlus_i]+1,RValue);
+         MatCreate(&fcnn->Layer[SpaceCreateActiPlus_i].ActiMatPlus,fcnn->CurrentSampleNum,fcnn->Layer[SpaceCreateActiPlus_i].NeuronNum+1,RValue);
          MatZeros(&fcnn->Layer[SpaceCreateActiPlus_i].ActiMatPlus,RValue);
          SpaceCreateActiPlus_i:=SpaceCreateActiPlus_i+1
          
      }
      )
      }; 
-  function SpaceCreateSum ( FCNN *fcnn,Custom userDefine )
+  function SpaceCreateSum ( FCNN *fcnn )
  {
      frame(SpaceCreateSum_i) and ( 
      int SpaceCreateSum_i<==0 and skip;
      
      while( (SpaceCreateSum_i<fcnn->HiddenLayerNum+2) )
      {
-         MatCreate(&fcnn->Layer[SpaceCreateSum_i].SumMat,userDefine.BatchSize,userDefine.NeuronNumArray[SpaceCreateSum_i],RValue);
+         MatCreate(&fcnn->Layer[SpaceCreateSum_i].SumMat,fcnn->CurrentSampleNum,fcnn->Layer[SpaceCreateSum_i].NeuronNum,RValue);
          MatZeros(&fcnn->Layer[SpaceCreateSum_i].SumMat,RValue);
          SpaceCreateSum_i:=SpaceCreateSum_i+1
          
      }
      )
      }; 
-  function SpaceCreateActiFunDerivation ( FCNN *fcnn,Custom userDefine )
+  function SpaceCreateActiFunDerivation ( FCNN *fcnn )
  {
      frame(SpaceCreateActiFunDerivation_i) and ( 
      int SpaceCreateActiFunDerivation_i<==0 and skip;
      
      while( (SpaceCreateActiFunDerivation_i<fcnn->HiddenLayerNum+2) )
      {
-         MatCreate(&fcnn->Layer[SpaceCreateActiFunDerivation_i].ActiFunDerivationMat,userDefine.BatchSize,userDefine.NeuronNumArray[SpaceCreateActiFunDerivation_i],RValue);
+         MatCreate(&fcnn->Layer[SpaceCreateActiFunDerivation_i].ActiFunDerivationMat,fcnn->CurrentSampleNum,fcnn->Layer[SpaceCreateActiFunDerivation_i].NeuronNum,RValue);
          MatZeros(&fcnn->Layer[SpaceCreateActiFunDerivation_i].ActiFunDerivationMat,RValue);
          SpaceCreateActiFunDerivation_i:=SpaceCreateActiFunDerivation_i+1
          
      }
      )
      }; 
-  function SpaceCreateDelta ( FCNN *fcnn,Custom userDefine )
+  function SpaceCreateDelta ( FCNN *fcnn )
  {
      frame(SpaceCreateDelta_i) and ( 
      int SpaceCreateDelta_i<==0 and skip;
      
      while( (SpaceCreateDelta_i<fcnn->HiddenLayerNum+2) )
      {
-         MatCreate(&fcnn->Layer[SpaceCreateDelta_i].DeltaMat,userDefine.BatchSize,userDefine.NeuronNumArray[SpaceCreateDelta_i],RValue);
+         MatCreate(&fcnn->Layer[SpaceCreateDelta_i].DeltaMat,fcnn->CurrentSampleNum,fcnn->Layer[SpaceCreateDelta_i].NeuronNum,RValue);
          MatZeros(&fcnn->Layer[SpaceCreateDelta_i].DeltaMat,RValue);
          SpaceCreateDelta_i:=SpaceCreateDelta_i+1
          
      }
      )
      }; 
-  function SpaceCreateWeight ( FCNN *fcnn,Custom userDefine )
+  function SpaceCreateWeight ( FCNN *fcnn )
  {
      frame(SpaceCreateWeight_i) and ( 
      fcnn->Layer[0].WeightMat.row:=0;
@@ -2798,14 +2798,14 @@ int BatchSize
      
      while( (SpaceCreateWeight_i<fcnn->HiddenLayerNum+2) )
      {
-         MatCreate(&fcnn->Layer[SpaceCreateWeight_i].WeightMat,userDefine.NeuronNumArray[SpaceCreateWeight_i-1],userDefine.NeuronNumArray[SpaceCreateWeight_i],RValue);
+         MatCreate(&fcnn->Layer[SpaceCreateWeight_i].WeightMat,fcnn->Layer[SpaceCreateWeight_i-1].NeuronNum,fcnn->Layer[SpaceCreateWeight_i].NeuronNum,RValue);
          MatZeros(&fcnn->Layer[SpaceCreateWeight_i].WeightMat,RValue);
          SpaceCreateWeight_i:=SpaceCreateWeight_i+1
          
      }
      )
      }; 
-  function SpaceCreateWeightBias ( FCNN *fcnn,Custom userDefine )
+  function SpaceCreateWeightBias ( FCNN *fcnn )
  {
      frame(SpaceCreateWeightBias_i) and ( 
      fcnn->Layer[0].WeightBiasMat.row:=0;
@@ -2814,14 +2814,14 @@ int BatchSize
      
      while( (SpaceCreateWeightBias_i<fcnn->HiddenLayerNum+2) )
      {
-         MatCreate(&fcnn->Layer[SpaceCreateWeightBias_i].WeightBiasMat,userDefine.NeuronNumArray[SpaceCreateWeightBias_i-1]+1,userDefine.NeuronNumArray[SpaceCreateWeightBias_i],RValue);
+         MatCreate(&fcnn->Layer[SpaceCreateWeightBias_i].WeightBiasMat,fcnn->Layer[SpaceCreateWeightBias_i-1].NeuronNum+1,fcnn->Layer[SpaceCreateWeightBias_i].NeuronNum,RValue);
          MatZeros(&fcnn->Layer[SpaceCreateWeightBias_i].WeightBiasMat,RValue);
          SpaceCreateWeightBias_i:=SpaceCreateWeightBias_i+1
          
      }
      )
      }; 
-  function SpaceCreateNablaWeightBias ( FCNN *fcnn,Custom userDefine )
+  function SpaceCreateNablaWeightBias ( FCNN *fcnn )
  {
      frame(SpaceCreateNablaWeightBias_i) and ( 
      fcnn->Layer[0].NablaWbMat.row:=0;
@@ -2830,27 +2830,27 @@ int BatchSize
      
      while( (SpaceCreateNablaWeightBias_i<fcnn->HiddenLayerNum+2) )
      {
-         MatCreate(&fcnn->Layer[SpaceCreateNablaWeightBias_i].NablaWbMat,userDefine.NeuronNumArray[SpaceCreateNablaWeightBias_i-1]+1,userDefine.NeuronNumArray[SpaceCreateNablaWeightBias_i],RValue);
+         MatCreate(&fcnn->Layer[SpaceCreateNablaWeightBias_i].NablaWbMat,fcnn->Layer[SpaceCreateNablaWeightBias_i-1].NeuronNum+1,fcnn->Layer[SpaceCreateNablaWeightBias_i].NeuronNum,RValue);
          MatZeros(&fcnn->Layer[SpaceCreateNablaWeightBias_i].NablaWbMat,RValue);
          SpaceCreateNablaWeightBias_i:=SpaceCreateNablaWeightBias_i+1
          
      }
      )
      }; 
-  function CreateNNOperationSpace ( FCNN *fcnn,Custom userDefine )
+  function CreateNNOperationSpace ( FCNN *fcnn )
  {
-     SpaceCreateActi(fcnn,userDefine);
-     SpaceCreateActiPlus(fcnn,userDefine);
-     SpaceCreateSum(fcnn,userDefine);
-     SpaceCreateActiFunDerivation(fcnn,userDefine);
-     SpaceCreateDelta(fcnn,userDefine)
+     SpaceCreateActi(fcnn);
+     SpaceCreateActiPlus(fcnn);
+     SpaceCreateSum(fcnn);
+     SpaceCreateActiFunDerivation(fcnn);
+     SpaceCreateDelta(fcnn)
      
  };
- function CreateNNParaSpace ( FCNN *fcnn,Custom userDefine )
+ function CreateNNParaSpace ( FCNN *fcnn )
  {
-     SpaceCreateWeight(fcnn,userDefine);
-     SpaceCreateWeightBias(fcnn,userDefine);
-     SpaceCreateNablaWeightBias(fcnn,userDefine)
+     SpaceCreateWeight(fcnn);
+     SpaceCreateWeightBias(fcnn);
+     SpaceCreateNablaWeightBias(fcnn)
      
  };
  function DoadinPara2FCLayer ( FCNN *fcnn,Custom userDefine )
@@ -2872,9 +2872,9 @@ int BatchSize
      frame(return) and ( 
      int return<==0 and skip;
      fcnn->Layer:=SpaceCreateFCLayer(fcnn,RValue);
-     CreateNNOperationSpace(fcnn,userDefine);
-     CreateNNParaSpace(fcnn,userDefine);
      DoadinPara2FCLayer(fcnn,userDefine);
+     CreateNNOperationSpace(fcnn);
+     CreateNNParaSpace(fcnn);
      return<==1 and RValue:=0;
      skip
      )
@@ -3006,30 +3006,72 @@ int BatchSize
  }
  )
  }; 
-  function NNforward ( Mat *P_ActiMat,Mat *P_ActiMatPlus,Mat *P_SumMat,Mat *P_WeightBiasMat,Mat Mat_oneHot,int N_hidden,int *NStr_ActiFsHidden,int Nstr_LossF,float RValue )
+  function NNforward ( Mat featureMat,Mat labelMat,FCNN *fcnn,float RValue )
  {
-     frame(NNforward_i,return) and ( 
+     frame(NNforward_OneHotMat,NNforward_i,NNforward_loss,return) and ( 
      int return<==0 and skip;
-     int NNforward_i<==0 and skip;
-     
-     while( (NNforward_i<N_hidden+1) )
+     if(featureMat.row!=labelMat.row) then 
      {
-         MatMul(&P_ActiMatPlus[NNforward_i],&P_WeightBiasMat[NNforward_i+1],&P_SumMat[NNforward_i+1],RValue);
-         MatActivate(&P_SumMat[NNforward_i+1],&P_ActiMat[NNforward_i+1],NStr_ActiFsHidden[NNforward_i+1],RValue);
-         if(NNforward_i!=N_hidden) then 
+         output ("\t\terr check, mismatching matrix for NNforward\t\t\n") and skip;
+         output ("\t\tfeatureMatShape:\n\t\t\t") and skip;
+         MatShape(&featureMat);
+         output ("\t\tlabelMatMatShape:\n\t\t\t") and skip;
+         MatShape(&labelMat);
+         return<==1 and RValue:=-1.0;
+         skip
+         
+     }
+     else 
+     {
+          skip 
+     };
+     if(return=0)   then 
+     {
+         if(featureMat.row!=fcnn->CurrentSampleNum) then 
          {
-             MatPlusCol(&P_ActiMat[NNforward_i+1],&P_ActiMatPlus[NNforward_i+1])
+             fcnn->CurrentSampleNum:=featureMat.row;
+             CreateNNOperationSpace(fcnn)
              
          }
          else 
          {
               skip 
          };
-         NNforward_i:=NNforward_i+1
+         MatCopy(&featureMat,&fcnn->Layer[0].ActiMat);
+         MatPlusCol(&fcnn->Layer[0].ActiMat,&fcnn->Layer[0].ActiMatPlus);
+         Mat NNforward_OneHotMat and skip;
+         MatCreate(&NNforward_OneHotMat,fcnn->CurrentSampleNum,fcnn->ClassificationNum,RValue);
+         OneHot(&labelMat,fcnn->ClassificationNum,&NNforward_OneHotMat,RValue);
+         int NNforward_i<==0 and skip;
          
-     };
-     return<==1 and RValue:=LossFunction(&P_ActiMat[N_hidden+1],&Mat_oneHot,Nstr_LossF,RValue);
-     skip
+         while( (NNforward_i<fcnn->HiddenLayerNum+1) )
+         {
+             MatMul(&fcnn->Layer[NNforward_i].ActiMatPlus,&fcnn->Layer[NNforward_i+1].WeightBiasMat,&fcnn->Layer[NNforward_i+1].SumMat,RValue);
+             MatActivate(&fcnn->Layer[NNforward_i+1].SumMat,&fcnn->Layer[NNforward_i+1].ActiMat,fcnn->Layer[NNforward_i+1].AcitFuncNum,RValue);
+             if(NNforward_i!=fcnn->HiddenLayerNum) then 
+             {
+                 MatPlusCol(&fcnn->Layer[NNforward_i+1].ActiMat,&fcnn->Layer[NNforward_i+1].ActiMatPlus)
+                 
+             }
+             else 
+             {
+                  skip 
+             };
+             NNforward_i:=NNforward_i+1
+             
+         };
+         MatDump(&NNforward_OneHotMat);
+         MatDump(&fcnn->Layer[fcnn->HiddenLayerNum+1].ActiMat);
+         float NNforward_loss<==-1.0 and skip;
+         NNforward_loss:=LossFunction(&fcnn->Layer[fcnn->HiddenLayerNum+1].ActiMat,&NNforward_OneHotMat,fcnn->LossFuncNum,RValue);
+         MatDelete(&NNforward_OneHotMat);
+         return<==1 and RValue:=NNforward_loss;
+         skip
+     }
+     else
+     {
+         skip
+     }
      )
      }; 
   function ActiFunDerivation ( Mat Mat_Sum,Mat *Mat_ActiFunDerivation,int option,Mat* RValue )
@@ -3231,7 +3273,7 @@ int BatchSize
      }; 
   function main ( int  RValue )
  {
-     frame(main_Xval,main_Yval,main_NueronNumArray,main_ActiFuncNumArray,main_userDefine,main_dataSet,main_fcnn,main_fclayer) and (
+     frame(main_Xval,main_Yval,main_NueronNumArray,main_ActiFuncNumArray,main_userDefine,main_dataSet,main_fcnn,main_fclayer,main_loss,main_buf,main_i) and (
      float main_Xval[160]<=={0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,0.0,0.0,0.0,1.0,0.0,0.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,0.0,0.0,0.0,0.0,1.0,0.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,1.0,0.0,1.0,0.0,0.0,0.0,0.0,1.0,0.0,0.0,1.0,0.0,1.0,0.0,1.0,0.0,0.0,1.0,0.0,1.0,1.0,0.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,0.0,1.0,0.0,1.0,1.0,1.0,0.0,0.0,1.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,1.0,0.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,0.0,1.0,0.0,0.0,1.0,1.0,1.0,0.0,1.0,0.0,0.0,1.0,0.0,1.0,0.0,1.0,1.0,0.0,1.0,1.0,0.0,1.0,0.0,1.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,1.0,0.0,1.0,0.0,1.0,1.0,0.0,1.0,1.0,1.0,1.0,1.0,0.0,0.0,1.0,1.0,1.0,0.0,1.0,1.0,1.0,1.0,1.0,0.0,1.0,1.0,1.0,1.0,1.0} and skip;
      float main_Yval[32]<=={0.0,1.0,1.0,0.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,0.0,1.0,1.0,0.0,1.0,0.0,0.0,1.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,1.0,0.0,0.0,1.0} and skip;
      int main_NueronNumArray[5]<=={5,6,8,6,2} and skip;
@@ -3257,12 +3299,44 @@ int BatchSize
      main_userDefine.YValArray:=main_Yval;
      main_userDefine.NeuronNumArray:=main_NueronNumArray;
      main_userDefine.ActiFuncNumArray:=main_ActiFuncNumArray;
+     DumpCustom(main_userDefine,RValue);
      LoadParaFromCustom(main_userDefine,&main_dataSet,&main_fcnn);
      CreateDataSetSpace(&main_dataSet);
      DataLoading(main_userDefine,&main_dataSet,RValue);
      DatasetConstruction(main_userDefine,&main_dataSet);
      CreateNNSpaceAndLoadinPara2FCLayer(&main_fcnn,main_userDefine,RValue);
-     NNWeightinit(&main_fcnn,RValue)
+     NNWeightinit(&main_fcnn,RValue);
+     float main_loss<==0.0 and skip;
+     char main_buf[12] and skip;
+     main_loss:=NNforward(main_dataSet.BatchTrainFeature[0],main_dataSet.BatchTrainLabel[0],&main_fcnn,RValue);
+     output (F2S(main_loss,main_buf,RValue),"\n","\n") and skip;
+     int main_i<==0 and skip;
+     
+     while( (main_i<main_userDefine.HiddenLayerNum+2) )
+     {
+         output ("第",main_i,"层：\n") and skip;
+         output ("神经元个数：",main_fcnn.Layer[main_i].NeuronNum,"\n") and skip;
+         output ("激活函数：",main_fcnn.Layer[main_i].AcitFuncNum,"\n") and skip;
+         output ("激活值矩阵：\n") and skip;
+         MatDump(&main_fcnn.Layer[main_i].ActiMat);
+         output ("激活值扩展矩阵：\n") and skip;
+         MatDump(&main_fcnn.Layer[main_i].ActiMatPlus);
+         output ("求和值值矩阵：\n") and skip;
+         MatDump(&main_fcnn.Layer[main_i].SumMat);
+         output ("激活函数求导值矩阵：\n") and skip;
+         MatDump(&main_fcnn.Layer[main_i].ActiFunDerivationMat);
+         output ("反向传播中间变量值矩阵：\n") and skip;
+         MatDump(&main_fcnn.Layer[main_i].DeltaMat);
+         output ("权值矩阵：\n") and skip;
+         MatDump(&main_fcnn.Layer[main_i].WeightMat);
+         output ("权值偏置矩阵：\n") and skip;
+         MatDump(&main_fcnn.Layer[main_i].WeightBiasMat);
+         output ("权值偏置导数矩阵：\n") and skip;
+         MatDump(&main_fcnn.Layer[main_i].NablaWbMat);
+         output ("\n\n\n") and skip;
+         main_i:=main_i+1
+         
+     }
      )
  };
   main(RValue)
