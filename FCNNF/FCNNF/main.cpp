@@ -66,17 +66,23 @@ typedef struct{
 	Mat CompleteTrainLabel;		// complete label Mat without onehot
 	Mat *BatchTrainFeature;		// batch featrue Mat for FCNN training [three dimensions]
 	Mat *BatchTrainLabel;		// batch label Mat without onehot [three dimensions]
+	Mat *BatchTrainLabelOneHot; // batch label Mat with onehot [three dimensions]
 	Mat TestFeature;			// featrue Mat for FCNN test
 	Mat TestLabel;				// label Mat without onehot
-	//Mat ValidationFeature;		// featrue Mat for FCNN Validation
+	Mat TestLabelOneHot;        // label Mat with onehot
+	//Mat ValidationFeature;	// featrue Mat for FCNN Validation
 	//Mat ValidationLabel;		// label Mat withoutone
 	
+
 	int CompleteSampleNum;		// number of all samples [int]
 	int TrainSampleNum;			// number of training samples [int]
 	int TestSampleNum;			// number of test samples [int]
 	//int ValidationNum;			// number of validation samples [int]
 	int SampleDimensionNum;    // dimensions(features) of sample [int]
+	int ClassificationNum;     // Number of categories classified [int]
 	int BatchSize;				// batch size for dataset
+	int BatchNum;				// number of batch
+	int remainder;				// the last batch size
 }DataSet;
 
 /************************************************************************/
@@ -1661,6 +1667,7 @@ void LoadParaFromCustom(Custom userDefine, DataSet *dataSet, FCNN *fcnn){
 	dataSet->SampleDimensionNum = userDefine.SampleDimensionNum;
 	dataSet->TrainSampleNum = userDefine.TrainSampleNum;
 	dataSet->TestSampleNum = userDefine.TestSampleNum;
+	dataSet->ClassificationNum = userDefine.ClassificationNum;
 
 	// Custom ==>> FCNN
 	fcnn->CurrentSampleNum = userDefine.BatchSize; //代表当前神经网络前向传播时的数据样本的个数
@@ -1715,8 +1722,10 @@ int InitDataSet(DataSet *dataSet){
 
 	dataSet->BatchTrainFeature = NULL;
 	dataSet->BatchTrainLabel = NULL;
+	dataSet->BatchTrainLabelOneHot = NULL;
 	dataSet->TestFeature.element = NULL;
 	dataSet->TestLabel.element = NULL;
+	dataSet->TestLabelOneHot.element = NULL;
 	//dataSet->ValidationFeature.element = NULL;
 	//dataSet->ValidationLabel.element = NULL;
 
@@ -1725,67 +1734,69 @@ int InitDataSet(DataSet *dataSet){
 	dataSet->TestSampleNum = -1;
 	dataSet->SampleDimensionNum = -1;
 	dataSet->BatchSize = -1;
+	dataSet->BatchNum = -1;
+	dataSet->remainder = -1;
+	dataSet->ClassificationNum = -1;
 
 	return 0;
 }
 
-void CreateDataSetSpace(DataSet *dataSet){
-	// init Complete dataset
-	dataSet->CompleteFeatureDataSet.row = dataSet->CompleteSampleNum;
-	dataSet->CompleteFeatureDataSet.col = dataSet->SampleDimensionNum;
-	MatCreate(&dataSet->CompleteFeatureDataSet, dataSet->CompleteFeatureDataSet.row, dataSet->CompleteFeatureDataSet.col);
-	MatZeros(&dataSet->CompleteFeatureDataSet);
-
-	dataSet->CompleteLabelDataSet.row = dataSet->CompleteSampleNum;
-	dataSet->CompleteLabelDataSet.col = 1;
-	MatCreate(&dataSet->CompleteLabelDataSet, dataSet->CompleteLabelDataSet.row, dataSet->CompleteLabelDataSet.col);
-	MatZeros(&dataSet->CompleteLabelDataSet);
-
-	// init Training dataset
-	dataSet->CompleteTrainFeature.row = dataSet->TrainSampleNum;
-	dataSet->CompleteTrainFeature.col = dataSet->SampleDimensionNum;
-	MatCreate(&dataSet->CompleteTrainFeature, dataSet->CompleteTrainFeature.row, dataSet->CompleteTrainFeature.col);
-	MatZeros(&dataSet->CompleteTrainFeature);
-
-	dataSet->CompleteTrainLabel.row = dataSet->TrainSampleNum;
-	dataSet->CompleteTrainLabel.col = 1;
-	MatCreate(&dataSet->CompleteTrainLabel, dataSet->CompleteTrainLabel.row, dataSet->CompleteTrainLabel.col);
-	MatZeros(&dataSet->CompleteTrainLabel);
-
-	// init train batch 
+void CalculateAndLoadDataSetPara(DataSet *dataSet) {
 	int batchNum = 0;
 	int remainder = 0;
 	batchNum = dataSet->TrainSampleNum / dataSet->BatchSize;
 	remainder = dataSet->TrainSampleNum % dataSet->BatchSize;
-	if (remainder != 0){
+	if (remainder != 0) {
 		batchNum = batchNum + 1;
 	}
-	//printf("%d\t%d\n", batchNum, remainder);
-	dataSet->BatchTrainFeature = (Mat*)malloc(batchNum*sizeof(Mat));
-	dataSet->BatchTrainLabel = (Mat*)malloc(batchNum*sizeof(Mat));
+	dataSet->BatchNum = batchNum;
+	dataSet->remainder = remainder;
+}
 
-	for (int i = 0; i < batchNum; ++i){
-		if (remainder != 0 && i == batchNum - 1){
-			(dataSet->BatchTrainFeature)[i].row = remainder;
-			(dataSet->BatchTrainFeature)[i].col = dataSet->SampleDimensionNum;
-			MatCreate(&(dataSet->BatchTrainFeature)[i], (dataSet->BatchTrainFeature)[i].row, (dataSet->BatchTrainFeature)[i].col);
+void CreateDataSetSpace(DataSet *dataSet){
+	// init Complete dataset
+	MatCreate(&dataSet->CompleteFeatureDataSet, dataSet->CompleteSampleNum, dataSet->SampleDimensionNum);
+	MatZeros(&dataSet->CompleteFeatureDataSet);
+
+	MatCreate(&dataSet->CompleteLabelDataSet, dataSet->CompleteSampleNum, 1);
+	MatZeros(&dataSet->CompleteLabelDataSet);
+
+	// init Training dataset
+	MatCreate(&dataSet->CompleteTrainFeature, dataSet->TrainSampleNum, dataSet->SampleDimensionNum);
+	MatZeros(&dataSet->CompleteTrainFeature);
+
+
+	MatCreate(&dataSet->CompleteTrainLabel, dataSet->TrainSampleNum, 1);
+	MatZeros(&dataSet->CompleteTrainLabel);
+
+	// init train batch 
+
+	//printf("%d\t%d\n", dataSet->BatchNum, dataSet->remainder);
+	dataSet->BatchTrainFeature = (Mat*)malloc(dataSet->BatchNum *sizeof(Mat));
+	dataSet->BatchTrainLabel = (Mat*)malloc(dataSet->BatchNum *sizeof(Mat));
+	dataSet->BatchTrainLabelOneHot = (Mat*)malloc(dataSet->BatchNum * sizeof(Mat));
+
+	for (int i = 0; i < dataSet->BatchNum; ++i){
+		if (i == dataSet->BatchNum - 1 && dataSet->remainder != 0){
+			MatCreate(&(dataSet->BatchTrainFeature)[i], dataSet->remainder, dataSet->SampleDimensionNum);
 			MatZeros(&(dataSet->BatchTrainFeature)[i]);
 
-			(dataSet->BatchTrainLabel)[i].row = remainder;
-			(dataSet->BatchTrainLabel)[i].col = 1;
-			MatCreate(&(dataSet->BatchTrainLabel)[i], (dataSet->BatchTrainLabel)[i].row, (dataSet->BatchTrainLabel)[i].col);
+			MatCreate(&(dataSet->BatchTrainLabel)[i], dataSet->remainder, 1);
 			MatZeros(&(dataSet->BatchTrainLabel)[i]);
+
+			MatCreate(&(dataSet->BatchTrainLabelOneHot)[i], dataSet->remainder, dataSet->ClassificationNum);
+			//printf("%d\n", dataSet->ClassificationNum);
+			MatZeros(&(dataSet->BatchTrainLabelOneHot)[i]);
 		}
 		else{
-			(dataSet->BatchTrainFeature)[i].row = dataSet->BatchSize;
-			(dataSet->BatchTrainFeature)[i].col = dataSet->SampleDimensionNum;
-			MatCreate(&(dataSet->BatchTrainFeature)[i], (dataSet->BatchTrainFeature)[i].row, (dataSet->BatchTrainFeature)[i].col);
+			MatCreate(&(dataSet->BatchTrainFeature)[i], dataSet->BatchSize, dataSet->SampleDimensionNum);
 			MatZeros(&(dataSet->BatchTrainFeature)[i]);
 
-			(dataSet->BatchTrainLabel)[i].row = dataSet->BatchSize;
-			(dataSet->BatchTrainLabel)[i].col = 1;
-			MatCreate(&(dataSet->BatchTrainLabel)[i], (dataSet->BatchTrainLabel)[i].row, (dataSet->BatchTrainLabel)[i].col);
+			MatCreate(&(dataSet->BatchTrainLabel)[i], dataSet->BatchSize, 1);
 			MatZeros(&(dataSet->BatchTrainLabel)[i]);
+
+			MatCreate(&(dataSet->BatchTrainLabelOneHot)[i], dataSet->BatchSize, dataSet->ClassificationNum);
+			MatZeros(&(dataSet->BatchTrainLabelOneHot)[i]);
 		}
 
 	}
@@ -1793,15 +1804,14 @@ void CreateDataSetSpace(DataSet *dataSet){
 
 
 	// init Training dataset
-	dataSet->TestFeature.row = dataSet->TestSampleNum;
-	dataSet->TestFeature.col = dataSet->SampleDimensionNum;
-	MatCreate(&dataSet->TestFeature, dataSet->TestFeature.row, dataSet->TestFeature.col);
+	MatCreate(&dataSet->TestFeature, dataSet->TestSampleNum, dataSet->SampleDimensionNum);
 	MatZeros(&dataSet->TestFeature);
 
-	dataSet->TestLabel.row = dataSet->TestSampleNum;
-	dataSet->TestLabel.col = 1;
-	MatCreate(&dataSet->TestLabel, dataSet->TestLabel.row, dataSet->TestLabel.col);
+	MatCreate(&dataSet->TestLabel, dataSet->TestSampleNum, 1);
 	MatZeros(&dataSet->TestLabel);
+
+	MatCreate(&dataSet->TestLabelOneHot, dataSet->TestSampleNum, dataSet->ClassificationNum);
+	MatZeros(&dataSet->TestLabelOneHot);
 }
 
 
@@ -1815,31 +1825,25 @@ int DataLoading(Custom userDefine, DataSet *dataSet){
 	MatSetVal(&dataSet->CompleteTrainFeature, userDefine.XValArray);
 	MatSetVal(&dataSet->CompleteTrainLabel, userDefine.YValArray);
 
-	// init batch train data loading
-	int batchNum = 0;
-	int remainder = 0;
-	batchNum = dataSet->TrainSampleNum / dataSet->BatchSize;
-	remainder = dataSet->TrainSampleNum % dataSet->BatchSize;
-	if (remainder != 0){
-		batchNum = batchNum + 1;
-	}
-
-	for (int i = 0; i < batchNum; ++i){
+	// init batch train data loading and onehot coding
+	for (int i = 0; i < dataSet->BatchNum; ++i){
 		MatSetVal(&dataSet->BatchTrainFeature[i], &userDefine.XValArray[i*dataSet->BatchSize*dataSet->SampleDimensionNum]);
 		MatSetVal(&dataSet->BatchTrainLabel[i], &userDefine.YValArray[i*dataSet->BatchSize]);
+		OneHot(&dataSet->BatchTrainLabel[i], dataSet->ClassificationNum, &dataSet->BatchTrainLabelOneHot[i]);
 	}
 
 
-	//test data loading
+	//test data loading and onehot coding
 	MatSetVal(&dataSet->TestFeature, &userDefine.XValArray[dataSet->TrainSampleNum*dataSet->SampleDimensionNum]);
 	MatSetVal(&dataSet->TestLabel, &userDefine.YValArray[dataSet->TrainSampleNum]);
-
+	OneHot(&dataSet->TestLabel, dataSet->ClassificationNum, &dataSet->TestLabelOneHot);
 
 	return 0;
 }
 
 
 void DatasetConstruction(Custom userDefine, DataSet *dataSet){
+	CalculateAndLoadDataSetPara(dataSet);
 	CreateDataSetSpace(dataSet);
 	DataLoading(userDefine, dataSet);
 }
@@ -2180,15 +2184,15 @@ float LossFunction(Mat *src, Mat *dst, int Nstr_LossF){
 }
 
 //神经网络向前传播， 返回loss scalar
-float NNforward(Mat featureMat, Mat labelMat, FCNN *fcnn) {
+float NNforward(Mat featureMat, Mat labelMatOneHot, FCNN *fcnn) {
 
 #ifdef MAT_LEGAL_CHECKING
-	if (featureMat.row != labelMat.row) {
+	if (featureMat.row != labelMatOneHot.row) {
 		printf("\t\terr check, mismatching matrix for NNforward\t\t\n");
 		printf("\t\tfeatureMatShape:\n\t\t\t");
 		MatShape(&featureMat);
 		printf("\t\tlabelMatMatShape:\n\t\t\t");
-		MatShape(&labelMat);
+		MatShape(&labelMatOneHot);
 		return -1.f;
 	}
 #endif
@@ -2204,11 +2208,6 @@ float NNforward(Mat featureMat, Mat labelMat, FCNN *fcnn) {
 	MatCopy(&featureMat, &fcnn->Layer[0].ActiMat);
 	MatPlusCol(&fcnn->Layer[0].ActiMat, &fcnn->Layer[0].ActiMatPlus);
 
-	Mat OneHotMat;
-	MatCreate(&OneHotMat, fcnn->CurrentSampleNum, fcnn->ClassificationNum);
-
-	OneHot(&labelMat, fcnn->ClassificationNum, &OneHotMat);
-
 		// 向前传播
 	for (int i = 0; i < fcnn->HiddenLayerNum+1; ++i){
 			MatMul(&fcnn->Layer[i].ActiMatPlus, &fcnn->Layer[i+1].WeightBiasMat, &fcnn->Layer[i + 1].SumMat);
@@ -2218,13 +2217,12 @@ float NNforward(Mat featureMat, Mat labelMat, FCNN *fcnn) {
 			}
 		}
 		//计算loss
-	MatDump(&OneHotMat);
-	MatDump(&fcnn->Layer[fcnn->HiddenLayerNum + 1].ActiMat);
+	//MatDump(&OneHotMat);
+	//MatDump(&fcnn->Layer[fcnn->HiddenLayerNum + 1].ActiMat);
 
 	float loss = -1.f;
-	loss = LossFunction(&fcnn->Layer[fcnn->HiddenLayerNum + 1].ActiMat, &OneHotMat, fcnn->LossFuncNum);
+	loss = LossFunction(&fcnn->Layer[fcnn->HiddenLayerNum + 1].ActiMat, &labelMatOneHot, fcnn->LossFuncNum);
 	
-	MatDelete(&OneHotMat);
 	return loss;
 }
 
@@ -2320,86 +2318,122 @@ Mat * LossFunDerivation(Mat *ActiMat, Mat *DerivativeActiMat, Mat One_hotMat, in
 	return NULL;
 }
 
-Mat * NNOuputLayerBackward(int N_hidden, int N_sample, int* N_layerNeuron, int *NStr_ActiFsHidden, 
-	int Nstr_LossF, Mat* P_NablaWbMat, Mat* P_ActiMatPlus, Mat* P_SumMat, Mat* P_DeltaMat, Mat* P_ActiMat, Mat* P_ActiFunDerivation, Mat Mat_oneHot){
-	
-	if (NStr_ActiFsHidden[N_hidden+1] == 5 && Nstr_LossF == 1){//softmax+crossentropy
-		MatSub(&P_ActiMat[N_hidden+1], &Mat_oneHot, &P_DeltaMat[N_hidden + 1]);
-		//MatDump(&P_ActiMat[N_hidden + 1]);
-		//MatDump(&Mat_oneHot);
-		//MatDump(&P_DeltaMat[N_hidden + 1]);
-	}
-	else{
-		Mat tempMat;
-		MatCreate(&tempMat, N_sample, N_layerNeuron[N_hidden + 1]);
+//Mat * NNOuputLayerBackward(FCNN *fcnn, Mat OneHotMat) {
+//
+//	if (fcnn->Layer[fcnn->HiddenLayerNum+1].AcitFuncNum == 5 && fcnn->LossFuncNum == 1) {//softmax+crossentropy
+//		MatSub(&fcnn->Layer[fcnn->HiddenLayerNum + 1].ActiMat, &OneHotMat, &P_DeltaMat[N_hidden + 1]);
+//		//MatDump(&P_ActiMat[N_hidden + 1]);
+//		//MatDump(&Mat_oneHot);
+//		//MatDump(&P_DeltaMat[N_hidden + 1]);
+//	}
+//	else {
+//		Mat tempMat;
+//		MatCreate(&tempMat, N_sample, N_layerNeuron[N_hidden + 1]);
+//
+//		LossFunDerivation(&P_ActiMat[N_hidden + 1], &tempMat, Mat_oneHot, Nstr_LossF);
+//
+//		ActiFunDerivation(P_SumMat[N_hidden + 1], &P_ActiFunDerivation[N_hidden + 1], NStr_ActiFsHidden[N_hidden + 1]);
+//
+//		MatProduct(&P_ActiMat[N_hidden + 1], &P_ActiFunDerivation[N_hidden + 1], &P_DeltaMat[N_hidden + 1]);
+//
+//		MatDelete(&tempMat);
+//		//MatDump(&P_DeltaMat[N_hidden + 1]);
+//	}
+//
+//	Mat ActiPlusTrans;
+//	MatCreate(&ActiPlusTrans, N_layerNeuron[N_hidden] + 1, N_sample);
+//	MatTrans(&P_ActiMatPlus[N_hidden], &ActiPlusTrans);
+//	MatMul(&ActiPlusTrans, &P_DeltaMat[N_hidden + 1], &P_NablaWbMat[N_hidden + 1]);
+//	//MatDump(&P_NablaWbMat[N_hidden + 1]);
+//	MatNumMul(1.f / P_SumMat[1].row, &P_NablaWbMat[N_hidden + 1], &P_NablaWbMat[N_hidden + 1]);
+//	//MatDump(&P_NablaWbMat[N_hidden + 1]);
+//
+//	return NULL;
+//
+//}
 
-		LossFunDerivation(&P_ActiMat[N_hidden + 1], &tempMat, Mat_oneHot, Nstr_LossF);
 
-		ActiFunDerivation(P_SumMat[N_hidden + 1], &P_ActiFunDerivation[N_hidden+1], NStr_ActiFsHidden[N_hidden + 1]);
 
-		MatProduct(&P_ActiMat[N_hidden + 1], &P_ActiFunDerivation[N_hidden + 1], &P_DeltaMat[N_hidden + 1]);
-		
-		MatDelete(&tempMat);
-		//MatDump(&P_DeltaMat[N_hidden + 1]);
-	}
+//Mat * NNOuputLayerBackward(int N_hidden, int N_sample, int* N_layerNeuron, int *NStr_ActiFsHidden, 
+//	int Nstr_LossF, Mat* P_NablaWbMat, Mat* P_ActiMatPlus, Mat* P_SumMat, Mat* P_DeltaMat, Mat* P_ActiMat, Mat* P_ActiFunDerivation, Mat Mat_oneHot){
+//	
+//	if (NStr_ActiFsHidden[N_hidden+1] == 5 && Nstr_LossF == 1){//softmax+crossentropy
+//		MatSub(&P_ActiMat[N_hidden+1], &Mat_oneHot, &P_DeltaMat[N_hidden + 1]);
+//		//MatDump(&P_ActiMat[N_hidden + 1]);
+//		//MatDump(&Mat_oneHot);
+//		//MatDump(&P_DeltaMat[N_hidden + 1]);
+//	}
+//	else{
+//		Mat tempMat;
+//		MatCreate(&tempMat, N_sample, N_layerNeuron[N_hidden + 1]);
+//
+//		LossFunDerivation(&P_ActiMat[N_hidden + 1], &tempMat, Mat_oneHot, Nstr_LossF);
+//
+//		ActiFunDerivation(P_SumMat[N_hidden + 1], &P_ActiFunDerivation[N_hidden+1], NStr_ActiFsHidden[N_hidden + 1]);
+//
+//		MatProduct(&P_ActiMat[N_hidden + 1], &P_ActiFunDerivation[N_hidden + 1], &P_DeltaMat[N_hidden + 1]);
+//		
+//		MatDelete(&tempMat);
+//		//MatDump(&P_DeltaMat[N_hidden + 1]);
+//	}
+//
+//	Mat ActiPlusTrans;
+//	MatCreate(&ActiPlusTrans, N_layerNeuron[N_hidden]+1, N_sample);
+//	MatTrans(&P_ActiMatPlus[N_hidden], &ActiPlusTrans);
+//	MatMul(&ActiPlusTrans, &P_DeltaMat[N_hidden + 1], &P_NablaWbMat[N_hidden + 1]);
+//	//MatDump(&P_NablaWbMat[N_hidden + 1]);
+//	MatNumMul(1.f / P_SumMat[1].row, &P_NablaWbMat[N_hidden + 1], &P_NablaWbMat[N_hidden + 1]);
+//	//MatDump(&P_NablaWbMat[N_hidden + 1]);
+//
+//	return NULL;
+//
+//}
 
-	Mat ActiPlusTrans;
-	MatCreate(&ActiPlusTrans, N_layerNeuron[N_hidden]+1, N_sample);
-	MatTrans(&P_ActiMatPlus[N_hidden], &ActiPlusTrans);
-	MatMul(&ActiPlusTrans, &P_DeltaMat[N_hidden + 1], &P_NablaWbMat[N_hidden + 1]);
-	//MatDump(&P_NablaWbMat[N_hidden + 1]);
-	MatNumMul(1.f / P_SumMat[1].row, &P_NablaWbMat[N_hidden + 1], &P_NablaWbMat[N_hidden + 1]);
-	//MatDump(&P_NablaWbMat[N_hidden + 1]);
-
-	return NULL;
-
-}
-
-Mat * NNBackward(int N_hidden, int N_sample, int* N_layerNeuron, int *NStr_ActiFsHidden, int Nstr_LossF, Mat* P_NablaWbMat, Mat* P_SumMat, 
-	Mat* P_DeltaMat, Mat* P_ActiFunDerivation, Mat* P_ActiMat, Mat* P_ActiMatPlus, Mat Mat_oneHot, Mat* P_WeightMat){
-
-	//printf("NN Start to backward......\n");
-
-	//输出层反向传播
-	NNOuputLayerBackward(N_hidden, N_sample, N_layerNeuron, NStr_ActiFsHidden, Nstr_LossF, P_NablaWbMat, P_ActiMatPlus, P_SumMat, P_DeltaMat, 
-P_ActiMat, P_ActiFunDerivation, Mat_oneHot);
-
-	//MatDump(&P_NablaWbMat[N_hidden + 1]);
-	//隐藏层反向传播
-	for (int i = N_hidden; i > 0; --i){
-		Mat tempTransW;
-		Mat ActiFuncMat;
-		Mat tempMulMat;
-		Mat tempProdMat;
-		Mat tempTransActi;
-
-		MatCreate(&tempTransW, P_WeightMat[i+1].col, P_WeightMat[i+1].row);
-		MatCreate(&ActiFuncMat, P_SumMat[i].row, P_SumMat[i].col);
-		MatCreate(&tempMulMat, P_DeltaMat[i + 1].row, P_WeightMat[i+1].row);
-		MatCreate(&tempProdMat, P_SumMat[i].row, P_SumMat[i].col);
-		MatCreate(&tempTransActi, P_ActiMatPlus[i - 1].col, P_ActiMatPlus[i - 1].row);
-
-		MatTrans(&P_WeightMat[i+1], &tempTransW);
-		ActiFunDerivation(P_SumMat[i], &ActiFuncMat, i);
-
-		MatMul(&P_DeltaMat[i + 1], &tempTransW, &tempMulMat);
-		MatProduct(&tempMulMat, &ActiFuncMat, &P_DeltaMat[i]);
-
-		MatTrans(&P_ActiMatPlus[i - 1], &tempTransActi);
-		MatMul(&tempTransActi, &P_DeltaMat[i], &P_NablaWbMat[i]);
-		//MatDump(&P_NablaWbMat[i]);
-		MatNumMul(1.f / N_sample, &P_NablaWbMat[i], &P_NablaWbMat[i]);
-		//MatDump(&P_NablaWbMat[i]);
-
-		MatDelete(&tempTransW);
-		MatDelete(&ActiFuncMat);
-		MatDelete(&tempMulMat);
-		MatDelete(&tempProdMat);
-		MatDelete(&tempTransActi);
-		//break;
-	}
-	return NULL;
-}
+//Mat * NNBackward(int N_hidden, int N_sample, int* N_layerNeuron, int *NStr_ActiFsHidden, int Nstr_LossF, Mat* P_NablaWbMat, Mat* P_SumMat, 
+//	Mat* P_DeltaMat, Mat* P_ActiFunDerivation, Mat* P_ActiMat, Mat* P_ActiMatPlus, Mat Mat_oneHot, Mat* P_WeightMat){
+//
+//	//printf("NN Start to backward......\n");
+//
+//	//输出层反向传播
+//	NNOuputLayerBackward(N_hidden, N_sample, N_layerNeuron, NStr_ActiFsHidden, Nstr_LossF, P_NablaWbMat, P_ActiMatPlus, P_SumMat, P_DeltaMat, 
+//P_ActiMat, P_ActiFunDerivation, Mat_oneHot);
+//
+//	//MatDump(&P_NablaWbMat[N_hidden + 1]);
+//	//隐藏层反向传播
+//	for (int i = N_hidden; i > 0; --i){
+//		Mat tempTransW;
+//		Mat ActiFuncMat;
+//		Mat tempMulMat;
+//		Mat tempProdMat;
+//		Mat tempTransActi;
+//
+//		MatCreate(&tempTransW, P_WeightMat[i+1].col, P_WeightMat[i+1].row);
+//		MatCreate(&ActiFuncMat, P_SumMat[i].row, P_SumMat[i].col);
+//		MatCreate(&tempMulMat, P_DeltaMat[i + 1].row, P_WeightMat[i+1].row);
+//		MatCreate(&tempProdMat, P_SumMat[i].row, P_SumMat[i].col);
+//		MatCreate(&tempTransActi, P_ActiMatPlus[i - 1].col, P_ActiMatPlus[i - 1].row);
+//
+//		MatTrans(&P_WeightMat[i+1], &tempTransW);
+//		ActiFunDerivation(P_SumMat[i], &ActiFuncMat, i);
+//
+//		MatMul(&P_DeltaMat[i + 1], &tempTransW, &tempMulMat);
+//		MatProduct(&tempMulMat, &ActiFuncMat, &P_DeltaMat[i]);
+//
+//		MatTrans(&P_ActiMatPlus[i - 1], &tempTransActi);
+//		MatMul(&tempTransActi, &P_DeltaMat[i], &P_NablaWbMat[i]);
+//		//MatDump(&P_NablaWbMat[i]);
+//		MatNumMul(1.f / N_sample, &P_NablaWbMat[i], &P_NablaWbMat[i]);
+//		//MatDump(&P_NablaWbMat[i]);
+//
+//		MatDelete(&tempTransW);
+//		MatDelete(&ActiFuncMat);
+//		MatDelete(&tempMulMat);
+//		MatDelete(&tempProdMat);
+//		MatDelete(&tempTransActi);
+//		//break;
+//	}
+//	return NULL;
+//}
 
 /************************************************************************/
 /*                           神经网络反向传播                           */
@@ -2533,7 +2567,7 @@ int main(){
 	LoadParaFromCustom(userDefine, &dataSet, &fcnn);
 
 
-	CreateDataSetSpace(&dataSet);
+	DatasetConstruction(userDefine, &dataSet);
 
 	//MatDump(&dataSet.CompleteFeatureDataSet);
 	//MatDump(&dataSet.CompleteLabelDataSet);
@@ -2543,36 +2577,13 @@ int main(){
 
 	//MatDump(&dataSet.TestFeature);
 	//MatDump(&dataSet.TestLabel);
-	//int batchNum = 0;
-	//int remainder = 0;
-	//batchNum = dataSet.TrainSampleNum / dataSet.BatchSize;
-	//remainder = dataSet.TrainSampleNum % dataSet.BatchSize;
-	//if (remainder != 0){
-	//	batchNum = batchNum + 1;
-	//}
-	//printf("%d\t%d\n", batchNum, remainder);
-
-	//for (int i = 0; i < batchNum; ++i){
-	//	MatDump(&(dataSet.BatchTrainFeature)[i]);
-	//}
 	
-	DataLoading(userDefine, &dataSet);
-
-	DatasetConstruction(userDefine, &dataSet);
 
 	//MatDump(&dataSet.CompleteFeatureDataSet);
 	//MatDump(&dataSet.CompleteLabelDataSet);
 
 	//MatDump(&dataSet.CompleteTrainFeature);
 	//MatDump(&dataSet.CompleteTrainLabel);
-	//int batchNum = 0;
-	//int remainder = 0;
-	//batchNum = dataSet.TrainSampleNum / dataSet.BatchSize;
-	//remainder = dataSet.TrainSampleNum % dataSet.BatchSize;
-	//if (remainder != 0){
-	//	batchNum = batchNum + 1;
-	//}
-	///*printf("%d\t%d\n", batchNum, remainder);*/
 
 	//for (int i = 0; i < batchNum; ++i){
 	//	MatDump(&(dataSet.BatchTrainFeature)[i]);
@@ -2600,37 +2611,37 @@ int main(){
 	/*前向传播*/
 	float loss=0.f;
 	char buf[12];
-	loss = NNforward(dataSet.BatchTrainFeature[0], dataSet.BatchTrainLabel[0], &fcnn);
-	printf("%s\n", F2S(loss, buf));
+	loss = NNforward(dataSet.BatchTrainFeature[0], dataSet.BatchTrainLabelOneHot[0], &fcnn);
+	printf("loss=%s\n", F2S(loss, buf));
 
 
 
-	for (int i = 0; i < userDefine.HiddenLayerNum + 2; ++i) {
-		printf("第%d层：\n", i);
-		printf("神经元个数：%d\n", fcnn.Layer[i].NeuronNum);
-		printf("激活函数：%d\n", fcnn.Layer[i].AcitFuncNum);
+	//for (int i = 0; i < userDefine.HiddenLayerNum + 2; ++i) {
+	//	printf("第%d层：\n", i);
+	//	printf("神经元个数：%d\n", fcnn.Layer[i].NeuronNum);
+	//	printf("激活函数：%d\n", fcnn.Layer[i].AcitFuncNum);
 
-		printf("激活值矩阵：\n");
-		MatDump(&fcnn.Layer[i].ActiMat);
-		printf("激活值扩展矩阵：\n");
-		MatDump(&fcnn.Layer[i].ActiMatPlus);
-		printf("求和值值矩阵：\n");
-		MatDump(&fcnn.Layer[i].SumMat);
-		printf("激活函数求导值矩阵：\n");
-		MatDump(&fcnn.Layer[i].ActiFunDerivationMat);
-		printf("反向传播中间变量值矩阵：\n");
-		MatDump(&fcnn.Layer[i].DeltaMat);
+	//	printf("激活值矩阵：\n");
+	//	MatDump(&fcnn.Layer[i].ActiMat);
+	//	printf("激活值扩展矩阵：\n");
+	//	MatDump(&fcnn.Layer[i].ActiMatPlus);
+	//	printf("求和值值矩阵：\n");
+	//	MatDump(&fcnn.Layer[i].SumMat);
+	//	printf("激活函数求导值矩阵：\n");
+	//	MatDump(&fcnn.Layer[i].ActiFunDerivationMat);
+	//	printf("反向传播中间变量值矩阵：\n");
+	//	MatDump(&fcnn.Layer[i].DeltaMat);
 
-		printf("权值矩阵：\n");
-		MatDump(&fcnn.Layer[i].WeightMat);
-		printf("权值偏置矩阵：\n");
-		MatDump(&fcnn.Layer[i].WeightBiasMat);
-		printf("权值偏置导数矩阵：\n");
-		MatDump(&fcnn.Layer[i].NablaWbMat);
+	//	printf("权值矩阵：\n");
+	//	MatDump(&fcnn.Layer[i].WeightMat);
+	//	printf("权值偏置矩阵：\n");
+	//	MatDump(&fcnn.Layer[i].WeightBiasMat);
+	//	printf("权值偏置导数矩阵：\n");
+	//	MatDump(&fcnn.Layer[i].NablaWbMat);
 
 
-		printf("\n\n\n");
-	}
+	//	printf("\n\n\n");
+	//}
 
 
 

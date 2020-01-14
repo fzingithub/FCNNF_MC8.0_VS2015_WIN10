@@ -46,13 +46,18 @@ Mat CompleteTrainFeature and
 Mat CompleteTrainLabel and 
 Mat *BatchTrainFeature and 
 Mat *BatchTrainLabel and 
+Mat *BatchTrainLabelOneHot and 
 Mat TestFeature and 
 Mat TestLabel and 
+Mat TestLabelOneHot and 
 int CompleteSampleNum and 
 int TrainSampleNum and 
 int TestSampleNum and 
 int SampleDimensionNum and 
-int BatchSize 
+int ClassificationNum and 
+int BatchSize and 
+int BatchNum and 
+int remainder 
 };
  function absolute ( float a,float RValue )
  {
@@ -2531,6 +2536,7 @@ int BatchSize
      dataSet->SampleDimensionNum:=userDefine.SampleDimensionNum;
      dataSet->TrainSampleNum:=userDefine.TrainSampleNum;
      dataSet->TestSampleNum:=userDefine.TestSampleNum;
+     dataSet->ClassificationNum:=userDefine.ClassificationNum;
      fcnn->CurrentSampleNum:=userDefine.BatchSize;
      fcnn->SampleDimensionNum:=userDefine.SampleDimensionNum;
      fcnn->HiddenLayerNum:=userDefine.HiddenLayerNum;
@@ -2549,129 +2555,118 @@ int BatchSize
      dataSet->CompleteTrainLabel.element:=NULL;
      dataSet->BatchTrainFeature:=NULL;
      dataSet->BatchTrainLabel:=NULL;
+     dataSet->BatchTrainLabelOneHot:=NULL;
      dataSet->TestFeature.element:=NULL;
      dataSet->TestLabel.element:=NULL;
+     dataSet->TestLabelOneHot.element:=NULL;
      dataSet->CompleteSampleNum:=-1;
      dataSet->TrainSampleNum:=-1;
      dataSet->TestSampleNum:=-1;
      dataSet->SampleDimensionNum:=-1;
      dataSet->BatchSize:=-1;
+     dataSet->BatchNum:=-1;
+     dataSet->remainder:=-1;
+     dataSet->ClassificationNum:=-1;
      return<==1 and RValue:=0;
      skip
      )
      }; 
-  function CreateDataSetSpace ( DataSet *dataSet )
+  function CalculateAndLoadDataSetPara ( DataSet *dataSet )
  {
-     frame(CreateDataSetSpace_batchNum,CreateDataSetSpace_remainder,CreateDataSetSpace_i) and ( 
-     dataSet->CompleteFeatureDataSet.row:=dataSet->CompleteSampleNum;
-     dataSet->CompleteFeatureDataSet.col:=dataSet->SampleDimensionNum;
-     MatCreate(&dataSet->CompleteFeatureDataSet,dataSet->CompleteFeatureDataSet.row,dataSet->CompleteFeatureDataSet.col,RValue);
-     MatZeros(&dataSet->CompleteFeatureDataSet,RValue);
-     dataSet->CompleteLabelDataSet.row:=dataSet->CompleteSampleNum;
-     dataSet->CompleteLabelDataSet.col:=1;
-     MatCreate(&dataSet->CompleteLabelDataSet,dataSet->CompleteLabelDataSet.row,dataSet->CompleteLabelDataSet.col,RValue);
-     MatZeros(&dataSet->CompleteLabelDataSet,RValue);
-     dataSet->CompleteTrainFeature.row:=dataSet->TrainSampleNum;
-     dataSet->CompleteTrainFeature.col:=dataSet->SampleDimensionNum;
-     MatCreate(&dataSet->CompleteTrainFeature,dataSet->CompleteTrainFeature.row,dataSet->CompleteTrainFeature.col,RValue);
-     MatZeros(&dataSet->CompleteTrainFeature,RValue);
-     dataSet->CompleteTrainLabel.row:=dataSet->TrainSampleNum;
-     dataSet->CompleteTrainLabel.col:=1;
-     MatCreate(&dataSet->CompleteTrainLabel,dataSet->CompleteTrainLabel.row,dataSet->CompleteTrainLabel.col,RValue);
-     MatZeros(&dataSet->CompleteTrainLabel,RValue);
-     int CreateDataSetSpace_batchNum<==0 and skip;
-     int CreateDataSetSpace_remainder<==0 and skip;
-     CreateDataSetSpace_batchNum:=dataSet->TrainSampleNum/ dataSet->BatchSize;
-     CreateDataSetSpace_remainder:=dataSet->TrainSampleNum % dataSet->BatchSize;
-     if(CreateDataSetSpace_remainder!=0) then 
+     frame(CalculateAndLoadDataSetPara_batchNum,CalculateAndLoadDataSetPara_remainder) and ( 
+     int CalculateAndLoadDataSetPara_batchNum<==0 and skip;
+     int CalculateAndLoadDataSetPara_remainder<==0 and skip;
+     CalculateAndLoadDataSetPara_batchNum:=dataSet->TrainSampleNum/ dataSet->BatchSize;
+     CalculateAndLoadDataSetPara_remainder:=dataSet->TrainSampleNum % dataSet->BatchSize;
+     if(CalculateAndLoadDataSetPara_remainder!=0) then 
      {
-         CreateDataSetSpace_batchNum:=CreateDataSetSpace_batchNum+1
+         CalculateAndLoadDataSetPara_batchNum:=CalculateAndLoadDataSetPara_batchNum+1
          
      }
      else 
      {
           skip 
      };
-     dataSet->BatchTrainFeature:=(Mat *)malloc(CreateDataSetSpace_batchNum*sizeof(Mat));
-     dataSet->BatchTrainLabel:=(Mat *)malloc(CreateDataSetSpace_batchNum*sizeof(Mat));
+     dataSet->BatchNum:=CalculateAndLoadDataSetPara_batchNum;
+     dataSet->remainder:=CalculateAndLoadDataSetPara_remainder
+     )
+     }; 
+  function CreateDataSetSpace ( DataSet *dataSet )
+ {
+     frame(CreateDataSetSpace_i) and ( 
+     MatCreate(&dataSet->CompleteFeatureDataSet,dataSet->CompleteSampleNum,dataSet->SampleDimensionNum,RValue);
+     MatZeros(&dataSet->CompleteFeatureDataSet,RValue);
+     MatCreate(&dataSet->CompleteLabelDataSet,dataSet->CompleteSampleNum,1,RValue);
+     MatZeros(&dataSet->CompleteLabelDataSet,RValue);
+     MatCreate(&dataSet->CompleteTrainFeature,dataSet->TrainSampleNum,dataSet->SampleDimensionNum,RValue);
+     MatZeros(&dataSet->CompleteTrainFeature,RValue);
+     MatCreate(&dataSet->CompleteTrainLabel,dataSet->TrainSampleNum,1,RValue);
+     MatZeros(&dataSet->CompleteTrainLabel,RValue);
+     dataSet->BatchTrainFeature:=(Mat *)malloc(dataSet->BatchNum*sizeof(Mat));
+     dataSet->BatchTrainLabel:=(Mat *)malloc(dataSet->BatchNum*sizeof(Mat));
+     dataSet->BatchTrainLabelOneHot:=(Mat *)malloc(dataSet->BatchNum*sizeof(Mat));
      int CreateDataSetSpace_i<==0 and skip;
      
-     while( (CreateDataSetSpace_i<CreateDataSetSpace_batchNum) )
+     while( (CreateDataSetSpace_i<dataSet->BatchNum) )
      {
-         if(CreateDataSetSpace_remainder!=0 AND CreateDataSetSpace_i=CreateDataSetSpace_batchNum-1) then 
+         if(CreateDataSetSpace_i=dataSet->BatchNum-1 AND dataSet->remainder!=0) then 
          {
-             (dataSet->BatchTrainFeature)[CreateDataSetSpace_i].row:=CreateDataSetSpace_remainder;
-             (dataSet->BatchTrainFeature)[CreateDataSetSpace_i].col:=dataSet->SampleDimensionNum;
-             MatCreate(&(dataSet->BatchTrainFeature)[CreateDataSetSpace_i],(dataSet->BatchTrainFeature)[CreateDataSetSpace_i].row,(dataSet->BatchTrainFeature)[CreateDataSetSpace_i].col,RValue);
+             MatCreate(&(dataSet->BatchTrainFeature)[CreateDataSetSpace_i],dataSet->remainder,dataSet->SampleDimensionNum,RValue);
              MatZeros(&(dataSet->BatchTrainFeature)[CreateDataSetSpace_i],RValue);
-             (dataSet->BatchTrainLabel)[CreateDataSetSpace_i].row:=CreateDataSetSpace_remainder;
-             (dataSet->BatchTrainLabel)[CreateDataSetSpace_i].col:=1;
-             MatCreate(&(dataSet->BatchTrainLabel)[CreateDataSetSpace_i],(dataSet->BatchTrainLabel)[CreateDataSetSpace_i].row,(dataSet->BatchTrainLabel)[CreateDataSetSpace_i].col,RValue);
-             MatZeros(&(dataSet->BatchTrainLabel)[CreateDataSetSpace_i],RValue)
+             MatCreate(&(dataSet->BatchTrainLabel)[CreateDataSetSpace_i],dataSet->remainder,1,RValue);
+             MatZeros(&(dataSet->BatchTrainLabel)[CreateDataSetSpace_i],RValue);
+             MatCreate(&(dataSet->BatchTrainLabelOneHot)[CreateDataSetSpace_i],dataSet->remainder,dataSet->ClassificationNum,RValue);
+             MatZeros(&(dataSet->BatchTrainLabelOneHot)[CreateDataSetSpace_i],RValue)
              
          }
          else
          {
-             (dataSet->BatchTrainFeature)[CreateDataSetSpace_i].row:=dataSet->BatchSize;
-             (dataSet->BatchTrainFeature)[CreateDataSetSpace_i].col:=dataSet->SampleDimensionNum;
-             MatCreate(&(dataSet->BatchTrainFeature)[CreateDataSetSpace_i],(dataSet->BatchTrainFeature)[CreateDataSetSpace_i].row,(dataSet->BatchTrainFeature)[CreateDataSetSpace_i].col,RValue);
+             MatCreate(&(dataSet->BatchTrainFeature)[CreateDataSetSpace_i],dataSet->BatchSize,dataSet->SampleDimensionNum,RValue);
              MatZeros(&(dataSet->BatchTrainFeature)[CreateDataSetSpace_i],RValue);
-             (dataSet->BatchTrainLabel)[CreateDataSetSpace_i].row:=dataSet->BatchSize;
-             (dataSet->BatchTrainLabel)[CreateDataSetSpace_i].col:=1;
-             MatCreate(&(dataSet->BatchTrainLabel)[CreateDataSetSpace_i],(dataSet->BatchTrainLabel)[CreateDataSetSpace_i].row,(dataSet->BatchTrainLabel)[CreateDataSetSpace_i].col,RValue);
-             MatZeros(&(dataSet->BatchTrainLabel)[CreateDataSetSpace_i],RValue)
+             MatCreate(&(dataSet->BatchTrainLabel)[CreateDataSetSpace_i],dataSet->BatchSize,1,RValue);
+             MatZeros(&(dataSet->BatchTrainLabel)[CreateDataSetSpace_i],RValue);
+             MatCreate(&(dataSet->BatchTrainLabelOneHot)[CreateDataSetSpace_i],dataSet->BatchSize,dataSet->ClassificationNum,RValue);
+             MatZeros(&(dataSet->BatchTrainLabelOneHot)[CreateDataSetSpace_i],RValue)
          };
          CreateDataSetSpace_i:=CreateDataSetSpace_i+1
          
      };
-     dataSet->TestFeature.row:=dataSet->TestSampleNum;
-     dataSet->TestFeature.col:=dataSet->SampleDimensionNum;
-     MatCreate(&dataSet->TestFeature,dataSet->TestFeature.row,dataSet->TestFeature.col,RValue);
+     MatCreate(&dataSet->TestFeature,dataSet->TestSampleNum,dataSet->SampleDimensionNum,RValue);
      MatZeros(&dataSet->TestFeature,RValue);
-     dataSet->TestLabel.row:=dataSet->TestSampleNum;
-     dataSet->TestLabel.col:=1;
-     MatCreate(&dataSet->TestLabel,dataSet->TestLabel.row,dataSet->TestLabel.col,RValue);
-     MatZeros(&dataSet->TestLabel,RValue)
+     MatCreate(&dataSet->TestLabel,dataSet->TestSampleNum,1,RValue);
+     MatZeros(&dataSet->TestLabel,RValue);
+     MatCreate(&dataSet->TestLabelOneHot,dataSet->TestSampleNum,dataSet->ClassificationNum,RValue);
+     MatZeros(&dataSet->TestLabelOneHot,RValue)
      )
      }; 
   function DataLoading ( Custom userDefine,DataSet *dataSet,int RValue )
  {
-     frame(DataLoading_batchNum,DataLoading_remainder,DataLoading_i,return) and ( 
+     frame(DataLoading_i,return) and ( 
      int return<==0 and skip;
      MatSetVal(&dataSet->CompleteFeatureDataSet,userDefine.XValArray,RValue);
      MatSetVal(&dataSet->CompleteLabelDataSet,userDefine.YValArray,RValue);
      MatSetVal(&dataSet->CompleteTrainFeature,userDefine.XValArray,RValue);
      MatSetVal(&dataSet->CompleteTrainLabel,userDefine.YValArray,RValue);
-     int DataLoading_batchNum<==0 and skip;
-     int DataLoading_remainder<==0 and skip;
-     DataLoading_batchNum:=dataSet->TrainSampleNum/ dataSet->BatchSize;
-     DataLoading_remainder:=dataSet->TrainSampleNum % dataSet->BatchSize;
-     if(DataLoading_remainder!=0) then 
-     {
-         DataLoading_batchNum:=DataLoading_batchNum+1
-         
-     }
-     else 
-     {
-          skip 
-     };
      int DataLoading_i<==0 and skip;
      
-     while( (DataLoading_i<DataLoading_batchNum) )
+     while( (DataLoading_i<dataSet->BatchNum) )
      {
          MatSetVal(&dataSet->BatchTrainFeature[DataLoading_i],&userDefine.XValArray[DataLoading_i*dataSet->BatchSize*dataSet->SampleDimensionNum],RValue);
          MatSetVal(&dataSet->BatchTrainLabel[DataLoading_i],&userDefine.YValArray[DataLoading_i*dataSet->BatchSize],RValue);
+         OneHot(&dataSet->BatchTrainLabel[DataLoading_i],dataSet->ClassificationNum,&dataSet->BatchTrainLabelOneHot[DataLoading_i],RValue);
          DataLoading_i:=DataLoading_i+1
          
      };
      MatSetVal(&dataSet->TestFeature,&userDefine.XValArray[dataSet->TrainSampleNum*dataSet->SampleDimensionNum],RValue);
      MatSetVal(&dataSet->TestLabel,&userDefine.YValArray[dataSet->TrainSampleNum],RValue);
+     OneHot(&dataSet->TestLabel,dataSet->ClassificationNum,&dataSet->TestLabelOneHot,RValue);
      return<==1 and RValue:=0;
      skip
      )
      }; 
   function DatasetConstruction ( Custom userDefine,DataSet *dataSet )
  {
+     CalculateAndLoadDataSetPara(dataSet);
      CreateDataSetSpace(dataSet);
      DataLoading(userDefine,dataSet,RValue)
      
@@ -3006,17 +3001,17 @@ int BatchSize
  }
  )
  }; 
-  function NNforward ( Mat featureMat,Mat labelMat,FCNN *fcnn,float RValue )
+  function NNforward ( Mat featureMat,Mat labelMatOneHot,FCNN *fcnn,float RValue )
  {
-     frame(NNforward_OneHotMat,NNforward_i,NNforward_loss,return) and ( 
+     frame(NNforward_i,NNforward_loss,return) and ( 
      int return<==0 and skip;
-     if(featureMat.row!=labelMat.row) then 
+     if(featureMat.row!=labelMatOneHot.row) then 
      {
          output ("\t\terr check, mismatching matrix for NNforward\t\t\n") and skip;
          output ("\t\tfeatureMatShape:\n\t\t\t") and skip;
          MatShape(&featureMat);
          output ("\t\tlabelMatMatShape:\n\t\t\t") and skip;
-         MatShape(&labelMat);
+         MatShape(&labelMatOneHot);
          return<==1 and RValue:=-1.0;
          skip
          
@@ -3039,9 +3034,6 @@ int BatchSize
          };
          MatCopy(&featureMat,&fcnn->Layer[0].ActiMat);
          MatPlusCol(&fcnn->Layer[0].ActiMat,&fcnn->Layer[0].ActiMatPlus);
-         Mat NNforward_OneHotMat and skip;
-         MatCreate(&NNforward_OneHotMat,fcnn->CurrentSampleNum,fcnn->ClassificationNum,RValue);
-         OneHot(&labelMat,fcnn->ClassificationNum,&NNforward_OneHotMat,RValue);
          int NNforward_i<==0 and skip;
          
          while( (NNforward_i<fcnn->HiddenLayerNum+1) )
@@ -3060,11 +3052,8 @@ int BatchSize
              NNforward_i:=NNforward_i+1
              
          };
-         MatDump(&NNforward_OneHotMat);
-         MatDump(&fcnn->Layer[fcnn->HiddenLayerNum+1].ActiMat);
          float NNforward_loss<==-1.0 and skip;
-         NNforward_loss:=LossFunction(&fcnn->Layer[fcnn->HiddenLayerNum+1].ActiMat,&NNforward_OneHotMat,fcnn->LossFuncNum,RValue);
-         MatDelete(&NNforward_OneHotMat);
+         NNforward_loss:=LossFunction(&fcnn->Layer[fcnn->HiddenLayerNum+1].ActiMat,&labelMatOneHot,fcnn->LossFuncNum,RValue);
          return<==1 and RValue:=NNforward_loss;
          skip
      }
@@ -3186,71 +3175,6 @@ int BatchSize
      }
      )
      }; 
-  function NNOuputLayerBackward ( int N_hidden,int N_sample,int *N_layerNeuron,int *NStr_ActiFsHidden,int Nstr_LossF,Mat *P_NablaWbMat,Mat *P_ActiMatPlus,Mat *P_SumMat,Mat *P_DeltaMat,Mat *P_ActiMat,Mat *P_ActiFunDerivation,Mat Mat_oneHot,Mat* RValue )
- {
-     frame(NNOuputLayerBackward_2_tempMat,NNOuputLayerBackward_ActiPlusTrans,return) and ( 
-     int return<==0 and skip;
-     if(NStr_ActiFsHidden[N_hidden+1]=5 AND Nstr_LossF=1) then 
-     {
-         MatSub(&P_ActiMat[N_hidden+1],&Mat_oneHot,&P_DeltaMat[N_hidden+1],RValue)
-         
-     }
-     else
-     {
-         Mat NNOuputLayerBackward_2_tempMat and skip;
-         MatCreate(&NNOuputLayerBackward_2_tempMat,N_sample,N_layerNeuron[N_hidden+1],RValue);
-         LossFunDerivation(&P_ActiMat[N_hidden+1],&NNOuputLayerBackward_2_tempMat,Mat_oneHot,Nstr_LossF,RValue);
-         ActiFunDerivation(P_SumMat[N_hidden+1],&P_ActiFunDerivation[N_hidden+1],NStr_ActiFsHidden[N_hidden+1],RValue);
-         MatProduct(&P_ActiMat[N_hidden+1],&P_ActiFunDerivation[N_hidden+1],&P_DeltaMat[N_hidden+1],RValue);
-         MatDelete(&NNOuputLayerBackward_2_tempMat)
-     };
-     Mat NNOuputLayerBackward_ActiPlusTrans and skip;
-     MatCreate(&NNOuputLayerBackward_ActiPlusTrans,N_layerNeuron[N_hidden]+1,N_sample,RValue);
-     MatTrans(&P_ActiMatPlus[N_hidden],&NNOuputLayerBackward_ActiPlusTrans,RValue);
-     MatMul(&NNOuputLayerBackward_ActiPlusTrans,&P_DeltaMat[N_hidden+1],&P_NablaWbMat[N_hidden+1],RValue);
-     MatNumMul(1.0/ P_SumMat[1].row,&P_NablaWbMat[N_hidden+1],&P_NablaWbMat[N_hidden+1],RValue);
-     return<==1 and RValue:=NULL;
-     skip
-     )
-     }; 
-  function NNBackward ( int N_hidden,int N_sample,int *N_layerNeuron,int *NStr_ActiFsHidden,int Nstr_LossF,Mat *P_NablaWbMat,Mat *P_SumMat,Mat *P_DeltaMat,Mat *P_ActiFunDerivation,Mat *P_ActiMat,Mat *P_ActiMatPlus,Mat Mat_oneHot,Mat *P_WeightMat,Mat* RValue )
- {
-     frame(NNBackward_i,NNBackward_tempTransW,NNBackward_ActiFuncMat,NNBackward_tempMulMat,NNBackward_tempProdMat,NNBackward_tempTransActi,return) and ( 
-     int return<==0 and skip;
-     NNOuputLayerBackward(N_hidden,N_sample,N_layerNeuron,NStr_ActiFsHidden,Nstr_LossF,P_NablaWbMat,P_ActiMatPlus,P_SumMat,P_DeltaMat,P_ActiMat,P_ActiFunDerivation,Mat_oneHot,RValue);
-     int NNBackward_i<==N_hidden and skip;
-     
-     while( (NNBackward_i>0) )
-     {
-         Mat NNBackward_tempTransW and skip;
-         Mat NNBackward_ActiFuncMat and skip;
-         Mat NNBackward_tempMulMat and skip;
-         Mat NNBackward_tempProdMat and skip;
-         Mat NNBackward_tempTransActi and skip;
-         MatCreate(&NNBackward_tempTransW,P_WeightMat[NNBackward_i+1].col,P_WeightMat[NNBackward_i+1].row,RValue);
-         MatCreate(&NNBackward_ActiFuncMat,P_SumMat[NNBackward_i].row,P_SumMat[NNBackward_i].col,RValue);
-         MatCreate(&NNBackward_tempMulMat,P_DeltaMat[NNBackward_i+1].row,P_WeightMat[NNBackward_i+1].row,RValue);
-         MatCreate(&NNBackward_tempProdMat,P_SumMat[NNBackward_i].row,P_SumMat[NNBackward_i].col,RValue);
-         MatCreate(&NNBackward_tempTransActi,P_ActiMatPlus[NNBackward_i-1].col,P_ActiMatPlus[NNBackward_i-1].row,RValue);
-         MatTrans(&P_WeightMat[NNBackward_i+1],&NNBackward_tempTransW,RValue);
-         ActiFunDerivation(P_SumMat[NNBackward_i],&NNBackward_ActiFuncMat,NNBackward_i,RValue);
-         MatMul(&P_DeltaMat[NNBackward_i+1],&NNBackward_tempTransW,&NNBackward_tempMulMat,RValue);
-         MatProduct(&NNBackward_tempMulMat,&NNBackward_ActiFuncMat,&P_DeltaMat[NNBackward_i],RValue);
-         MatTrans(&P_ActiMatPlus[NNBackward_i-1],&NNBackward_tempTransActi,RValue);
-         MatMul(&NNBackward_tempTransActi,&P_DeltaMat[NNBackward_i],&P_NablaWbMat[NNBackward_i],RValue);
-         MatNumMul(1.0/ N_sample,&P_NablaWbMat[NNBackward_i],&P_NablaWbMat[NNBackward_i],RValue);
-         MatDelete(&NNBackward_tempTransW);
-         MatDelete(&NNBackward_ActiFuncMat);
-         MatDelete(&NNBackward_tempMulMat);
-         MatDelete(&NNBackward_tempProdMat);
-         MatDelete(&NNBackward_tempTransActi);
-         NNBackward_i:=NNBackward_i-1
-         
-     };
-     return<==1 and RValue:=NULL;
-     skip
-     )
-     }; 
   function BGD ( Mat *P_WeightBiasMat,Mat *P_NablaWbMat,int N_hidden,float alpha,Mat* RValue )
  {
      frame(BGD_temp,BGD_i,return) and ( 
@@ -3273,7 +3197,7 @@ int BatchSize
      }; 
   function main ( int  RValue )
  {
-     frame(main_Xval,main_Yval,main_NueronNumArray,main_ActiFuncNumArray,main_userDefine,main_dataSet,main_fcnn,main_fclayer,main_loss,main_buf,main_i) and (
+     frame(main_Xval,main_Yval,main_NueronNumArray,main_ActiFuncNumArray,main_userDefine,main_dataSet,main_fcnn,main_fclayer,main_loss,main_buf) and (
      float main_Xval[160]<=={0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,0.0,0.0,0.0,1.0,0.0,0.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,0.0,0.0,0.0,0.0,1.0,0.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,1.0,0.0,1.0,0.0,0.0,0.0,0.0,1.0,0.0,0.0,1.0,0.0,1.0,0.0,1.0,0.0,0.0,1.0,0.0,1.0,1.0,0.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,0.0,1.0,0.0,1.0,1.0,1.0,0.0,0.0,1.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,1.0,0.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,0.0,1.0,0.0,0.0,1.0,1.0,1.0,0.0,1.0,0.0,0.0,1.0,0.0,1.0,0.0,1.0,1.0,0.0,1.0,1.0,0.0,1.0,0.0,1.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,1.0,0.0,1.0,0.0,1.0,1.0,0.0,1.0,1.0,1.0,1.0,1.0,0.0,0.0,1.0,1.0,1.0,0.0,1.0,1.0,1.0,1.0,1.0,0.0,1.0,1.0,1.0,1.0,1.0} and skip;
      float main_Yval[32]<=={0.0,1.0,1.0,0.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,0.0,1.0,1.0,0.0,1.0,0.0,0.0,1.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,1.0,0.0,0.0,1.0} and skip;
      int main_NueronNumArray[5]<=={5,6,8,6,2} and skip;
@@ -3301,42 +3225,13 @@ int BatchSize
      main_userDefine.ActiFuncNumArray:=main_ActiFuncNumArray;
      DumpCustom(main_userDefine,RValue);
      LoadParaFromCustom(main_userDefine,&main_dataSet,&main_fcnn);
-     CreateDataSetSpace(&main_dataSet);
-     DataLoading(main_userDefine,&main_dataSet,RValue);
      DatasetConstruction(main_userDefine,&main_dataSet);
      CreateNNSpaceAndLoadinPara2FCLayer(&main_fcnn,main_userDefine,RValue);
      NNWeightinit(&main_fcnn,RValue);
      float main_loss<==0.0 and skip;
      char main_buf[12] and skip;
-     main_loss:=NNforward(main_dataSet.BatchTrainFeature[0],main_dataSet.BatchTrainLabel[0],&main_fcnn,RValue);
-     output (F2S(main_loss,main_buf,RValue),"\n","\n") and skip;
-     int main_i<==0 and skip;
-     
-     while( (main_i<main_userDefine.HiddenLayerNum+2) )
-     {
-         output ("第",main_i,"层：\n") and skip;
-         output ("神经元个数：",main_fcnn.Layer[main_i].NeuronNum,"\n") and skip;
-         output ("激活函数：",main_fcnn.Layer[main_i].AcitFuncNum,"\n") and skip;
-         output ("激活值矩阵：\n") and skip;
-         MatDump(&main_fcnn.Layer[main_i].ActiMat);
-         output ("激活值扩展矩阵：\n") and skip;
-         MatDump(&main_fcnn.Layer[main_i].ActiMatPlus);
-         output ("求和值值矩阵：\n") and skip;
-         MatDump(&main_fcnn.Layer[main_i].SumMat);
-         output ("激活函数求导值矩阵：\n") and skip;
-         MatDump(&main_fcnn.Layer[main_i].ActiFunDerivationMat);
-         output ("反向传播中间变量值矩阵：\n") and skip;
-         MatDump(&main_fcnn.Layer[main_i].DeltaMat);
-         output ("权值矩阵：\n") and skip;
-         MatDump(&main_fcnn.Layer[main_i].WeightMat);
-         output ("权值偏置矩阵：\n") and skip;
-         MatDump(&main_fcnn.Layer[main_i].WeightBiasMat);
-         output ("权值偏置导数矩阵：\n") and skip;
-         MatDump(&main_fcnn.Layer[main_i].NablaWbMat);
-         output ("\n\n\n") and skip;
-         main_i:=main_i+1
-         
-     }
+     main_loss:=NNforward(main_dataSet.BatchTrainFeature[0],main_dataSet.BatchTrainLabelOneHot[0],&main_fcnn,RValue);
+     output ("loss=",F2S(main_loss,main_buf,RValue),"\n") and skip
      )
  };
   main(RValue)
