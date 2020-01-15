@@ -2832,13 +2832,19 @@ int remainder
      }
      )
      }; 
-  function CreateNNOperationSpace ( FCNN *fcnn )
+  function SpaceCreateFCNNOneHotMat ( FCNN *fcnn )
+ {
+     MatCreate(&fcnn->OnehotMat,fcnn->CurrentSampleNum,fcnn->ClassificationNum,RValue)
+     
+ };
+ function CreateNNOperationSpace ( FCNN *fcnn )
  {
      SpaceCreateActi(fcnn);
      SpaceCreateActiPlus(fcnn);
      SpaceCreateSum(fcnn);
      SpaceCreateActiFunDerivation(fcnn);
-     SpaceCreateDelta(fcnn)
+     SpaceCreateDelta(fcnn);
+     SpaceCreateFCNNOneHotMat(fcnn)
      
  };
  function CreateNNParaSpace ( FCNN *fcnn )
@@ -3034,6 +3040,7 @@ int remainder
          };
          MatCopy(&featureMat,&fcnn->Layer[0].ActiMat);
          MatPlusCol(&fcnn->Layer[0].ActiMat,&fcnn->Layer[0].ActiMatPlus);
+         MatCopy(&labelMatOneHot,&fcnn->OnehotMat);
          int NNforward_i<==0 and skip;
          
          while( (NNforward_i<fcnn->HiddenLayerNum+1) )
@@ -3053,7 +3060,7 @@ int remainder
              
          };
          float NNforward_loss<==-1.0 and skip;
-         NNforward_loss:=LossFunction(&fcnn->Layer[fcnn->HiddenLayerNum+1].ActiMat,&labelMatOneHot,fcnn->LossFuncNum,RValue);
+         NNforward_loss:=LossFunction(&fcnn->Layer[fcnn->HiddenLayerNum+1].ActiMat,&fcnn->OnehotMat,fcnn->LossFuncNum,RValue);
          return<==1 and RValue:=NNforward_loss;
          skip
      }
@@ -3175,6 +3182,73 @@ int remainder
      }
      )
      }; 
+  function NNOuputLayerBackward ( FCNN *fcnn,Mat* RValue )
+ {
+     frame(NNOuputLayerBackward_2_tempMat,NNOuputLayerBackward_ActiPlusTrans,return) and ( 
+     int return<==0 and skip;
+     if(fcnn->Layer[fcnn->HiddenLayerNum+1].AcitFuncNum=5 AND fcnn->LossFuncNum=1) then 
+     {
+         MatSub(&fcnn->Layer[fcnn->HiddenLayerNum+1].ActiMat,&fcnn->OnehotMat,&fcnn->Layer[fcnn->HiddenLayerNum+1].DeltaMat,RValue)
+         
+     }
+     else
+     {
+         Mat NNOuputLayerBackward_2_tempMat and skip;
+         MatCreate(&NNOuputLayerBackward_2_tempMat,fcnn->CurrentSampleNum,fcnn->Layer[fcnn->HiddenLayerNum+1].NeuronNum,RValue);
+         LossFunDerivation(&fcnn->Layer[fcnn->HiddenLayerNum+1].ActiMat,&NNOuputLayerBackward_2_tempMat,fcnn->OnehotMat,fcnn->LossFuncNum,RValue);
+         ActiFunDerivation(fcnn->Layer[fcnn->HiddenLayerNum+1].SumMat,&fcnn->Layer[fcnn->HiddenLayerNum+1].ActiFunDerivationMat,fcnn->Layer[fcnn->HiddenLayerNum+1].AcitFuncNum,RValue);
+         MatProduct(&fcnn->Layer[fcnn->HiddenLayerNum+1].ActiMat,&fcnn->Layer[fcnn->HiddenLayerNum+1].ActiFunDerivationMat,&fcnn->Layer[fcnn->HiddenLayerNum+1].DeltaMat,RValue);
+         MatDelete(&NNOuputLayerBackward_2_tempMat)
+     };
+     Mat NNOuputLayerBackward_ActiPlusTrans and skip;
+     MatCreate(&NNOuputLayerBackward_ActiPlusTrans,fcnn->Layer[fcnn->HiddenLayerNum].NeuronNum+1,fcnn->CurrentSampleNum,RValue);
+     MatTrans(&fcnn->Layer[fcnn->HiddenLayerNum].ActiMatPlus,&NNOuputLayerBackward_ActiPlusTrans,RValue);
+     MatMul(&NNOuputLayerBackward_ActiPlusTrans,&fcnn->Layer[fcnn->HiddenLayerNum+1].DeltaMat,&fcnn->Layer[fcnn->HiddenLayerNum+1].NablaWbMat,RValue);
+     MatNumMul(1.0/ fcnn->CurrentSampleNum,&fcnn->Layer[fcnn->HiddenLayerNum+1].NablaWbMat,&fcnn->Layer[fcnn->HiddenLayerNum+1].NablaWbMat,RValue);
+     return<==1 and RValue:=NULL;
+     skip
+     )
+     }; 
+  function NNBackward ( FCNN *fcnn,Mat* RValue )
+ {
+     frame(NNBackward_i,NNBackward_tempTransW,NNBackward_ActiFuncMat,NNBackward_tempMulMat,NNBackward_tempProdMat,NNBackward_tempTransActi,return) and ( 
+     int return<==0 and skip;
+     NNOuputLayerBackward(fcnn,RValue);
+     MatDump(&fcnn->Layer[fcnn->HiddenLayerNum+1].NablaWbMat);
+     int NNBackward_i<==fcnn->HiddenLayerNum and skip;
+     
+     while( (NNBackward_i>0) )
+     {
+         Mat NNBackward_tempTransW and skip;
+         Mat NNBackward_ActiFuncMat and skip;
+         Mat NNBackward_tempMulMat and skip;
+         Mat NNBackward_tempProdMat and skip;
+         Mat NNBackward_tempTransActi and skip;
+         MatCreate(&NNBackward_tempTransW,fcnn->Layer[NNBackward_i+1].WeightMat.col,fcnn->Layer[NNBackward_i+1].WeightMat.row,RValue);
+         MatCreate(&NNBackward_ActiFuncMat,fcnn->Layer[NNBackward_i].SumMat.row,fcnn->Layer[NNBackward_i].SumMat.col,RValue);
+         MatCreate(&NNBackward_tempMulMat,fcnn->Layer[NNBackward_i+1].DeltaMat.row,fcnn->Layer[NNBackward_i+1].WeightMat.row,RValue);
+         MatCreate(&NNBackward_tempProdMat,fcnn->Layer[NNBackward_i].SumMat.row,fcnn->Layer[NNBackward_i].SumMat.col,RValue);
+         MatCreate(&NNBackward_tempTransActi,fcnn->Layer[NNBackward_i-1].ActiMatPlus.col,fcnn->Layer[NNBackward_i-1].ActiMatPlus.row,RValue);
+         MatTrans(&fcnn->Layer[NNBackward_i+1].WeightMat,&NNBackward_tempTransW,RValue);
+         ActiFunDerivation(fcnn->Layer[NNBackward_i].SumMat,&NNBackward_ActiFuncMat,fcnn->Layer[NNBackward_i].AcitFuncNum,RValue);
+         MatMul(&fcnn->Layer[NNBackward_i+1].DeltaMat,&NNBackward_tempTransW,&NNBackward_tempMulMat,RValue);
+         MatProduct(&NNBackward_tempMulMat,&NNBackward_ActiFuncMat,&fcnn->Layer[NNBackward_i].DeltaMat,RValue);
+         MatTrans(&fcnn->Layer[NNBackward_i-1].ActiMatPlus,&NNBackward_tempTransActi,RValue);
+         MatMul(&NNBackward_tempTransActi,&fcnn->Layer[NNBackward_i].DeltaMat,&fcnn->Layer[NNBackward_i].NablaWbMat,RValue);
+         MatNumMul(1.0/ fcnn->CurrentSampleNum,&fcnn->Layer[NNBackward_i].NablaWbMat,&fcnn->Layer[NNBackward_i].NablaWbMat,RValue);
+         MatDump(&fcnn->Layer[NNBackward_i].NablaWbMat);
+         MatDelete(&NNBackward_tempTransW);
+         MatDelete(&NNBackward_ActiFuncMat);
+         MatDelete(&NNBackward_tempMulMat);
+         MatDelete(&NNBackward_tempProdMat);
+         MatDelete(&NNBackward_tempTransActi);
+         NNBackward_i:=NNBackward_i-1
+         
+     };
+     return<==1 and RValue:=NULL;
+     skip
+     )
+     }; 
   function BGD ( Mat *P_WeightBiasMat,Mat *P_NablaWbMat,int N_hidden,float alpha,Mat* RValue )
  {
      frame(BGD_temp,BGD_i,return) and ( 
@@ -3230,8 +3304,9 @@ int remainder
      NNWeightinit(&main_fcnn,RValue);
      float main_loss<==0.0 and skip;
      char main_buf[12] and skip;
-     main_loss:=NNforward(main_dataSet.BatchTrainFeature[0],main_dataSet.BatchTrainLabelOneHot[0],&main_fcnn,RValue);
-     output ("loss=",F2S(main_loss,main_buf,RValue),"\n") and skip
+     main_loss:=NNforward(main_dataSet.BatchTrainFeature[4],main_dataSet.BatchTrainLabelOneHot[4],&main_fcnn,RValue);
+     output ("loss=",F2S(main_loss,main_buf,RValue),"\n") and skip;
+     NNBackward(&main_fcnn,RValue)
      )
  };
   main(RValue)

@@ -2002,6 +2002,10 @@ void SpaceCreateNablaWeightBias(FCNN *fcnn) {
 	}
 }
 
+//malloc并初始化FCNN OneHotMat
+void SpaceCreateFCNNOneHotMat(FCNN *fcnn) {
+	MatCreate(&fcnn->OnehotMat, fcnn->CurrentSampleNum, fcnn->ClassificationNum);
+}
 
 void CreateNNOperationSpace(FCNN *fcnn) {
 	SpaceCreateActi(fcnn);
@@ -2009,6 +2013,8 @@ void CreateNNOperationSpace(FCNN *fcnn) {
 	SpaceCreateSum(fcnn);
 	SpaceCreateActiFunDerivation(fcnn);
 	SpaceCreateDelta(fcnn);
+
+	SpaceCreateFCNNOneHotMat(fcnn);
 }
 
 
@@ -2207,6 +2213,8 @@ float NNforward(Mat featureMat, Mat labelMatOneHot, FCNN *fcnn) {
 
 	MatCopy(&featureMat, &fcnn->Layer[0].ActiMat);
 	MatPlusCol(&fcnn->Layer[0].ActiMat, &fcnn->Layer[0].ActiMatPlus);
+	
+	MatCopy(&labelMatOneHot, &fcnn->OnehotMat);
 
 		// 向前传播
 	for (int i = 0; i < fcnn->HiddenLayerNum+1; ++i){
@@ -2221,7 +2229,7 @@ float NNforward(Mat featureMat, Mat labelMatOneHot, FCNN *fcnn) {
 	//MatDump(&fcnn->Layer[fcnn->HiddenLayerNum + 1].ActiMat);
 
 	float loss = -1.f;
-	loss = LossFunction(&fcnn->Layer[fcnn->HiddenLayerNum + 1].ActiMat, &labelMatOneHot, fcnn->LossFuncNum);
+	loss = LossFunction(&fcnn->Layer[fcnn->HiddenLayerNum + 1].ActiMat, &fcnn->OnehotMat, fcnn->LossFuncNum);
 	
 	return loss;
 }
@@ -2318,39 +2326,36 @@ Mat * LossFunDerivation(Mat *ActiMat, Mat *DerivativeActiMat, Mat One_hotMat, in
 	return NULL;
 }
 
-//Mat * NNOuputLayerBackward(FCNN *fcnn, Mat OneHotMat) {
-//
-//	if (fcnn->Layer[fcnn->HiddenLayerNum+1].AcitFuncNum == 5 && fcnn->LossFuncNum == 1) {//softmax+crossentropy
-//		MatSub(&fcnn->Layer[fcnn->HiddenLayerNum + 1].ActiMat, &OneHotMat, &P_DeltaMat[N_hidden + 1]);
-//		//MatDump(&P_ActiMat[N_hidden + 1]);
-//		//MatDump(&Mat_oneHot);
-//		//MatDump(&P_DeltaMat[N_hidden + 1]);
-//	}
-//	else {
-//		Mat tempMat;
-//		MatCreate(&tempMat, N_sample, N_layerNeuron[N_hidden + 1]);
-//
-//		LossFunDerivation(&P_ActiMat[N_hidden + 1], &tempMat, Mat_oneHot, Nstr_LossF);
-//
-//		ActiFunDerivation(P_SumMat[N_hidden + 1], &P_ActiFunDerivation[N_hidden + 1], NStr_ActiFsHidden[N_hidden + 1]);
-//
-//		MatProduct(&P_ActiMat[N_hidden + 1], &P_ActiFunDerivation[N_hidden + 1], &P_DeltaMat[N_hidden + 1]);
-//
-//		MatDelete(&tempMat);
-//		//MatDump(&P_DeltaMat[N_hidden + 1]);
-//	}
-//
-//	Mat ActiPlusTrans;
-//	MatCreate(&ActiPlusTrans, N_layerNeuron[N_hidden] + 1, N_sample);
-//	MatTrans(&P_ActiMatPlus[N_hidden], &ActiPlusTrans);
-//	MatMul(&ActiPlusTrans, &P_DeltaMat[N_hidden + 1], &P_NablaWbMat[N_hidden + 1]);
-//	//MatDump(&P_NablaWbMat[N_hidden + 1]);
-//	MatNumMul(1.f / P_SumMat[1].row, &P_NablaWbMat[N_hidden + 1], &P_NablaWbMat[N_hidden + 1]);
-//	//MatDump(&P_NablaWbMat[N_hidden + 1]);
-//
-//	return NULL;
-//
-//}
+Mat * NNOuputLayerBackward(FCNN *fcnn) {
+
+	if (fcnn->Layer[fcnn->HiddenLayerNum+1].AcitFuncNum == 5 && fcnn->LossFuncNum == 1) {//softmax+crossentropy
+		MatSub(&fcnn->Layer[fcnn->HiddenLayerNum + 1].ActiMat, &fcnn->OnehotMat, &fcnn->Layer[fcnn->HiddenLayerNum+1].DeltaMat);
+	}
+	else {
+		Mat tempMat;
+		MatCreate(&tempMat, fcnn->CurrentSampleNum, fcnn->Layer[fcnn->HiddenLayerNum + 1].NeuronNum);
+
+		LossFunDerivation(&fcnn->Layer[fcnn->HiddenLayerNum + 1].ActiMat, &tempMat, fcnn->OnehotMat, fcnn->LossFuncNum);
+
+		ActiFunDerivation(fcnn->Layer[fcnn->HiddenLayerNum + 1].SumMat, &fcnn->Layer[fcnn->HiddenLayerNum + 1].ActiFunDerivationMat, fcnn->Layer[fcnn->HiddenLayerNum + 1].AcitFuncNum);
+
+		MatProduct(&fcnn->Layer[fcnn->HiddenLayerNum + 1].ActiMat, &fcnn->Layer[fcnn->HiddenLayerNum + 1].ActiFunDerivationMat, &fcnn->Layer[fcnn->HiddenLayerNum + 1].DeltaMat);
+
+		MatDelete(&tempMat);
+		//MatDump(&P_DeltaMat[N_hidden + 1]);
+	}
+
+	Mat ActiPlusTrans;
+	MatCreate(&ActiPlusTrans, fcnn->Layer[fcnn->HiddenLayerNum].NeuronNum + 1, fcnn->CurrentSampleNum);
+	MatTrans(&fcnn->Layer[fcnn->HiddenLayerNum].ActiMatPlus, &ActiPlusTrans);
+	MatMul(&ActiPlusTrans, &fcnn->Layer[fcnn->HiddenLayerNum + 1].DeltaMat, &fcnn->Layer[fcnn->HiddenLayerNum + 1].NablaWbMat);
+	//MatDump(&P_NablaWbMat[N_hidden + 1]);
+	MatNumMul(1.f / fcnn->CurrentSampleNum, &fcnn->Layer[fcnn->HiddenLayerNum + 1].NablaWbMat, &fcnn->Layer[fcnn->HiddenLayerNum + 1].NablaWbMat);
+	//MatDump(&P_NablaWbMat[N_hidden + 1]);
+
+	return NULL;
+
+}
 
 
 
@@ -2388,6 +2393,52 @@ Mat * LossFunDerivation(Mat *ActiMat, Mat *DerivativeActiMat, Mat One_hotMat, in
 //	return NULL;
 //
 //}
+
+
+Mat * NNBackward(FCNN *fcnn){
+
+	//printf("NN Start to backward......\n");
+
+	//输出层反向传播
+	NNOuputLayerBackward(fcnn);
+
+	MatDump(&fcnn->Layer[fcnn->HiddenLayerNum+1].NablaWbMat);
+	//隐藏层反向传播
+	for (int i = fcnn->HiddenLayerNum; i > 0; --i){
+		Mat tempTransW;
+		Mat ActiFuncMat;
+		Mat tempMulMat;
+		Mat tempProdMat;
+		Mat tempTransActi;
+
+		MatCreate(&tempTransW, fcnn->Layer[i+1].WeightMat.col, fcnn->Layer[i + 1].WeightMat.row);
+		MatCreate(&ActiFuncMat, fcnn->Layer[i].SumMat.row, fcnn->Layer[i].SumMat.col);
+		MatCreate(&tempMulMat, fcnn->Layer[i + 1].DeltaMat.row, fcnn->Layer[i + 1].WeightMat.row);
+		MatCreate(&tempProdMat, fcnn->Layer[i].SumMat.row, fcnn->Layer[i].SumMat.col);
+		MatCreate(&tempTransActi, fcnn->Layer[i-1].ActiMatPlus.col, fcnn->Layer[i - 1].ActiMatPlus.row);
+
+		MatTrans(&fcnn->Layer[i + 1].WeightMat, &tempTransW);
+		ActiFunDerivation(fcnn->Layer[i].SumMat, &ActiFuncMat, fcnn->Layer[i].AcitFuncNum);
+
+		MatMul(&fcnn->Layer[i + 1].DeltaMat, &tempTransW, &tempMulMat);
+		MatProduct(&tempMulMat, &ActiFuncMat, &fcnn->Layer[i].DeltaMat);
+
+		//MatDump(&fcnn->Layer[i].NablaWbMat);
+		MatTrans(&fcnn->Layer[i - 1].ActiMatPlus, &tempTransActi);
+		MatMul(&tempTransActi, &fcnn->Layer[i].DeltaMat, &fcnn->Layer[i].NablaWbMat);
+		/*MatDump(&fcnn->Layer[i].NablaWbMat);*/
+		MatNumMul(1.f / fcnn->CurrentSampleNum, &fcnn->Layer[i].NablaWbMat, &fcnn->Layer[i].NablaWbMat);
+		MatDump(&fcnn->Layer[i].NablaWbMat);
+
+		MatDelete(&tempTransW);
+		MatDelete(&ActiFuncMat);
+		MatDelete(&tempMulMat);
+		MatDelete(&tempProdMat);
+		MatDelete(&tempTransActi);
+		//break;
+	}
+	return NULL;
+}
 
 //Mat * NNBackward(int N_hidden, int N_sample, int* N_layerNeuron, int *NStr_ActiFsHidden, int Nstr_LossF, Mat* P_NablaWbMat, Mat* P_SumMat, 
 //	Mat* P_DeltaMat, Mat* P_ActiFunDerivation, Mat* P_ActiMat, Mat* P_ActiMatPlus, Mat Mat_oneHot, Mat* P_WeightMat){
@@ -2613,6 +2664,9 @@ int main(){
 	char buf[12];
 	loss = NNforward(dataSet.BatchTrainFeature[0], dataSet.BatchTrainLabelOneHot[0], &fcnn);
 	printf("loss=%s\n", F2S(loss, buf));
+
+	//MatDump(&fcnn.Layer[fcnn.HiddenLayerNum + 1].NablaWbMat);
+	NNBackward(&fcnn);
 
 
 
