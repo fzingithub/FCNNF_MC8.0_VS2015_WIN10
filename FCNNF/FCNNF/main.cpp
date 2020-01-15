@@ -1931,11 +1931,25 @@ void SpaceCreateActi(FCNN *fcnn) {
 	}
 }
 
+// free激活值矩阵空间
+void SpaceDeleteActi(FCNN *fcnn) {
+	for (int i = 0; i < fcnn->HiddenLayerNum + 2; ++i) {
+		MatDelete(&fcnn->Layer[i].ActiMat);
+	}
+}
+
 // malloc并初始化激活值Plus矩阵空间
 void SpaceCreateActiPlus(FCNN *fcnn) {
 	for (int i = 0; i < fcnn->HiddenLayerNum + 2; ++i) {
 		MatCreate(&fcnn->Layer[i].ActiMatPlus, fcnn->CurrentSampleNum, fcnn->Layer[i].NeuronNum +1);
 		MatZeros(&fcnn->Layer[i].ActiMatPlus);
+	}
+}
+
+// free激活值Plus矩阵空间
+void SpaceDeleteActiPlus(FCNN *fcnn) {
+	for (int i = 0; i < fcnn->HiddenLayerNum + 2; ++i) {
+		MatDelete(&fcnn->Layer[i].ActiMatPlus);
 	}
 }
 
@@ -1947,11 +1961,25 @@ void SpaceCreateSum(FCNN *fcnn) {
 	}
 }
 
+// free求和值矩阵空间
+void SpaceDeleteSum(FCNN *fcnn) {
+	for (int i = 0; i < fcnn->HiddenLayerNum + 2; ++i) {
+		MatDelete(&fcnn->Layer[i].SumMat);
+	}
+}
+
 // malloc并初始化激活函数对求和值导数矩阵
 void SpaceCreateActiFunDerivation(FCNN *fcnn) {
 	for (int i = 0; i < fcnn->HiddenLayerNum + 2; ++i) {
 		MatCreate(&fcnn->Layer[i].ActiFunDerivationMat, fcnn->CurrentSampleNum, fcnn->Layer[i].NeuronNum);
 		MatZeros(&fcnn->Layer[i].ActiFunDerivationMat);
+	}
+}
+
+// free激活函数对求和值导数矩阵
+void SpaceDeleteActiFunDerivation(FCNN *fcnn) {
+	for (int i = 0; i < fcnn->HiddenLayerNum + 2; ++i) {
+		MatDelete(&fcnn->Layer[i].ActiFunDerivationMat);
 	}
 }
 
@@ -1964,7 +1992,22 @@ void SpaceCreateDelta(FCNN *fcnn) {
 	}
 }
 
+// malloc并初始化反向传播中间变量空间
+void SpaceDeleteDelta(FCNN *fcnn) {
+	for (int i = 0; i < fcnn->HiddenLayerNum + 2; ++i) {
+		MatDelete(&fcnn->Layer[i].DeltaMat);
+	}
+}
 
+//malloc并初始化FCNN OneHotMat
+void SpaceCreateFCNNOneHotMat(FCNN *fcnn) {
+	MatCreate(&fcnn->OnehotMat, fcnn->CurrentSampleNum, fcnn->ClassificationNum);
+}
+
+//free FCNN OneHotMat
+void SpaceDeleteFCNNOneHotMat(FCNN *fcnn) {
+	MatDelete(&fcnn->OnehotMat);
+}
 
 
 
@@ -2002,10 +2045,7 @@ void SpaceCreateNablaWeightBias(FCNN *fcnn) {
 	}
 }
 
-//malloc并初始化FCNN OneHotMat
-void SpaceCreateFCNNOneHotMat(FCNN *fcnn) {
-	MatCreate(&fcnn->OnehotMat, fcnn->CurrentSampleNum, fcnn->ClassificationNum);
-}
+
 
 void CreateNNOperationSpace(FCNN *fcnn) {
 	SpaceCreateActi(fcnn);
@@ -2016,6 +2056,17 @@ void CreateNNOperationSpace(FCNN *fcnn) {
 
 	SpaceCreateFCNNOneHotMat(fcnn);
 }
+
+void DeleteNNOperationSpace(FCNN *fcnn) {
+	SpaceDeleteActi(fcnn);
+	SpaceDeleteActiPlus(fcnn);
+	SpaceDeleteSum(fcnn);
+	SpaceDeleteActiFunDerivation(fcnn);
+	SpaceDeleteDelta(fcnn);
+
+	SpaceDeleteFCNNOneHotMat(fcnn);
+}
+
 
 
 void CreateNNParaSpace(FCNN *fcnn) {
@@ -2202,10 +2253,11 @@ float NNforward(Mat featureMat, Mat labelMatOneHot, FCNN *fcnn) {
 		return -1.f;
 	}
 #endif
-
+	//MatDump(&featureMat);
 	if (featureMat.row != fcnn->CurrentSampleNum) {// 处理小批量的余数
 		fcnn->CurrentSampleNum = featureMat.row;
 
+		DeleteNNOperationSpace(fcnn);
 		CreateNNOperationSpace(fcnn);
 	}
 
@@ -2353,6 +2405,7 @@ Mat * NNOuputLayerBackward(FCNN *fcnn) {
 	MatNumMul(1.f / fcnn->CurrentSampleNum, &fcnn->Layer[fcnn->HiddenLayerNum + 1].NablaWbMat, &fcnn->Layer[fcnn->HiddenLayerNum + 1].NablaWbMat);
 	//MatDump(&P_NablaWbMat[N_hidden + 1]);
 
+	MatDelete(&ActiPlusTrans);
 	return NULL;
 
 }
@@ -2402,7 +2455,7 @@ Mat * NNBackward(FCNN *fcnn){
 	//输出层反向传播
 	NNOuputLayerBackward(fcnn);
 
-	MatDump(&fcnn->Layer[fcnn->HiddenLayerNum+1].NablaWbMat);
+	//MatDump(&fcnn->Layer[fcnn->HiddenLayerNum+1].NablaWbMat);
 	//隐藏层反向传播
 	for (int i = fcnn->HiddenLayerNum; i > 0; --i){
 		Mat tempTransW;
@@ -2428,7 +2481,7 @@ Mat * NNBackward(FCNN *fcnn){
 		MatMul(&tempTransActi, &fcnn->Layer[i].DeltaMat, &fcnn->Layer[i].NablaWbMat);
 		/*MatDump(&fcnn->Layer[i].NablaWbMat);*/
 		MatNumMul(1.f / fcnn->CurrentSampleNum, &fcnn->Layer[i].NablaWbMat, &fcnn->Layer[i].NablaWbMat);
-		MatDump(&fcnn->Layer[i].NablaWbMat);
+		//MatDump(&fcnn->Layer[i].NablaWbMat);
 
 		MatDelete(&tempTransW);
 		MatDelete(&ActiFuncMat);
@@ -2519,22 +2572,19 @@ Mat * NNBackward(FCNN *fcnn){
 
 
 //批量梯度下降
-Mat * BGD(Mat *P_WeightBiasMat, Mat *P_NablaWbMat, int N_hidden, float alpha){
+void  MBGD(FCNN *fcnn, float alpha){
 	Mat temp;
-	for (int i = 1; i <= N_hidden + 1; ++i){
+	for (int i = 1; i <= fcnn->HiddenLayerNum + 1; ++i){
 		//MatDump(&P_WeightBiasMat[i]);
-		MatCreate(&temp, P_NablaWbMat[i].row, P_NablaWbMat[i].col);
-		MatNumMul(alpha, &P_NablaWbMat[i], &temp);
-		MatSub(&P_WeightBiasMat[i],&temp , &P_WeightBiasMat[i]);
+		MatCreate(&temp, fcnn->Layer[i].NablaWbMat.row, fcnn->Layer[i].NablaWbMat.col);
+		MatNumMul(alpha, &fcnn->Layer[i].NablaWbMat, &temp);
+		MatSub(&fcnn->Layer[i].WeightBiasMat,&temp , &fcnn->Layer[i].WeightBiasMat);
 		MatDelete(&temp);
 	}
-	return P_WeightBiasMat;
+
 }
-
-
-
 /************************************************************************/
-/*                          神经网络优化算法                          */
+/*                          神经网络优化算法                            */
 /************************************************************************/
 
 
@@ -2584,6 +2634,9 @@ int main(){
 	float Yval[] = { 0.f, 1.f, 1.f, 0.f, 1.f, 0.f, 0.f, 1.f, 1.f, 0.f, 0.f, 1.f, 0.f, 1.f, 1.f, 0.f, 1.f, 0.f, 0.f, 1.f, 0.f, 1.f, 1.f, 0.f, 0.f, 1.f, 1.f, 0.f, 1.f, 0.f, 0.f, 1.f };  //样本标签二分类
 	int NueronNumArray[] = {5, 6, 8, 6 ,2};
 	int ActiFuncNumArray[] = {0, 3, 3, 3, 5 };// 各层激活函数使用真值；注意映射关系。 最后一层表示输出层激活函数SoftMax
+	char buf1[40];
+	char buf2[40];
+
 
 
 	/*用户自定义参数输入*/
@@ -2599,7 +2652,7 @@ int main(){
 
 	userDefine.CompleteSampleNum = 32;
 	userDefine.TrainSampleNum = 24;
-	userDefine.TestSampleNum = 8;
+	userDefine.TestSampleNum = 7;
 	//userDefine.ValidationNum = 0;
 	userDefine.SampleDimensionNum = 5;
 	userDefine.HiddenLayerNum = 3;
@@ -2658,52 +2711,43 @@ int main(){
 
 
 	
-
-	/*前向传播*/
-	float loss=0.f;
-	char buf[12];
-	loss = NNforward(dataSet.BatchTrainFeature[0], dataSet.BatchTrainLabelOneHot[0], &fcnn);
-	printf("loss=%s\n", F2S(loss, buf));
-
-	//MatDump(&fcnn.Layer[fcnn.HiddenLayerNum + 1].NablaWbMat);
-	NNBackward(&fcnn);
+	MatDump(&dataSet.TestFeature);
+	MatDump(&dataSet.TestLabelOneHot);
 
 
+	/*训练*/
+	float loss = 0.f;
+	float losstest = 0.f;
+	int trainOperationNum = 100000;
+	for (int i = 0; i < trainOperationNum; ++i){
+		for (int j = 0; j < dataSet.BatchNum; ++j) {
+			
+			/*神经网络前项传播*/
+			if (i % 10 == 0) {
+				losstest = NNforward(dataSet.TestFeature, dataSet.TestLabelOneHot, &fcnn);
+			}
 
-	//for (int i = 0; i < userDefine.HiddenLayerNum + 2; ++i) {
-	//	printf("第%d层：\n", i);
-	//	printf("神经元个数：%d\n", fcnn.Layer[i].NeuronNum);
-	//	printf("激活函数：%d\n", fcnn.Layer[i].AcitFuncNum);
+			loss = NNforward(dataSet.BatchTrainFeature[j], dataSet.BatchTrainLabelOneHot[j], &fcnn);
 
-	//	printf("激活值矩阵：\n");
-	//	MatDump(&fcnn.Layer[i].ActiMat);
-	//	printf("激活值扩展矩阵：\n");
-	//	MatDump(&fcnn.Layer[i].ActiMatPlus);
-	//	printf("求和值值矩阵：\n");
-	//	MatDump(&fcnn.Layer[i].SumMat);
-	//	printf("激活函数求导值矩阵：\n");
-	//	MatDump(&fcnn.Layer[i].ActiFunDerivationMat);
-	//	printf("反向传播中间变量值矩阵：\n");
-	//	MatDump(&fcnn.Layer[i].DeltaMat);
+			NNBackward(&fcnn);
+			MBGD(&fcnn, 0.1f);
 
-	//	printf("权值矩阵：\n");
-	//	MatDump(&fcnn.Layer[i].WeightMat);
-	//	printf("权值偏置矩阵：\n");
-	//	MatDump(&fcnn.Layer[i].WeightBiasMat);
-	//	printf("权值偏置导数矩阵：\n");
-	//	MatDump(&fcnn.Layer[i].NablaWbMat);
+			if (i % 10 == 0) {
+				printf("epoch %d/%d, iteration %d/%d， loss=%s, testloss=%s\n", i + 1, trainOperationNum, j + 1, dataSet.BatchNum, F2S(loss, buf1), F2S(losstest, buf2));
+			}
+			else {
+				printf("epoch %d/%d, iteration %d/%d， loss=%s\n", i + 1, trainOperationNum, j + 1, dataSet.BatchNum, F2S(loss, buf1));
 
+			}
 
-	//	printf("\n\n\n");
-	//}
+			
+		}
+	}
 
-
-
-
-
-
-
-
+	MatDump(&fcnn.Layer[fcnn.HiddenLayerNum + 1].ActiMat);
+	losstest = NNforward(dataSet.TestFeature, dataSet.TestLabelOneHot, &fcnn);
+	MatDump(&fcnn.Layer[fcnn.HiddenLayerNum + 1].ActiMat);
+	
 }
 
 
