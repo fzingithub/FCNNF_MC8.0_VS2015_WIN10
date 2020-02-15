@@ -1,5 +1,6 @@
-#include <stdio.h>
+ï»¿#include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <math.h>
 #include <time.h>
 
@@ -11,7 +12,7 @@ typedef struct {
 	float** element;   // element, two dimensions
 }Mat;
 
-typedef struct{
+typedef struct {
 	Mat ActiMat;               // active value Matrix without bias column
 	Mat ActiMatPlus;           // active value Matrix with bias column
 	Mat SumMat;                // sum value Matrix 
@@ -26,7 +27,7 @@ typedef struct{
 }FCLayer;
 
 
-typedef struct{
+typedef struct {
 	int CurrentSampleNum;             // number of current samples [int]
 	int SampleDimensionNum;    // dimensions(features) of sample [int]
 	int HiddenLayerNum;        // number of hidden layer [int]
@@ -41,11 +42,11 @@ typedef struct{
 
 
 
-typedef struct{
+typedef struct {
 	int CompleteSampleNum;		// number of all samples [int]
 	int TrainSampleNum;			// number of training samples [int]
 	int TestSampleNum;			// number of test samples [int]
-	//int ValidationNum;			// number of validation samples [int]
+								//int ValidationNum;			// number of validation samples [int]
 	int SampleDimensionNum;    // dimensions(features) of sample [int]
 	int HiddenLayerNum;        // number of hidden layer [int]
 	int WeightInitWayNum;      // weight initialization mode [int]
@@ -59,7 +60,7 @@ typedef struct{
 }Custom;
 
 
-typedef struct{
+typedef struct {
 	Mat CompleteFeatureDataSet;	// complete featrue Mat for FCNN
 	Mat CompleteLabelDataSet;	// complete label Mat without onehot
 	Mat CompleteTrainFeature;	// complete featrue Mat for FCNN training
@@ -70,14 +71,14 @@ typedef struct{
 	Mat TestFeature;			// featrue Mat for FCNN test
 	Mat TestLabel;				// label Mat without onehot
 	Mat TestLabelOneHot;        // label Mat with onehot
-	//Mat ValidationFeature;	// featrue Mat for FCNN Validation
-	//Mat ValidationLabel;		// label Mat withoutone
-	
+								//Mat ValidationFeature;	// featrue Mat for FCNN Validation
+								//Mat ValidationLabel;		// label Mat withoutone
+
 
 	int CompleteSampleNum;		// number of all samples [int]
 	int TrainSampleNum;			// number of training samples [int]
 	int TestSampleNum;			// number of test samples [int]
-	//int ValidationNum;			// number of validation samples [int]
+								//int ValidationNum;			// number of validation samples [int]
 	int SampleDimensionNum;    // dimensions(features) of sample [int]
 	int ClassificationNum;     // Number of categories classified [int]
 	int BatchSize;				// batch size for dataset
@@ -86,7 +87,7 @@ typedef struct{
 }DataSet;
 
 /************************************************************************/
-/*                            ¸¨Öúº¯Êı                                  */
+/*                            è¾…åŠ©å‡½æ•°                                  */
 /************************************************************************/
 float absolute(float a)
 {
@@ -134,7 +135,7 @@ char* F2S(float f, char* str)
 	float d;
 
 	d = absolute(f);
-	i = (int)d;//¸¡µãÊıµÄÕûÊı²¿·Ö
+	i = (int)d;//æµ®ç‚¹æ•°çš„æ•´æ•°éƒ¨åˆ†
 	while (i > 0)
 	{
 		str1[j++] = i % 10 + '0';
@@ -142,7 +143,7 @@ char* F2S(float f, char* str)
 	}
 	for (k = 0; k < j; k++)
 	{
-		str[k] = str1[j - 1 - k];//±»ÌáÈ¡µÄÕûÊı²¿·ÖÕıĞò´æ·Åµ½ÁíÒ»¸öÊı×é
+		str[k] = str1[j - 1 - k];//è¢«æå–çš„æ•´æ•°éƒ¨åˆ†æ­£åºå­˜æ”¾åˆ°å¦ä¸€ä¸ªæ•°ç»„
 	}
 
 	if ((int)d == 0)
@@ -152,22 +153,22 @@ char* F2S(float f, char* str)
 
 	str[j++] = '.';
 
-	d = d - (int)d;//Ğ¡Êı²¿·ÖÌáÈ¡
-	//printf("Ğ¡Êı²¿·Ö%f\n", d);
+	d = d - (int)d;//å°æ•°éƒ¨åˆ†æå–
+				   //printf("å°æ•°éƒ¨åˆ†%f\n", d);
 	for (i = 0; i < 4; i++)
 	{
 		d = d * 10;
 		str[j++] = (int)d + '0';
 		//printf("%c", str[j - 1]);
 		d = d - (int)d;
-		
+
 	}
 	/*while (str[--j] == '0');*/
 	str[j] = '\0';
 
 	/*printf("%c\n", str[0]);*/
 
-	//´¦Àí¸ºÊı
+	//å¤„ç†è´Ÿæ•°
 	if (f < 0)
 	{
 		j = 0;
@@ -186,7 +187,7 @@ char* F2S(float f, char* str)
 	return str;
 }
 /************************************************************************/
-/*                            ¸¨Öúº¯Êı                                  */
+/*                            è¾…åŠ©å‡½æ•°                                  */
 /************************************************************************/
 
 
@@ -195,7 +196,7 @@ char* F2S(float f, char* str)
 
 
 /************************************************************************/
-/*                           ¶şÎ¬¾ØÕó²Ù×÷                               */
+/*                           äºŒç»´çŸ©é˜µæ“ä½œ                               */
 /************************************************************************/
 Mat* MatCreate(Mat* mat, int row, int col)
 {
@@ -286,18 +287,18 @@ void MatDump(const Mat* mat)
 		return;
 	}
 #endif
-	
+
 	printf("Mat %dx%d:\n", mat->row, mat->col);
 	for (row = 0; row < mat->row; row++) {
 		for (col = 0; col < mat->col; col++) {
 			data = F2S((mat->element[row])[col], str);
-			if (data[0] == '-'){
+			if (data[0] == '-') {
 				printf(" %s\t", F2S((mat->element[row])[col], str));
 			}
-			else{
+			else {
 				printf("  %s\t", F2S((mat->element[row])[col], str));
 			}
-			
+
 		}
 		printf("\n");
 	}
@@ -437,8 +438,8 @@ Mat* MatProduct(Mat* src1, Mat* src2, Mat* dst)
 }
 
 
-/* dst = num * src ¾ØÕóÊı³ËÔËËã */
-Mat* MatNumMul(float num,Mat* src, Mat* dst)
+/* dst = num * src çŸ©é˜µæ•°ä¹˜è¿ç®— */
+Mat* MatNumMul(float num, Mat* src, Mat* dst)
 {
 	int row, col;
 
@@ -462,7 +463,7 @@ Mat* MatNumMul(float num,Mat* src, Mat* dst)
 }
 
 
-/* dst = num + src ¾ØÕóÊı¼ÓÔËËã */
+/* dst = num + src çŸ©é˜µæ•°åŠ è¿ç®— */
 Mat* MatNumAdd(float num, Mat* src, Mat* dst)
 {
 	int row, col;
@@ -513,13 +514,13 @@ Mat* MatTrans(Mat* src, Mat* dst)
 }
 
 
-/*È«0Õó*/
+/*å…¨0é˜µ*/
 Mat* MatZeros(Mat* mat)
 {
 	int row, col;
 
-	for (row = 0; row < mat->row; row++){
-		for (col = 0; col < mat->col; col++){
+	for (row = 0; row < mat->row; row++) {
+		for (col = 0; col < mat->col; col++) {
 			(mat->element[row])[col] = 0.0f;
 		}
 	}
@@ -528,13 +529,13 @@ Mat* MatZeros(Mat* mat)
 }
 
 
-/*È«1Õó*/
+/*å…¨1é˜µ*/
 Mat* MatOnes(Mat* mat)
 {
 	int row, col;
 
-	for (row = 0; row < mat->row; row++){
-		for (col = 0; col < mat->col; col++){
+	for (row = 0; row < mat->row; row++) {
+		for (col = 0; col < mat->col; col++) {
 			(mat->element[row])[col] = 1.0f;
 		}
 	}
@@ -543,13 +544,13 @@ Mat* MatOnes(Mat* mat)
 }
 
 
-/*¶Ô½Ç1¾ØÕó*/
+/*å¯¹è§’1çŸ©é˜µ*/
 Mat* MatEye(Mat* mat)
 {
 	int i;
 
 	MatZeros(mat);
-	for (i = 0; i < min(float(mat->row), float(mat->col)); i++){
+	for (i = 0; i < min(float(mat->row), float(mat->col)); i++) {
 		(mat->element[i])[i] = 1.0f;
 	}
 
@@ -557,7 +558,7 @@ Mat* MatEye(Mat* mat)
 }
 
 
-/*dst = sum(src)  src ¾ØÕóµÄÃ¿Ò»ĞĞÏà¼Ó*/
+/*dst = sum(src)  src çŸ©é˜µçš„æ¯ä¸€è¡Œç›¸åŠ */
 Mat* MatRowSum(Mat* src, Mat* dst)
 {
 	int row, col;
@@ -574,9 +575,9 @@ Mat* MatRowSum(Mat* src, Mat* dst)
 	}
 #endif
 
-	for (row = 0; row < src->row; row++){
+	for (row = 0; row < src->row; row++) {
 		temp = 0;
-		for (col = 0; col < src->col; col++){
+		for (col = 0; col < src->col; col++) {
 			temp += (src->element[row])[col];
 			//printf("%f\t", temp);
 		}
@@ -588,7 +589,7 @@ Mat* MatRowSum(Mat* src, Mat* dst)
 }
 
 
-/*dst = MatMax(src)  src ÕÒ³ö¾ØÕóµÄÃ¿Ò»ĞĞ×î´óÖµ*/
+/*dst = MatMax(src)  src æ‰¾å‡ºçŸ©é˜µçš„æ¯ä¸€è¡Œæœ€å¤§å€¼*/
 Mat* MatRowMax(Mat* src, Mat* dst)
 {
 	int row, col;
@@ -605,10 +606,10 @@ Mat* MatRowMax(Mat* src, Mat* dst)
 	}
 #endif
 
-	for (row = 0; row < src->row; row++){
+	for (row = 0; row < src->row; row++) {
 		temp = (src->element[row])[0];
-		for (col = 1; col < src->col; col++){
-			if ((src->element[row])[col] > temp){
+		for (col = 1; col < src->col; col++) {
+			if ((src->element[row])[col] > temp) {
 				temp = (src->element[row])[col];
 			}
 		}
@@ -634,8 +635,8 @@ Mat* MatSquare(Mat* src, Mat* dst)
 	}
 #endif
 
-	for (row = 0; row < src->row; row++){
-		for (col = 0; col < src->col; col++){
+	for (row = 0; row < src->row; row++) {
+		for (col = 0; col < src->col; col++) {
 			(dst->element[row])[col] = (src->element[row])[col] * (src->element[row])[col];
 		}
 	}
@@ -644,7 +645,7 @@ Mat* MatSquare(Mat* src, Mat* dst)
 }
 
 
-/*dst = MatExp(src)  Ö¸Êı×÷ÓÃ*/
+/*dst = MatExp(src)  æŒ‡æ•°ä½œç”¨*/
 Mat* MatExp(Mat* src, Mat* dst)
 {
 	int row, col;
@@ -660,8 +661,8 @@ Mat* MatExp(Mat* src, Mat* dst)
 	}
 #endif
 
-	for (row = 0; row < src->row; row++){
-		for (col = 0; col < src->col; col++){
+	for (row = 0; row < src->row; row++) {
+		for (col = 0; col < src->col; col++) {
 			(dst->element[row])[col] = (float)(exp(float((src->element[row])[col])));
 		}
 	}
@@ -670,7 +671,7 @@ Mat* MatExp(Mat* src, Mat* dst)
 }
 
 
-/* dst = src - vector   ¾ØÕó¼õÏòÁ¿ ĞĞ¼õ*/
+/* dst = src - vector   çŸ©é˜µå‡å‘é‡ è¡Œå‡*/
 Mat* MatVectorSub(Mat* src, Mat* vector, Mat *dst)
 {
 	int row, col;
@@ -689,8 +690,8 @@ Mat* MatVectorSub(Mat* src, Mat* vector, Mat *dst)
 #endif
 
 
-	for (row = 0; row < src->row; row++){
-		for (col = 0; col < src->col; col++){
+	for (row = 0; row < src->row; row++) {
+		for (col = 0; col < src->col; col++) {
 			(dst->element[row])[col] = (src->element[row])[col] - (vector->element[row])[0];
 		}
 	}
@@ -700,7 +701,7 @@ Mat* MatVectorSub(Mat* src, Mat* vector, Mat *dst)
 }
 
 
-/* dst = src / vector   ¾ØÕó³ıÏòÁ¿ ĞĞ³ı*/
+/* dst = src / vector   çŸ©é˜µé™¤å‘é‡ è¡Œé™¤*/
 Mat* MatVectorDiv(Mat* src, Mat* vector, Mat *dst)
 {
 	int row, col;
@@ -717,8 +718,8 @@ Mat* MatVectorDiv(Mat* src, Mat* vector, Mat *dst)
 		return NULL;
 	}
 
-	for (row = 0; row < src->row; row++){
-		if (absolute((vector->element[row])[0]) < 0.000001){
+	for (row = 0; row < src->row; row++) {
+		if (absolute((vector->element[row])[0]) < 0.000001) {
 			printf("err check, Divisor vector has zero.\n");
 			return NULL;
 		}
@@ -726,9 +727,9 @@ Mat* MatVectorDiv(Mat* src, Mat* vector, Mat *dst)
 #endif
 
 
-	for (row = 0; row < src->row; row++){
-		for (col = 0; col < src->col; col++){
-			(dst->element[row])[col] = (src->element[row])[col]/(vector->element[row])[0];
+	for (row = 0; row < src->row; row++) {
+		for (col = 0; col < src->col; col++) {
+			(dst->element[row])[col] = (src->element[row])[col] / (vector->element[row])[0];
 		}
 	}
 
@@ -737,7 +738,7 @@ Mat* MatVectorDiv(Mat* src, Mat* vector, Mat *dst)
 }
 
 
-/* dst = src ÄÚ´æ¿½±´ */
+/* dst = src å†…å­˜æ‹·è´ */
 void MatCopy(Mat* src, Mat* dst)
 {
 	int row, col;
@@ -778,7 +779,7 @@ void MatPlusCol(Mat* src, Mat* dst)
 	for (row = 0, col = 0; row < dst->row; row++) {
 		(dst->element[row])[col] = 1;
 	}
-	for (row = 0; row < src->row; row++){
+	for (row = 0; row < src->row; row++) {
 		for (col = 0; col < src->col; col++)
 			(dst->element[row])[col + 1] = (src->element[row])[col];
 	}
@@ -792,7 +793,7 @@ void MatPlusRow(Mat* src, Mat* dst)
 	int row, col;
 
 #ifdef MAT_LEGAL_CHECKING
-	if (src->row+1 != dst->row || (src->col) != dst->col) {
+	if (src->row + 1 != dst->row || (src->col) != dst->col) {
 		printf("\t\terr check, unmathed matrix for MatPlus\t\t\n");
 		printf("\t\tsrcMatShape:\n\t\t\t");
 		MatShape(src);
@@ -804,15 +805,15 @@ void MatPlusRow(Mat* src, Mat* dst)
 	for (row = 0, col = 0; col < dst->col; col++) {
 		(dst->element[row])[col] = 0.f;
 	}
-	for (row = 0; row < src->row; row++){
+	for (row = 0; row < src->row; row++) {
 		for (col = 0; col < src->col; col++)
-			(dst->element[row+1])[col] = (src->element[row])[col];
+			(dst->element[row + 1])[col] = (src->element[row])[col];
 	}
 }
 
 
 /************************************************************************/
-/*                           ¶şÎ¬¾ØÕó²Ù×÷                               */
+/*                           äºŒç»´çŸ©é˜µæ“ä½œ                               */
 /************************************************************************/
 
 
@@ -831,7 +832,7 @@ void MatPlusRow(Mat* src, Mat* dst)
 
 
 /************************************************************************/
-/*                           ¼¤»îº¯Êı²Ù×÷                               */
+/*                           æ¿€æ´»å‡½æ•°æ“ä½œ                               */
 /************************************************************************/
 float sigmoid(float z)
 {
@@ -839,7 +840,7 @@ float sigmoid(float z)
 }
 
 
-//Ö±½Óµ÷ÓÃ math.h Àïº¯Êı
+//ç›´æ¥è°ƒç”¨ math.h é‡Œå‡½æ•°
 //float tanh(float z){
 //	return (exp(z) - exp(-z)) / (exp(z) + exp(-z));
 //}
@@ -872,17 +873,17 @@ Mat* MatSoftmax(Mat *src, Mat *dst)
 #endif
 
 	Mat tempV;
-	MatCreate(&tempV, src->row, 1);   //´æÁÙÊ±µÄ×î´óĞĞÖµÒÔ¼°ÇóºÍĞĞÖµÏòÁ¿
+	MatCreate(&tempV, src->row, 1);   //å­˜ä¸´æ—¶çš„æœ€å¤§è¡Œå€¼ä»¥åŠæ±‚å’Œè¡Œå€¼å‘é‡
 
-	MatRowMax(src, &tempV);   //Çó×î´óĞĞÖµÏòÁ¿
+	MatRowMax(src, &tempV);   //æ±‚æœ€å¤§è¡Œå€¼å‘é‡
 
-	MatVectorSub(src, &tempV, dst);   //¾ØÕóÏòÁ¿Ïà¼õ
+	MatVectorSub(src, &tempV, dst);   //çŸ©é˜µå‘é‡ç›¸å‡
 
-	MatExp(dst, dst);   //¾ØÕóÇó¶ÔÊı
+	MatExp(dst, dst);   //çŸ©é˜µæ±‚å¯¹æ•°
 
-	MatRowSum(dst, &tempV);   //ÇóĞĞÇóºÍÏòÁ¿
+	MatRowSum(dst, &tempV);   //æ±‚è¡Œæ±‚å’Œå‘é‡
 
-	MatVectorDiv(dst, &tempV, dst);   //¾ØÕóÏòÁ¿Ïà³ı
+	MatVectorDiv(dst, &tempV, dst);   //çŸ©é˜µå‘é‡ç›¸é™¤
 
 	MatDelete(&tempV);
 
@@ -1029,12 +1030,12 @@ Mat* MatDerivationSoftmax(Mat *src, Mat *dst)
 	MatZeros(dst);
 
 	for (row = 0; row < src->row; row++) {
-		for (col = 0; col < src->col; col++){
-			for (i = 0; i < src->col; i++){
-				if (i == col){
+		for (col = 0; col < src->col; col++) {
+			for (i = 0; i < src->col; i++) {
+				if (i == col) {
 					(dst->element[row])[col] += (src->element[row])[i] * (1 - (src->element[row])[col]);
 				}
-				else{
+				else {
 					(dst->element[row])[col] += -(src->element[row])[i] * (src->element[row])[col];
 				}
 				//printf("%f\n", (dst->element[row])[col]);
@@ -1049,7 +1050,7 @@ Mat* MatDerivationSoftmax(Mat *src, Mat *dst)
 
 
 Mat* MatDerivationNoneActi(Mat *src, Mat *dst)
-{	//²»¼¤»îµ¼ÊıÖµÎª1
+{	//ä¸æ¿€æ´»å¯¼æ•°å€¼ä¸º1
 	int row, col;
 #ifdef MAT_LEGAL_CHECKING
 	if (src->row != dst->row || src->col != dst->col) {
@@ -1117,7 +1118,7 @@ Mat* MatDerivationTanh(Mat *src, Mat *dst)
 
 	Mat tempMat;
 	MatCreate(&tempMat, src->row, src->col);
-	
+
 	MatTanh(src, &tempMat);
 	//MatDump(&tempMat);
 	MatSquare(&tempMat, &tempMat);
@@ -1145,15 +1146,15 @@ Mat* MatDerivationRelu(Mat *src, Mat *dst)
 	}
 #endif
 	for (row = 0; row < src->row; row++) {
-		for (col = 0; col < src->col; col++){
-			if ((src->element[row])[col]>0){
+		for (col = 0; col < src->col; col++) {
+			if ((src->element[row])[col]>0) {
 				(dst->element[row])[col] = 1.f;
 			}
-			else{
+			else {
 				(dst->element[row])[col] = 0.f;
-				}
+			}
 		}
-			
+
 	}
 
 	return dst;
@@ -1174,21 +1175,21 @@ Mat* MatDerivationLeakyRelu(float a, Mat *src, Mat *dst)
 	}
 #endif
 	for (row = 0; row < src->row; row++) {
-		for (col = 0; col < src->col; col++){
-			if ((src->element[row])[col]>0){
+		for (col = 0; col < src->col; col++) {
+			if ((src->element[row])[col]>0) {
 				(dst->element[row])[col] = 1.f;
 			}
-			else{
+			else {
 				(dst->element[row])[col] = a;
 			}
 		}
-			
+
 	}
 
 	return dst;
 }
 /************************************************************************/
-/*                           ¼¤»îº¯Êı²Ù×÷                               */
+/*                           æ¿€æ´»å‡½æ•°æ“ä½œ                               */
 /************************************************************************/
 
 
@@ -1205,7 +1206,7 @@ Mat* MatDerivationLeakyRelu(float a, Mat *src, Mat *dst)
 
 
 /************************************************************************/
-/*                           ËğÊ§º¯Êı²Ù×÷                               */
+/*                           æŸå¤±å‡½æ•°æ“ä½œ                               */
 /************************************************************************/
 Mat* OneHot(Mat *src, int k, Mat *dst)
 {
@@ -1233,11 +1234,11 @@ Mat* OneHot(Mat *src, int k, Mat *dst)
 	return dst;
 }
 
-/*¾ù·½Îó²î*/
+/*å‡æ–¹è¯¯å·®*/
 float MSE(Mat *src, Mat *dst)
 {
 	int row;
-	float loss=0.f;
+	float loss = 0.f;
 	Mat sub_square_mat;
 	Mat sum_row_mat;
 
@@ -1248,7 +1249,7 @@ float MSE(Mat *src, Mat *dst)
 		MatShape(src);
 		printf("\t\tOneHotMatShape:\n\t\t\t");
 		MatShape(dst);
-		return -1.;     // ²ÎÊı¼ì²é²»¹ı¹Ø·µ»Ø -1£»
+		return -1.;     // å‚æ•°æ£€æŸ¥ä¸è¿‡å…³è¿”å› -1ï¼›
 	}
 #endif
 
@@ -1262,7 +1263,7 @@ float MSE(Mat *src, Mat *dst)
 	MatRowSum(&sub_square_mat, &sum_row_mat);
 	//MatDump(&sum_row_mat);
 
-	for (row = 0; row < src->row; ++row){
+	for (row = 0; row < src->row; ++row) {
 		//printf("%f\t", (sum_row_mat.element[row])[0]);
 		loss = loss + (sum_row_mat.element[row])[0];
 	}
@@ -1286,23 +1287,23 @@ float CrossEntropy(Mat *src, Mat *dst)
 		MatShape(src);
 		printf("\t\tOneHotMatShape:\n\t\t\t");
 		MatShape(dst);
-		return -1.;     // ²ÎÊı¼ì²é²»¹ı¹Ø·µ»Ø -1£»
+		return -1.;     // å‚æ•°æ£€æŸ¥ä¸è¿‡å…³è¿”å› -1ï¼›
 	}
 #endif
 
 	for (row = 0; row < src->row; row++) {
 		for (col = 0; col < src->col; col++)
-			loss += (float)(-1*(dst->element[row])[col]*log((src->element[row])[col]));
+			loss += (float)(-1 * (dst->element[row])[col] * log((src->element[row])[col]));
 	}
 
 	loss = loss / (src->row);
-	
+
 	return loss;
 }
 
 
-//¶Ô¼¤»îÖµÇóµ¼Êı
-Mat * MSEDerivative(Mat *ActiMat, Mat *DerivativeActiMat, Mat One_hotMat){
+//å¯¹æ¿€æ´»å€¼æ±‚å¯¼æ•°
+Mat * MSEDerivative(Mat *ActiMat, Mat *DerivativeActiMat, Mat One_hotMat) {
 
 #ifdef MAT_LEGAL_CHECKING
 	if (ActiMat->row != DerivativeActiMat->row || ActiMat->col != DerivativeActiMat->col || ActiMat->row != One_hotMat.row || ActiMat->col != One_hotMat.col) {
@@ -1313,7 +1314,7 @@ Mat * MSEDerivative(Mat *ActiMat, Mat *DerivativeActiMat, Mat One_hotMat){
 		MatShape(DerivativeActiMat);
 		printf("\t\tOne_hotMatShape:\n\t\t\t");
 		MatShape(&One_hotMat);
-		return NULL;     // ²ÎÊı¼ì²é²»¹ı¹Ø·µ»Ø -1£»
+		return NULL;     // å‚æ•°æ£€æŸ¥ä¸è¿‡å…³è¿”å› -1ï¼›
 	}
 #endif
 
@@ -1323,7 +1324,7 @@ Mat * MSEDerivative(Mat *ActiMat, Mat *DerivativeActiMat, Mat One_hotMat){
 }
 
 
-Mat * CrossEntropyDerivative(Mat *ActiMat, Mat *DerivativeActiMat, Mat One_hotMat){
+Mat * CrossEntropyDerivative(Mat *ActiMat, Mat *DerivativeActiMat, Mat One_hotMat) {
 	int row, col;
 #ifdef MAT_LEGAL_CHECKING
 	if (ActiMat->row != DerivativeActiMat->row || ActiMat->col != DerivativeActiMat->col || ActiMat->row != One_hotMat.row || ActiMat->col != One_hotMat.col) {
@@ -1334,7 +1335,7 @@ Mat * CrossEntropyDerivative(Mat *ActiMat, Mat *DerivativeActiMat, Mat One_hotMa
 		MatShape(DerivativeActiMat);
 		printf("\t\tOne_hotMatShape:\n\t\t\t");
 		MatShape(&One_hotMat);
-		return NULL;     // ²ÎÊı¼ì²é²»¹ı¹Ø·µ»Ø -1£»
+		return NULL;     // å‚æ•°æ£€æŸ¥ä¸è¿‡å…³è¿”å› -1ï¼›
 	}
 #endif
 
@@ -1342,19 +1343,19 @@ Mat * CrossEntropyDerivative(Mat *ActiMat, Mat *DerivativeActiMat, Mat One_hotMa
 	for (row = 0; row < ActiMat->row; row++) {
 		for (col = 0; col < ActiMat->col; col++)
 			//div 0 error 
-			if (equal((ActiMat->element[row])[col], 0.f)==1){
-				(DerivativeActiMat->element[row])[col] = - (One_hotMat.element[row])[col] * 10000000000;
+			if (equal((ActiMat->element[row])[col], 0.f) == 1) {
+				(DerivativeActiMat->element[row])[col] = -(One_hotMat.element[row])[col] * 10000000000;
 			}
-			else{
-				(DerivativeActiMat->element[row])[col] = - (One_hotMat.element[row])[col] / (ActiMat->element[row])[col];
+			else {
+				(DerivativeActiMat->element[row])[col] = -(One_hotMat.element[row])[col] / (ActiMat->element[row])[col];
 			}
-			}
-			
+	}
+
 	return DerivativeActiMat;
 
 }
 /************************************************************************/
-/*                           ËğÊ§º¯Êı²Ù×÷                               */
+/*                           æŸå¤±å‡½æ•°æ“ä½œ                               */
 /************************************************************************/
 
 
@@ -1371,17 +1372,17 @@ Mat * CrossEntropyDerivative(Mat *ActiMat, Mat *DerivativeActiMat, Mat One_hotMa
 
 
 /************************************************************************/
-/*                           È¨Öµ³õÊ¼»¯º¯Êı²Ù×÷                         */
+/*                           æƒå€¼åˆå§‹åŒ–å‡½æ•°æ“ä½œ                         */
 /************************************************************************/
 float gaussrand_NORMAL() {
-	float V1=0., V2=0., S=0.;
+	float V1 = 0., V2 = 0., S = 0.;
 	int phase = 0;
 	int count = 0;
 	float X;
 
 
 	if (phase == 0) {
-		while (count == 0 || (S >= 1 || S == 0)){
+		while (count == 0 || (S >= 1 || S == 0)) {
 			float U1 = (float)(rand() % 10000) / 10000.f;
 			float U2 = (float)(rand() % 10000) / 10000.f;
 
@@ -1390,7 +1391,7 @@ float gaussrand_NORMAL() {
 			V2 = 2 * U2 - 1;
 			S = V1 * V1 + V2 * V2;
 			count += 1;
-		} ;
+		};
 
 		float temp_S_1 = (float)log(S);
 		X = V1 * (float)sqrt(-2 * temp_S_1 / S);
@@ -1400,12 +1401,12 @@ float gaussrand_NORMAL() {
 		float temp_S_2 = (float)log(S);
 		X = V2 * (float)sqrt(-2 * temp_S_2 / S);
 	}
-		
+
 
 
 	phase = 1 - phase;
 
-	
+
 	return X;
 }
 
@@ -1415,7 +1416,7 @@ float gaussrand(float mean, float stdc) {
 }
 
 
-// È«0³õÊ¼»¯ 
+// å…¨0åˆå§‹åŒ– 
 Mat* MatInitZero(Mat *src)
 {
 	MatZeros(src);
@@ -1424,16 +1425,16 @@ Mat* MatInitZero(Mat *src)
 
 
 
-/* ³õÊ¼»¯³É0¾ùÖµ 0.01·½²îµÄ±ê×¼»¯Êı¾İ*/
+/* åˆå§‹åŒ–æˆ0å‡å€¼ 0.01æ–¹å·®çš„æ ‡å‡†åŒ–æ•°æ®*/
 Mat* MatInitRandomNormalization(Mat *src)
 {
 	srand((unsigned int)time(NULL));  // set randon seed
-	
+
 	int row, col;
 
 	//weight
-	for (row = 0; row < src->row; ++row){
-		for (col = 0; col < src->col; ++col){
+	for (row = 0; row < src->row; ++row) {
+		for (col = 0; col < src->col; ++col) {
 			(src->element[row])[col] = gaussrand(0.f, 0.1f);  // mean stdc
 		}
 	}
@@ -1451,9 +1452,9 @@ Mat* MatInitXavier(Mat *src)
 
 	int row, col;
 	//weight
-	for (row = 0; row < src->row; ++row){
-		for (col = 0; col < src->col; ++col){
-			(src->element[row])[col] = gaussrand(0.f, 0.1f) * (float)sqrt(1.f/src->row);  // mean stdc
+	for (row = 0; row < src->row; ++row) {
+		for (col = 0; col < src->col; ++col) {
+			(src->element[row])[col] = gaussrand(0.f, 0.1f) * (float)sqrt(1.f / src->row);  // mean stdc
 		}
 	}
 	//set bias row 0
@@ -1471,8 +1472,8 @@ Mat* MatInitHe(Mat *src)
 
 	int row, col;
 	//weight
-	for (row = 0; row < src->row; ++row){
-		for (col = 0; col < src->col; ++col){
+	for (row = 0; row < src->row; ++row) {
+		for (col = 0; col < src->col; ++col) {
 			(src->element[row])[col] = gaussrand(0.f, 0.9f) * (float)sqrt(2.f / src->row);  // mean stdc
 		}
 	}
@@ -1483,7 +1484,7 @@ Mat* MatInitHe(Mat *src)
 	return src;
 }
 /************************************************************************/
-/*                           È¨Öµ³õÊ¼»¯º¯Êı²Ù×÷                         */
+/*                           æƒå€¼åˆå§‹åŒ–å‡½æ•°æ“ä½œ                         */
 /************************************************************************/
 
 
@@ -1509,7 +1510,7 @@ Mat* MatInitHe(Mat *src)
 
 
 /************************************************************************/
-/*                     ÓÃ»§ÊäÈë²ÎÊıÁĞ±í¼°´«Èëº¯Êı                       */
+/*                     ç”¨æˆ·è¾“å…¥å‚æ•°åˆ—è¡¨åŠä¼ å…¥å‡½æ•°                       */
 /************************************************************************/
 //typedef struct{
 //	int CompleteSampleNum;		// number of all samples [int]
@@ -1529,7 +1530,7 @@ Mat* MatInitHe(Mat *src)
 //}Custom;
 
 
-int InitCustom(Custom *userDefine){
+int InitCustom(Custom *userDefine) {
 	userDefine->CompleteSampleNum = -1;
 	userDefine->TrainSampleNum = -1;
 	userDefine->TestSampleNum = -1;
@@ -1548,37 +1549,37 @@ int InitCustom(Custom *userDefine){
 	return 0;
 }
 
-void DumpFloatArray(float* array, int n){
+void DumpFloatArray(float* array, int n) {
 	char str[40];
-	for (int i = 0; i < n; ++i){
+	for (int i = 0; i < n; ++i) {
 		printf("%s", F2S(array[i], str));
 		printf("\t");
 	}
 	printf("\n");
 }
 
-void DumpIntArray(int* array, int n){
-	for (int i = 0; i < n; ++i){
+void DumpIntArray(int* array, int n) {
+	for (int i = 0; i < n; ++i) {
 		printf("%d\t", array[i]);
 	}
 	printf("\n");
 }
 
-int DumpCustom(Custom UserDefine){
+int DumpCustom(Custom UserDefine) {
 	printf("==================================================================== Custom Dump =====================================================================\n");
-	if (UserDefine.CompleteSampleNum == -1){
+	if (UserDefine.CompleteSampleNum == -1) {
 		printf("\t\t\tCustom parameter 'TrainSampleNum' uninitialized!!!\n");
 		return -1;
 	}
 	printf("CompleteSampleNum:\t%d\n", UserDefine.CompleteSampleNum);
 
-	if (UserDefine.TrainSampleNum == -1){
+	if (UserDefine.TrainSampleNum == -1) {
 		printf("\t\t\tCustom parameter 'TrainSampleNum' uninitialized!!!\n");
 		return -1;
 	}
 	printf("TrainSampleNum:\t\t%d\n", UserDefine.TrainSampleNum);
 
-	if (UserDefine.TestSampleNum == -1){
+	if (UserDefine.TestSampleNum == -1) {
 		printf("\t\t\tCustom parameter 'TestSampleNum' uninitialized!!!\n");
 		return -1;
 	}
@@ -1590,77 +1591,77 @@ int DumpCustom(Custom UserDefine){
 	//}
 	//printf("ValidationNum:\t\t%d\n", UserDefine.ValidationNum);
 
-	if (UserDefine.SampleDimensionNum == -1){
+	if (UserDefine.SampleDimensionNum == -1) {
 		printf("\t\t\tCustom parameter 'SampleDimensionNum' uninitialized!!!\n");
 		return -1;
 	}
 	printf("SampleDimensionNum:\t%d\n", UserDefine.SampleDimensionNum);
 
-	if (UserDefine.HiddenLayerNum == -1){
+	if (UserDefine.HiddenLayerNum == -1) {
 		printf("\t\t\tCustom parameter 'HiddenLayerNum' uninitialized!!!\n");
 		return -1;
 	}
 	printf("HiddenLayerNum:\t\t%d\n", UserDefine.HiddenLayerNum);
 
-	if (UserDefine.WeightInitWayNum == -1){
+	if (UserDefine.WeightInitWayNum == -1) {
 		printf("\t\t\tCustom parameter 'WeightInitWayNum' uninitialized!!!\n");
 		return -1;
 	}
 	printf("WeightInitWayNum:\t%d\n", UserDefine.WeightInitWayNum);
 
-	if (UserDefine.ClassificationNum == -1){
+	if (UserDefine.ClassificationNum == -1) {
 		printf("\t\t\tCustom parameter 'ClassificationNum' uninitialized!!!\n");
 		return -1;
 	}
 	printf("ClassificationNum:\t%d\n", UserDefine.ClassificationNum);
 
-	if (UserDefine.LossFuncNum == -1){
+	if (UserDefine.LossFuncNum == -1) {
 		printf("\t\t\tCustom parameter 'LossFuncNum' uninitialized!!!\n");
 		return -1;
 	}
 	printf("LossFuncNum:\t\t%d\n", UserDefine.LossFuncNum);
 
-	if (UserDefine.BatchSize == -1){
+	if (UserDefine.BatchSize == -1) {
 		printf("\t\t\tCustom parameter 'BatchSize' uninitialized!!!\n");
 		return -1;
 	}
 	printf("BatchSize:\t\t%d\n", UserDefine.BatchSize);
 
 
-	if (UserDefine.XValArray == NULL){
+	if (UserDefine.XValArray == NULL) {
 		printf("\t\t\tCustom parameter 'XValArray' uninitialized!!!\n");
 		return -1;
 	}
 	printf("XValArray:(length = %d)\t\n", UserDefine.CompleteSampleNum*UserDefine.SampleDimensionNum);
-	DumpFloatArray(UserDefine.XValArray, UserDefine.CompleteSampleNum*UserDefine.SampleDimensionNum);
+	//DumpFloatArray(UserDefine.XValArray, UserDefine.CompleteSampleNum*UserDefine.SampleDimensionNum);
 
-	if (UserDefine.YValArray == NULL){
+	if (UserDefine.YValArray == NULL) {
 		printf("\t\t\tCustom parameter 'YValArray' uninitialized!!!\n");
 		return -1;
 	}
 	printf("YValArray:(length = %d)\t\n", UserDefine.CompleteSampleNum);
-	DumpFloatArray(UserDefine.YValArray, UserDefine.CompleteSampleNum);
+	//DumpFloatArray(UserDefine.YValArray, UserDefine.CompleteSampleNum);
 
-	if (UserDefine.NeuronNumArray == NULL){
+	if (UserDefine.NeuronNumArray == NULL) {
 		printf("\t\t\tCustom parameter 'NeuronNumArray' uninitialized!!!\n");
 		return -1;
 	}
 	printf("NeuronNumArray:\t\n");
-	DumpIntArray(UserDefine.NeuronNumArray, UserDefine.HiddenLayerNum+2);
+	DumpIntArray(UserDefine.NeuronNumArray, UserDefine.HiddenLayerNum + 2);
 
-	if (UserDefine.ActiFuncNumArray == NULL){
+	if (UserDefine.ActiFuncNumArray == NULL) {
 		printf("\t\t\tCustom parameter 'ActiFuncNumArray' uninitialized!!!\n");
 		return -1;
 	}
-	printf("ActiFuncNumArray:£¨include output layer Acti-Function£©\t\n");
-	DumpIntArray(UserDefine.ActiFuncNumArray, UserDefine.HiddenLayerNum+2);
+	printf("ActiFuncNumArray:(include output layer Acti-Function)\t\n");
+	DumpIntArray(UserDefine.ActiFuncNumArray, UserDefine.HiddenLayerNum + 2);
 
 	printf("================================================================= Custom Dump finish =================================================================\n");
 
 	return 0;
 }
 
-void LoadParaFromCustom(Custom userDefine, DataSet *dataSet, FCNN *fcnn){
+void LoadParaFromCustom(Custom userDefine, DataSet *dataSet, FCNN *fcnn) {
 	// Custom ==>> DataSet
 	dataSet->BatchSize = userDefine.BatchSize;
 	dataSet->CompleteSampleNum = userDefine.CompleteSampleNum;
@@ -1670,7 +1671,7 @@ void LoadParaFromCustom(Custom userDefine, DataSet *dataSet, FCNN *fcnn){
 	dataSet->ClassificationNum = userDefine.ClassificationNum;
 
 	// Custom ==>> FCNN
-	fcnn->CurrentSampleNum = userDefine.BatchSize; //´ú±íµ±Ç°Éñ¾­ÍøÂçÇ°Ïò´«²¥Ê±µÄÊı¾İÑù±¾µÄ¸öÊı
+	fcnn->CurrentSampleNum = userDefine.BatchSize; //ä»£è¡¨å½“å‰ç¥ç»ç½‘ç»œå‰å‘ä¼ æ’­æ—¶çš„æ•°æ®æ ·æœ¬çš„ä¸ªæ•°
 	fcnn->SampleDimensionNum = userDefine.SampleDimensionNum;
 	fcnn->HiddenLayerNum = userDefine.HiddenLayerNum;
 	fcnn->WeightInitWayNum = userDefine.WeightInitWayNum;
@@ -1679,7 +1680,7 @@ void LoadParaFromCustom(Custom userDefine, DataSet *dataSet, FCNN *fcnn){
 }
 
 /************************************************************************/
-/*                     ÓÃ»§ÊäÈë²ÎÊıÁĞ±í¼°´«Èëº¯Êı                       */
+/*                     ç”¨æˆ·è¾“å…¥å‚æ•°åˆ—è¡¨åŠä¼ å…¥å‡½æ•°                       */
 /************************************************************************/
 
 
@@ -1692,7 +1693,7 @@ void LoadParaFromCustom(Custom userDefine, DataSet *dataSet, FCNN *fcnn){
 
 
 /************************************************************************/
-/*                         Éñ¾­ÍøÂçÊı¾İ¼¯¹¹½¨                           */
+/*                         ç¥ç»ç½‘ç»œæ•°æ®é›†æ„å»º                           */
 /************************************************************************/
 //typedef struct{
 //	Mat CompleteFeatureDataSet;	// complete featrue Mat for FCNN
@@ -1714,7 +1715,7 @@ void LoadParaFromCustom(Custom userDefine, DataSet *dataSet, FCNN *fcnn){
 //	int BatchSize;				// batch size for dataset
 //}DataSet;
 
-int InitDataSet(DataSet *dataSet){
+int InitDataSet(DataSet *dataSet) {
 	dataSet->CompleteFeatureDataSet.element = NULL;
 	dataSet->CompleteLabelDataSet.element = NULL;
 	dataSet->CompleteTrainFeature.element = NULL;
@@ -1753,7 +1754,7 @@ void CalculateAndLoadDataSetPara(DataSet *dataSet) {
 	dataSet->remainder = remainder;
 }
 
-void CreateDataSetSpace(DataSet *dataSet){
+void CreateDataSetSpace(DataSet *dataSet) {
 	// init Complete dataset
 	MatCreate(&dataSet->CompleteFeatureDataSet, dataSet->CompleteSampleNum, dataSet->SampleDimensionNum);
 	MatZeros(&dataSet->CompleteFeatureDataSet);
@@ -1772,12 +1773,12 @@ void CreateDataSetSpace(DataSet *dataSet){
 	// init train batch 
 
 	//printf("%d\t%d\n", dataSet->BatchNum, dataSet->remainder);
-	dataSet->BatchTrainFeature = (Mat*)malloc(dataSet->BatchNum *sizeof(Mat));
-	dataSet->BatchTrainLabel = (Mat*)malloc(dataSet->BatchNum *sizeof(Mat));
+	dataSet->BatchTrainFeature = (Mat*)malloc(dataSet->BatchNum * sizeof(Mat));
+	dataSet->BatchTrainLabel = (Mat*)malloc(dataSet->BatchNum * sizeof(Mat));
 	dataSet->BatchTrainLabelOneHot = (Mat*)malloc(dataSet->BatchNum * sizeof(Mat));
 
-	for (int i = 0; i < dataSet->BatchNum; ++i){
-		if (i == dataSet->BatchNum - 1 && dataSet->remainder != 0){
+	for (int i = 0; i < dataSet->BatchNum; ++i) {
+		if (i == dataSet->BatchNum - 1 && dataSet->remainder != 0) {
 			MatCreate(&(dataSet->BatchTrainFeature)[i], dataSet->remainder, dataSet->SampleDimensionNum);
 			MatZeros(&(dataSet->BatchTrainFeature)[i]);
 
@@ -1788,7 +1789,7 @@ void CreateDataSetSpace(DataSet *dataSet){
 			//printf("%d\n", dataSet->ClassificationNum);
 			MatZeros(&(dataSet->BatchTrainLabelOneHot)[i]);
 		}
-		else{
+		else {
 			MatCreate(&(dataSet->BatchTrainFeature)[i], dataSet->BatchSize, dataSet->SampleDimensionNum);
 			MatZeros(&(dataSet->BatchTrainFeature)[i]);
 
@@ -1816,7 +1817,7 @@ void CreateDataSetSpace(DataSet *dataSet){
 
 
 
-int DataLoading(Custom userDefine, DataSet *dataSet){
+int DataLoading(Custom userDefine, DataSet *dataSet) {
 	// complete data loading
 	MatSetVal(&dataSet->CompleteFeatureDataSet, userDefine.XValArray);
 	MatSetVal(&dataSet->CompleteLabelDataSet, userDefine.YValArray);
@@ -1826,7 +1827,7 @@ int DataLoading(Custom userDefine, DataSet *dataSet){
 	MatSetVal(&dataSet->CompleteTrainLabel, userDefine.YValArray);
 
 	// init batch train data loading and onehot coding
-	for (int i = 0; i < dataSet->BatchNum; ++i){
+	for (int i = 0; i < dataSet->BatchNum; ++i) {
 		MatSetVal(&dataSet->BatchTrainFeature[i], &userDefine.XValArray[i*dataSet->BatchSize*dataSet->SampleDimensionNum]);
 		MatSetVal(&dataSet->BatchTrainLabel[i], &userDefine.YValArray[i*dataSet->BatchSize]);
 		OneHot(&dataSet->BatchTrainLabel[i], dataSet->ClassificationNum, &dataSet->BatchTrainLabelOneHot[i]);
@@ -1842,13 +1843,13 @@ int DataLoading(Custom userDefine, DataSet *dataSet){
 }
 
 
-void DatasetConstruction(Custom userDefine, DataSet *dataSet){
+void DatasetConstruction(Custom userDefine, DataSet *dataSet) {
 	CalculateAndLoadDataSetPara(dataSet);
 	CreateDataSetSpace(dataSet);
 	DataLoading(userDefine, dataSet);
 }
 /************************************************************************/
-/*                         Éñ¾­ÍøÂçÊı¾İ¼¯¹¹½¨                           */
+/*                         ç¥ç»ç½‘ç»œæ•°æ®é›†æ„å»º                           */
 /************************************************************************/
 
 
@@ -1865,26 +1866,26 @@ void DatasetConstruction(Custom userDefine, DataSet *dataSet){
 
 
 /************************************************************************/
-/*                      Éñ¾­ÍøÂçµÄÔËËãËùĞè¿Õ¼ä±äÁ¿                      */
+/*                      ç¥ç»ç½‘ç»œçš„è¿ç®—æ‰€éœ€ç©ºé—´å˜é‡                      */
 /************************************************************************/
-//Éñ¾­ÍøÂç¼¤»îÖµ¾ØÕó			P_ActiMat			Mat*		ÁĞ±íË÷Òıi = 0(ÊäÈë²ã), 1, ..., N hidden£¬N hidden + 1(Êä³ö²ã)
-//Éñ¾­ÍøÂç¼¤»îÖµ¾ØÕó¼ÓÆ«ÖÃÁĞ	P_ActiMatPlus		Mat*		ÁĞ±íË÷Òıi = 0(ÊäÈë²ã), 1, ..., N hidden
-																//¼ÓÆ«ÖÃÁĞÆ«ÖÃÁĞÈ«²¿ÖÃ1.Êä³ö²ã²»ĞèÒªPlus
-//Éñ¾­ÍøÂçÇóºÍ¾ØÕó				P_SumMat			Mat*		ÁĞ±íË÷Òıi = 0(ÊäÈë²ã), 1, ..., N hidden£¬N hidden + 1(Êä³ö²ã)
-																//i = 0 Ê±ÊäÈë²ãÇóºÍ¾ØÕóĞĞÁĞÖÃÁãÎŞÊµ¼Êº¬Òå
-//Éñ¾­ÍøÂçÈ¨Öµ¾ØÕó				P_WeightMat			Mat*		ÁĞ±íË÷Òıi = 0(ÊäÈë²ã), 1, ..., N hidden£¬N hidden + 1(Êä³ö²ã)
-																//i = 0 Ê±ÊäÈë²ãÇóºÍ¾ØÕóĞĞÁĞÖÃÁãÎŞÊµ¼Êº¬Òå
-//Éñ¾­ÍøÂçÈ¨ÖµÆ«ÖÃ¾ØÕó			P_WeightBiasMat		Mat*		ÁĞ±íË÷Òıi = 0(ÊäÈë²ã), 1, ..., N hidden£¬N hidden + 1(Êä³ö²ã)
-																//i = 0 Ê±ÊäÈë²ãÇóºÍ¾ØÕóĞĞÁĞÖÃÁãÎŞÊµ¼Êº¬Òå
-//ÑµÁ·Êı¾İ±êÇ©					Mat_oneHot			Mat			row = N_sample col = N_out
-//·´Ïò´«²¥ÖĞ¼ä±äÁ¿¾ØÕó			P_DeltaMat			Mat*		ÁĞ±íË÷Òıi = 0(ÊäÈë²ã), 1, ..., N hidden£¬N hidden + 1(Êä³ö²ã)
-																//i = 0 Ê±ÊäÈë²ãÇóºÍ¾ØÕóĞĞÁĞÖÃÁãÎŞÊµ¼Êº¬Òå
-//È¨ÖµÆ«ÖÃ¾ØÕóµ¼Êı±äÁ¿¾ØÕó		P_NablaWbMat		Mat*		ÁĞ±íË÷Òıi = 0(ÊäÈë²ã), 1, ..., N hidden£¬N hidden + 1(Êä³ö²ã)
-																//i = 0 Ê±ÊäÈë²ãÇóºÍ¾ØÕóĞĞÁĞÖÃÁãÎŞÊµ¼Êº¬Òå
-//¼¤»îº¯Êı¶ÔÇóºÍÖµµ¼Êı¾ØÕó      P_ActiFunDerivation	Mat*		ÁĞ±íË÷Òıi = 0(ÊäÈë²ã), 1, ..., N hidden£¬N hidden + 1(Êä³ö²ã)
-																//i = 0 Ê±ÊäÈë²ãÇóºÍ¾ØÕóĞĞÁĞÖÃÁãÎŞÊµ¼Êº¬Òå
+//ç¥ç»ç½‘ç»œæ¿€æ´»å€¼çŸ©é˜µ			P_ActiMat			Mat*		åˆ—è¡¨ç´¢å¼•i = 0(è¾“å…¥å±‚), 1, ..., N hiddenï¼ŒN hidden + 1(è¾“å‡ºå±‚)
+//ç¥ç»ç½‘ç»œæ¿€æ´»å€¼çŸ©é˜µåŠ åç½®åˆ—	P_ActiMatPlus		Mat*		åˆ—è¡¨ç´¢å¼•i = 0(è¾“å…¥å±‚), 1, ..., N hidden
+//åŠ åç½®åˆ—åç½®åˆ—å…¨éƒ¨ç½®1.è¾“å‡ºå±‚ä¸éœ€è¦Plus
+//ç¥ç»ç½‘ç»œæ±‚å’ŒçŸ©é˜µ				P_SumMat			Mat*		åˆ—è¡¨ç´¢å¼•i = 0(è¾“å…¥å±‚), 1, ..., N hiddenï¼ŒN hidden + 1(è¾“å‡ºå±‚)
+//i = 0 æ—¶è¾“å…¥å±‚æ±‚å’ŒçŸ©é˜µè¡Œåˆ—ç½®é›¶æ— å®é™…å«ä¹‰
+//ç¥ç»ç½‘ç»œæƒå€¼çŸ©é˜µ				P_WeightMat			Mat*		åˆ—è¡¨ç´¢å¼•i = 0(è¾“å…¥å±‚), 1, ..., N hiddenï¼ŒN hidden + 1(è¾“å‡ºå±‚)
+//i = 0 æ—¶è¾“å…¥å±‚æ±‚å’ŒçŸ©é˜µè¡Œåˆ—ç½®é›¶æ— å®é™…å«ä¹‰
+//ç¥ç»ç½‘ç»œæƒå€¼åç½®çŸ©é˜µ			P_WeightBiasMat		Mat*		åˆ—è¡¨ç´¢å¼•i = 0(è¾“å…¥å±‚), 1, ..., N hiddenï¼ŒN hidden + 1(è¾“å‡ºå±‚)
+//i = 0 æ—¶è¾“å…¥å±‚æ±‚å’ŒçŸ©é˜µè¡Œåˆ—ç½®é›¶æ— å®é™…å«ä¹‰
+//è®­ç»ƒæ•°æ®æ ‡ç­¾					Mat_oneHot			Mat			row = N_sample col = N_out
+//åå‘ä¼ æ’­ä¸­é—´å˜é‡çŸ©é˜µ			P_DeltaMat			Mat*		åˆ—è¡¨ç´¢å¼•i = 0(è¾“å…¥å±‚), 1, ..., N hiddenï¼ŒN hidden + 1(è¾“å‡ºå±‚)
+//i = 0 æ—¶è¾“å…¥å±‚æ±‚å’ŒçŸ©é˜µè¡Œåˆ—ç½®é›¶æ— å®é™…å«ä¹‰
+//æƒå€¼åç½®çŸ©é˜µå¯¼æ•°å˜é‡çŸ©é˜µ		P_NablaWbMat		Mat*		åˆ—è¡¨ç´¢å¼•i = 0(è¾“å…¥å±‚), 1, ..., N hiddenï¼ŒN hidden + 1(è¾“å‡ºå±‚)
+//i = 0 æ—¶è¾“å…¥å±‚æ±‚å’ŒçŸ©é˜µè¡Œåˆ—ç½®é›¶æ— å®é™…å«ä¹‰
+//æ¿€æ´»å‡½æ•°å¯¹æ±‚å’Œå€¼å¯¼æ•°çŸ©é˜µ      P_ActiFunDerivation	Mat*		åˆ—è¡¨ç´¢å¼•i = 0(è¾“å…¥å±‚), 1, ..., N hiddenï¼ŒN hidden + 1(è¾“å‡ºå±‚)
+//i = 0 æ—¶è¾“å…¥å±‚æ±‚å’ŒçŸ©é˜µè¡Œåˆ—ç½®é›¶æ— å®é™…å«ä¹‰
 
-//³õÊ¼»¯FCNN½á¹¹Ìå
+//åˆå§‹åŒ–FCNNç»“æ„ä½“
 int InitFCNN(FCNN *fcnn) {
 	fcnn->CurrentSampleNum = -1;
 	fcnn->SampleDimensionNum = -1;
@@ -1899,7 +1900,7 @@ int InitFCNN(FCNN *fcnn) {
 }
 
 
-//³õÊ¼»¯FCLayer½á¹¹Ìå
+//åˆå§‹åŒ–FCLayerç»“æ„ä½“
 int InitFCLayer(FCLayer *fclayer) {
 	fclayer->ActiMat.element = NULL;
 	fclayer->ActiMatPlus.element = NULL;
@@ -1916,14 +1917,14 @@ int InitFCLayer(FCLayer *fclayer) {
 	return 0;
 }
 
-//´´½¨ÍøÂç²ã¿Õ¼ä
+//åˆ›å»ºç½‘ç»œå±‚ç©ºé—´
 FCLayer * SpaceCreateFCLayer(FCNN *fcnn) {
 	fcnn->Layer = (FCLayer*)malloc((fcnn->HiddenLayerNum + 2) * sizeof(FCLayer));
 	return fcnn->Layer;
 }
 
 
-// malloc²¢³õÊ¼»¯¼¤»îÖµ¾ØÕó¿Õ¼ä
+// mallocå¹¶åˆå§‹åŒ–æ¿€æ´»å€¼çŸ©é˜µç©ºé—´
 void SpaceCreateActi(FCNN *fcnn) {
 	for (int i = 0; i < fcnn->HiddenLayerNum + 2; ++i) {
 		MatCreate(&fcnn->Layer[i].ActiMat, fcnn->CurrentSampleNum, fcnn->Layer[i].NeuronNum);
@@ -1931,29 +1932,29 @@ void SpaceCreateActi(FCNN *fcnn) {
 	}
 }
 
-// free¼¤»îÖµ¾ØÕó¿Õ¼ä
+// freeæ¿€æ´»å€¼çŸ©é˜µç©ºé—´
 void SpaceDeleteActi(FCNN *fcnn) {
 	for (int i = 0; i < fcnn->HiddenLayerNum + 2; ++i) {
 		MatDelete(&fcnn->Layer[i].ActiMat);
 	}
 }
 
-// malloc²¢³õÊ¼»¯¼¤»îÖµPlus¾ØÕó¿Õ¼ä
+// mallocå¹¶åˆå§‹åŒ–æ¿€æ´»å€¼PlusçŸ©é˜µç©ºé—´
 void SpaceCreateActiPlus(FCNN *fcnn) {
 	for (int i = 0; i < fcnn->HiddenLayerNum + 2; ++i) {
-		MatCreate(&fcnn->Layer[i].ActiMatPlus, fcnn->CurrentSampleNum, fcnn->Layer[i].NeuronNum +1);
+		MatCreate(&fcnn->Layer[i].ActiMatPlus, fcnn->CurrentSampleNum, fcnn->Layer[i].NeuronNum + 1);
 		MatZeros(&fcnn->Layer[i].ActiMatPlus);
 	}
 }
 
-// free¼¤»îÖµPlus¾ØÕó¿Õ¼ä
+// freeæ¿€æ´»å€¼PlusçŸ©é˜µç©ºé—´
 void SpaceDeleteActiPlus(FCNN *fcnn) {
 	for (int i = 0; i < fcnn->HiddenLayerNum + 2; ++i) {
 		MatDelete(&fcnn->Layer[i].ActiMatPlus);
 	}
 }
 
-// malloc²¢³õÊ¼»¯ÇóºÍÖµ¾ØÕó¿Õ¼ä
+// mallocå¹¶åˆå§‹åŒ–æ±‚å’Œå€¼çŸ©é˜µç©ºé—´
 void SpaceCreateSum(FCNN *fcnn) {
 	for (int i = 0; i < fcnn->HiddenLayerNum + 2; ++i) {
 		MatCreate(&fcnn->Layer[i].SumMat, fcnn->CurrentSampleNum, fcnn->Layer[i].NeuronNum);
@@ -1961,14 +1962,14 @@ void SpaceCreateSum(FCNN *fcnn) {
 	}
 }
 
-// freeÇóºÍÖµ¾ØÕó¿Õ¼ä
+// freeæ±‚å’Œå€¼çŸ©é˜µç©ºé—´
 void SpaceDeleteSum(FCNN *fcnn) {
 	for (int i = 0; i < fcnn->HiddenLayerNum + 2; ++i) {
 		MatDelete(&fcnn->Layer[i].SumMat);
 	}
 }
 
-// malloc²¢³õÊ¼»¯¼¤»îº¯Êı¶ÔÇóºÍÖµµ¼Êı¾ØÕó
+// mallocå¹¶åˆå§‹åŒ–æ¿€æ´»å‡½æ•°å¯¹æ±‚å’Œå€¼å¯¼æ•°çŸ©é˜µ
 void SpaceCreateActiFunDerivation(FCNN *fcnn) {
 	for (int i = 0; i < fcnn->HiddenLayerNum + 2; ++i) {
 		MatCreate(&fcnn->Layer[i].ActiFunDerivationMat, fcnn->CurrentSampleNum, fcnn->Layer[i].NeuronNum);
@@ -1976,7 +1977,7 @@ void SpaceCreateActiFunDerivation(FCNN *fcnn) {
 	}
 }
 
-// free¼¤»îº¯Êı¶ÔÇóºÍÖµµ¼Êı¾ØÕó
+// freeæ¿€æ´»å‡½æ•°å¯¹æ±‚å’Œå€¼å¯¼æ•°çŸ©é˜µ
 void SpaceDeleteActiFunDerivation(FCNN *fcnn) {
 	for (int i = 0; i < fcnn->HiddenLayerNum + 2; ++i) {
 		MatDelete(&fcnn->Layer[i].ActiFunDerivationMat);
@@ -1984,7 +1985,7 @@ void SpaceDeleteActiFunDerivation(FCNN *fcnn) {
 }
 
 
-// malloc²¢³õÊ¼»¯·´Ïò´«²¥ÖĞ¼ä±äÁ¿¿Õ¼ä
+// mallocå¹¶åˆå§‹åŒ–åå‘ä¼ æ’­ä¸­é—´å˜é‡ç©ºé—´
 void SpaceCreateDelta(FCNN *fcnn) {
 	for (int i = 0; i < fcnn->HiddenLayerNum + 2; ++i) {
 		MatCreate(&fcnn->Layer[i].DeltaMat, fcnn->CurrentSampleNum, fcnn->Layer[i].NeuronNum);
@@ -1992,14 +1993,14 @@ void SpaceCreateDelta(FCNN *fcnn) {
 	}
 }
 
-// malloc²¢³õÊ¼»¯·´Ïò´«²¥ÖĞ¼ä±äÁ¿¿Õ¼ä
+// mallocå¹¶åˆå§‹åŒ–åå‘ä¼ æ’­ä¸­é—´å˜é‡ç©ºé—´
 void SpaceDeleteDelta(FCNN *fcnn) {
 	for (int i = 0; i < fcnn->HiddenLayerNum + 2; ++i) {
 		MatDelete(&fcnn->Layer[i].DeltaMat);
 	}
 }
 
-//malloc²¢³õÊ¼»¯FCNN OneHotMat
+//mallocå¹¶åˆå§‹åŒ–FCNN OneHotMat
 void SpaceCreateFCNNOneHotMat(FCNN *fcnn) {
 	MatCreate(&fcnn->OnehotMat, fcnn->CurrentSampleNum, fcnn->ClassificationNum);
 }
@@ -2011,36 +2012,36 @@ void SpaceDeleteFCNNOneHotMat(FCNN *fcnn) {
 
 
 
-// malloc²¢³õÊ¼»¯Éñ¾­ÍøÂçÈ¨Öµ¾ØÕó¿Õ¼ä
+// mallocå¹¶åˆå§‹åŒ–ç¥ç»ç½‘ç»œæƒå€¼çŸ©é˜µç©ºé—´
 void SpaceCreateWeight(FCNN *fcnn) {
 
 	fcnn->Layer[0].WeightMat.row = 0;
 	fcnn->Layer[0].WeightMat.col = 0;
 	for (int i = 1; i < fcnn->HiddenLayerNum + 2; ++i) {
-		MatCreate(&fcnn->Layer[i].WeightMat, fcnn->Layer[i-1].NeuronNum, fcnn->Layer[i].NeuronNum);
+		MatCreate(&fcnn->Layer[i].WeightMat, fcnn->Layer[i - 1].NeuronNum, fcnn->Layer[i].NeuronNum);
 		MatZeros(&fcnn->Layer[i].WeightMat);
 	}
 }
 
 
-// malloc²¢³õÊ¼»¯Éñ¾­ÍøÂçÈ¨ÖµÆ«ÖÃ¾ØÕó¿Õ¼ä
+// mallocå¹¶åˆå§‹åŒ–ç¥ç»ç½‘ç»œæƒå€¼åç½®çŸ©é˜µç©ºé—´
 void SpaceCreateWeightBias(FCNN *fcnn) {
 
 	fcnn->Layer[0].WeightBiasMat.row = 0;
 	fcnn->Layer[0].WeightBiasMat.col = 0;
 	for (int i = 1; i < fcnn->HiddenLayerNum + 2; ++i) {
-		MatCreate(&fcnn->Layer[i].WeightBiasMat, fcnn->Layer[i-1].NeuronNum +1, fcnn->Layer[i].NeuronNum);
+		MatCreate(&fcnn->Layer[i].WeightBiasMat, fcnn->Layer[i - 1].NeuronNum + 1, fcnn->Layer[i].NeuronNum);
 		MatZeros(&fcnn->Layer[i].WeightBiasMat);
 	}
 }
 
-//malloc²¢³õÊ¼»¯È¨ÖµÆ«ÖÃ¾ØÕóµ¼Êı±äÁ¿¾ØÕó
+//mallocå¹¶åˆå§‹åŒ–æƒå€¼åç½®çŸ©é˜µå¯¼æ•°å˜é‡çŸ©é˜µ
 void SpaceCreateNablaWeightBias(FCNN *fcnn) {
 
 	fcnn->Layer[0].NablaWbMat.row = 0;
 	fcnn->Layer[0].NablaWbMat.col = 0;
 	for (int i = 1; i < fcnn->HiddenLayerNum + 2; ++i) {
-		MatCreate(&fcnn->Layer[i].NablaWbMat, fcnn->Layer[i-1].NeuronNum + 1, fcnn->Layer[i].NeuronNum);
+		MatCreate(&fcnn->Layer[i].NablaWbMat, fcnn->Layer[i - 1].NeuronNum + 1, fcnn->Layer[i].NeuronNum);
 		MatZeros(&fcnn->Layer[i].NablaWbMat);
 	}
 }
@@ -2086,7 +2087,7 @@ void DoadinPara2FCLayer(FCNN *fcnn, Custom userDefine) {
 
 int CreateNNSpaceAndLoadinPara2FCLayer(FCNN *fcnn, Custom userDefine) {
 	fcnn->Layer = SpaceCreateFCLayer(fcnn);
-	
+
 	DoadinPara2FCLayer(fcnn, userDefine);
 
 	CreateNNOperationSpace(fcnn);
@@ -2101,7 +2102,7 @@ int CreateNNSpaceAndLoadinPara2FCLayer(FCNN *fcnn, Custom userDefine) {
 
 
 /************************************************************************/
-/*                      Éñ¾­ÍøÂçµÄÔËËãËùĞè¿Õ¼ä±äÁ¿                      */
+/*                      ç¥ç»ç½‘ç»œçš„è¿ç®—æ‰€éœ€ç©ºé—´å˜é‡                      */
 /************************************************************************/
 
 
@@ -2129,25 +2130,25 @@ int CreateNNSpaceAndLoadinPara2FCLayer(FCNN *fcnn, Custom userDefine) {
 
 
 /************************************************************************/
-/*                             ³õÊ¼»¯È¨Öµ                           */
+/*                             åˆå§‹åŒ–æƒå€¼                           */
 /************************************************************************/
-/*Éñ¾­ÍøÂçÈ¨Öµ³õÊ¼»¯*/
-//ÊäÈë¾ØÕó Êä³ö¾ØÕó È¨Öµ¾ØÕó
+/*ç¥ç»ç½‘ç»œæƒå€¼åˆå§‹åŒ–*/
+//è¾“å…¥çŸ©é˜µ è¾“å‡ºçŸ©é˜µ æƒå€¼çŸ©é˜µ
 
-void WeightInit_ChooseWay(Mat *Weight, int Style_initWeight){
-	if (Style_initWeight == 0){
+void WeightInit_ChooseWay(Mat *Weight, int Style_initWeight) {
+	if (Style_initWeight == 0) {
 		MatInitZero(Weight);
 	}
-	else if (Style_initWeight == 1){
+	else if (Style_initWeight == 1) {
 		MatInitRandomNormalization(Weight);
 	}
-	else if (Style_initWeight == 2){
+	else if (Style_initWeight == 2) {
 		MatInitXavier(Weight);
 	}
-	else if (Style_initWeight == 3){
+	else if (Style_initWeight == 3) {
 		MatInitHe(Weight);
 	}
-	else{
+	else {
 		printf("error for WeightInit_ChooseWay, please check Style_initWeight variable!\n");
 	}
 
@@ -2156,7 +2157,7 @@ void WeightInit_ChooseWay(Mat *Weight, int Style_initWeight){
 
 int NNWeightinit(FCNN *fcnn) {
 
-	//È¨ÖµºÎ¿­Ã÷³õÊ¼»¯£¨ºóÆÚÀ©Õ¹¿ÉÑ¡³£ÓÃµÄ¼¸ÖÖ³õÊ¼»¯·½Ê½£©
+	//æƒå€¼ä½•å‡¯æ˜åˆå§‹åŒ–ï¼ˆåæœŸæ‰©å±•å¯é€‰å¸¸ç”¨çš„å‡ ç§åˆå§‹åŒ–æ–¹å¼ï¼‰
 	for (int i = 1; i < fcnn->HiddenLayerNum + 2; ++i) {
 		WeightInit_ChooseWay(&fcnn->Layer[i].WeightMat, fcnn->WeightInitWayNum);
 		MatPlusRow(&fcnn->Layer[i].WeightMat, &fcnn->Layer[i].WeightBiasMat);
@@ -2165,7 +2166,7 @@ int NNWeightinit(FCNN *fcnn) {
 	return 0;
 }
 /************************************************************************/
-/*                             ³õÊ¼»¯Éñ¾­ÍøÂç                           */
+/*                             åˆå§‹åŒ–ç¥ç»ç½‘ç»œ                           */
 /************************************************************************/
 
 
@@ -2187,60 +2188,60 @@ int NNWeightinit(FCNN *fcnn) {
 
 
 /************************************************************************/
-/*                           Éñ¾­ÍøÂçÇ°Ïò´«²¥                           */
+/*                           ç¥ç»ç½‘ç»œå‰å‘ä¼ æ’­                           */
 /************************************************************************/
-//ËùĞè²ÎÊı
-//Éñ¾­ÍøÂçÒş²Ø²ã²ãÊı:			N_hidden.
-//Éñ¾­ÍøÂç¼¤»îÖµ¾ØÕó			P_ActiMat		Mat*		ÁĞ±íË÷Òıi = 0(ÊäÈë²ã), 1, ..., N hidden£¬N hidden + 1(Êä³ö²ã)
-//Éñ¾­ÍøÂç¼¤»îÖµ¾ØÕó¼ÓÆ«ÖÃÁĞ	P_ActiMatPlus	Mat*		ÁĞ±íË÷Òıi = 0(ÊäÈë²ã), 1, ..., N hidden
-//¼ÓÆ«ÖÃÁĞÆ«ÖÃÁĞÈ«²¿ÖÃ1.Êä³ö²ã²»ĞèÒªPlus
-//Éñ¾­ÍøÂçÇóºÍ¾ØÕó				P_SumMat		Mat*		ÁĞ±íË÷Òıi = 0(ÊäÈë²ã), 1, ..., N hidden£¬N hidden + 1(Êä³ö²ã)
-//i = 0 Ê±ÊäÈë²ãÇóºÍ¾ØÕóĞĞÁĞÖÃÁãÎŞÊµ¼Êº¬Òå
-//Éñ¾­ÍøÂçÈ¨ÖµÆ«ÖÃ¾ØÕó			P_WeightBiasMat	Mat*		ÁĞ±íË÷Òıi = 0(ÊäÈë²ã), 1, ..., N hidden£¬N hidden + 1(Êä³ö²ã)
-//i = 0 Ê±ÊäÈë²ãÇóºÍ¾ØÕóĞĞÁĞÖÃÁãÎŞÊµ¼Êº¬Òå
-//ÑµÁ·Êı¾İ±êÇ©					Mat_oneHot		Mat			row = N_sample col = N_out
+//æ‰€éœ€å‚æ•°
+//ç¥ç»ç½‘ç»œéšè—å±‚å±‚æ•°:			N_hidden.
+//ç¥ç»ç½‘ç»œæ¿€æ´»å€¼çŸ©é˜µ			P_ActiMat		Mat*		åˆ—è¡¨ç´¢å¼•i = 0(è¾“å…¥å±‚), 1, ..., N hiddenï¼ŒN hidden + 1(è¾“å‡ºå±‚)
+//ç¥ç»ç½‘ç»œæ¿€æ´»å€¼çŸ©é˜µåŠ åç½®åˆ—	P_ActiMatPlus	Mat*		åˆ—è¡¨ç´¢å¼•i = 0(è¾“å…¥å±‚), 1, ..., N hidden
+//åŠ åç½®åˆ—åç½®åˆ—å…¨éƒ¨ç½®1.è¾“å‡ºå±‚ä¸éœ€è¦Plus
+//ç¥ç»ç½‘ç»œæ±‚å’ŒçŸ©é˜µ				P_SumMat		Mat*		åˆ—è¡¨ç´¢å¼•i = 0(è¾“å…¥å±‚), 1, ..., N hiddenï¼ŒN hidden + 1(è¾“å‡ºå±‚)
+//i = 0 æ—¶è¾“å…¥å±‚æ±‚å’ŒçŸ©é˜µè¡Œåˆ—ç½®é›¶æ— å®é™…å«ä¹‰
+//ç¥ç»ç½‘ç»œæƒå€¼åç½®çŸ©é˜µ			P_WeightBiasMat	Mat*		åˆ—è¡¨ç´¢å¼•i = 0(è¾“å…¥å±‚), 1, ..., N hiddenï¼ŒN hidden + 1(è¾“å‡ºå±‚)
+//i = 0 æ—¶è¾“å…¥å±‚æ±‚å’ŒçŸ©é˜µè¡Œåˆ—ç½®é›¶æ— å®é™…å«ä¹‰
+//è®­ç»ƒæ•°æ®æ ‡ç­¾					Mat_oneHot		Mat			row = N_sample col = N_out
 
 
-Mat* *MatActivate(Mat *src, Mat *dst, int way){
-	if (way == 0){
+Mat* *MatActivate(Mat *src, Mat *dst, int way) {
+	if (way == 0) {
 		MatNoneActi(src, dst);
 	}
-	else if (way == 1){
+	else if (way == 1) {
 		MatSigmoid(src, dst);
 	}
-	else if (way == 2){
+	else if (way == 2) {
 		MatTanh(src, dst);
 	}
-	else if (way == 3){
+	else if (way == 3) {
 		MatRelu(src, dst);
 	}
-	else if (way == 4){
+	else if (way == 4) {
 		MatLeakyRelu(0.2f, src, dst); //leak = 0.2
 	}
-	else if (way == 5){
+	else if (way == 5) {
 		MatSoftmax(src, dst);
 	}
-	else{
+	else {
 		printf("error for MatActivate, please check ActiFsHidden  variable!\n");
 	}
 	return NULL;
 }
 
 
-float LossFunction(Mat *src, Mat *dst, int Nstr_LossF){
-	if (Nstr_LossF == 0){
+float LossFunction(Mat *src, Mat *dst, int Nstr_LossF) {
+	if (Nstr_LossF == 0) {
 		return MSE(src, dst);
 	}
-	else if (Nstr_LossF == 1){
+	else if (Nstr_LossF == 1) {
 		return CrossEntropy(src, dst);
 	}
-	else{
+	else {
 		printf("error for Nstr_LossF, please check loss function variable!\n");
 		return -1;
 	}
 }
 
-//Éñ¾­ÍøÂçÏòÇ°´«²¥£¬ ·µ»Øloss scalar
+//ç¥ç»ç½‘ç»œå‘å‰ä¼ æ’­ï¼Œ è¿”å›loss scalar
 float NNforward(Mat featureMat, Mat labelMatOneHot, FCNN *fcnn) {
 
 #ifdef MAT_LEGAL_CHECKING
@@ -2254,41 +2255,41 @@ float NNforward(Mat featureMat, Mat labelMatOneHot, FCNN *fcnn) {
 	}
 #endif
 	//MatDump(&featureMat);
-	if (featureMat.row != fcnn->CurrentSampleNum) {// ´¦ÀíĞ¡ÅúÁ¿µÄÓàÊı
+	if (featureMat.row != fcnn->CurrentSampleNum) {// å¤„ç†å°æ‰¹é‡çš„ä½™æ•°
 		fcnn->CurrentSampleNum = featureMat.row;
 
 		DeleteNNOperationSpace(fcnn);
 		CreateNNOperationSpace(fcnn);
 	}
 
-	
+
 
 	MatCopy(&featureMat, &fcnn->Layer[0].ActiMat);
 	MatPlusCol(&fcnn->Layer[0].ActiMat, &fcnn->Layer[0].ActiMatPlus);
-	
+
 	MatCopy(&labelMatOneHot, &fcnn->OnehotMat);
 
-		// ÏòÇ°´«²¥
-	for (int i = 0; i < fcnn->HiddenLayerNum+1; ++i){
-			MatMul(&fcnn->Layer[i].ActiMatPlus, &fcnn->Layer[i+1].WeightBiasMat, &fcnn->Layer[i + 1].SumMat);
-			MatActivate(&fcnn->Layer[i + 1].SumMat, &fcnn->Layer[i + 1].ActiMat, fcnn->Layer[i + 1].AcitFuncNum);
-			if (i != fcnn->HiddenLayerNum){
-				MatPlusCol(&fcnn->Layer[i+1].ActiMat, &fcnn->Layer[i+1].ActiMatPlus);
-			}
+	// å‘å‰ä¼ æ’­
+	for (int i = 0; i < fcnn->HiddenLayerNum + 1; ++i) {
+		MatMul(&fcnn->Layer[i].ActiMatPlus, &fcnn->Layer[i + 1].WeightBiasMat, &fcnn->Layer[i + 1].SumMat);
+		MatActivate(&fcnn->Layer[i + 1].SumMat, &fcnn->Layer[i + 1].ActiMat, fcnn->Layer[i + 1].AcitFuncNum);
+		if (i != fcnn->HiddenLayerNum) {
+			MatPlusCol(&fcnn->Layer[i + 1].ActiMat, &fcnn->Layer[i + 1].ActiMatPlus);
 		}
-		//¼ÆËãloss
+	}
+	//è®¡ç®—loss
 	//MatDump(&OneHotMat);
 	//MatDump(&fcnn->Layer[fcnn->HiddenLayerNum + 1].ActiMat);
 
 	float loss = -1.f;
 	loss = LossFunction(&fcnn->Layer[fcnn->HiddenLayerNum + 1].ActiMat, &fcnn->OnehotMat, fcnn->LossFuncNum);
-	
+
 	return loss;
 }
 
 //float NNforward(Mat *P_ActiMat, Mat *P_ActiMatPlus, Mat *P_SumMat, Mat *P_WeightBiasMat, Mat Mat_oneHot, int N_hidden, int *NStr_ActiFsHidden, int Nstr_LossF){
 //
-//	// ÏòÇ°´«²¥
+//	// å‘å‰ä¼ æ’­
 //	for (int i = 0; i < N_hidden+1; ++i){
 //		MatMul(&P_ActiMatPlus[i], &P_WeightBiasMat[i + 1], &P_SumMat[i + 1]);
 //		MatActivate(&P_SumMat[i + 1], &P_ActiMat[i + 1], NStr_ActiFsHidden[i + 1]);
@@ -2297,12 +2298,12 @@ float NNforward(Mat featureMat, Mat labelMatOneHot, FCNN *fcnn) {
 //		}
 //		//MatDump(&P_ActiMat[i + 1]);
 //	}
-//	//¼ÆËãloss
+//	//è®¡ç®—loss
 //	return LossFunction(&P_ActiMat[N_hidden + 1], &Mat_oneHot, Nstr_LossF);
 //}
 
 /************************************************************************/
-/*                           Éñ¾­ÍøÂçÇ°Ïò´«²¥                           */
+/*                           ç¥ç»ç½‘ç»œå‰å‘ä¼ æ’­                           */
 /************************************************************************/
 
 
@@ -2311,68 +2312,68 @@ float NNforward(Mat featureMat, Mat labelMatOneHot, FCNN *fcnn) {
 
 
 /************************************************************************/
-/*                           Éñ¾­ÍøÂç·´Ïò´«²¥                           */
+/*                           ç¥ç»ç½‘ç»œåå‘ä¼ æ’­                           */
 /************************************************************************/
-//ËùĞè²ÎÊı
-//Éñ¾­ÍøÂçÒş²Ø²ã²ãÊı:			N_hidden.
-//ÊäÈëÑù±¾µÄÊıÁ¿£º				N_sample.
-//¸÷²ãÉñ¾­Ôª¸öÊı :				N_layerNeuron[i],			i =0(ÊäÈë²ã),1,...,N_hidden,N_hidden+1(Êä³ö²ã).
-//È¨ÖµÆ«ÖÃ¾ØÕóµ¼Êı±äÁ¿¾ØÕó		P_NablaWbMat	Mat*		ÁĞ±íË÷Òıi = 0(ÊäÈë²ã), 1, ..., N hidden£¬N hidden + 1(Êä³ö²ã)
-															//i = 0 Ê±ÊäÈë²ãÇóºÍ¾ØÕóĞĞÁĞÖÃÁãÎŞÊµ¼Êº¬Òå
-//Éñ¾­ÍøÂçÇóºÍ¾ØÕó				P_SumMat		Mat*		ÁĞ±íË÷Òıi = 0(ÊäÈë²ã), 1, ..., N hidden£¬N hidden + 1(Êä³ö²ã)
-															//i = 0 Ê±ÊäÈë²ãÇóºÍ¾ØÕóĞĞÁĞÖÃÁãÎŞÊµ¼Êº¬Òå
-//Éñ¾­ÍøÂç¼¤»îÖµ¾ØÕó			P_ActiMat		Mat*		ÁĞ±íË÷Òıi = 0(ÊäÈë²ã), 1, ..., N hidden£¬N hidden + 1(Êä³ö²ã)
-//Éñ¾­ÍøÂç¼¤»îÖµ¾ØÕó¼ÓÆ«ÖÃÁĞ	P_ActiMatPlus	Mat*		ÁĞ±íË÷Òıi = 0(ÊäÈë²ã), 1, ..., N hidden
-//¸÷²ã¼¤»îº¯Êı£º				NStr_ActiFsHidden[i], i=0,1,...,N_hidden,N_hidden+1(Êä³ö²ã).
-															//0  -> no activation
-															//1  -> sigmoid
-															//2  -> tanh
-															//3  -> relu
-															//4  -> leaky relu
-															//5  -> softmax (output layer)
-//Êä³ö²ãËğÊ§º¯Êı£º				Nstr_LossF 
-															//0  -> MSE
-															//1  -> CE
-//·´Ïò´«²¥ÖĞ¼ä±äÁ¿¾ØÕó			P_DeltaMat		Mat*		ÁĞ±íË÷Òıi = 0(ÊäÈë²ã), 1, ..., N hidden£¬N hidden + 1(Êä³ö²ã)
-															//i = 0 Ê±ÊäÈë²ãÇóºÍ¾ØÕóĞĞÁĞÖÃÁãÎŞÊµ¼Êº¬Òå
-//ÑµÁ·Êı¾İ±êÇ©					Mat_oneHot		Mat			row = N_sample col = N_out
-//¼¤»îº¯Êı¶ÔÇóºÍÖµµ¼Êı¾ØÕó      P_ActiFunDerivation	Mat*		ÁĞ±íË÷Òıi = 0(ÊäÈë²ã), 1, ..., N hidden£¬N hidden + 1(Êä³ö²ã)
-															//i = 0 Ê±ÊäÈë²ãÇóºÍ¾ØÕóĞĞÁĞÖÃÁãÎŞÊµ¼Êº¬Òå
+//æ‰€éœ€å‚æ•°
+//ç¥ç»ç½‘ç»œéšè—å±‚å±‚æ•°:			N_hidden.
+//è¾“å…¥æ ·æœ¬çš„æ•°é‡ï¼š				N_sample.
+//å„å±‚ç¥ç»å…ƒä¸ªæ•° :				N_layerNeuron[i],			i =0(è¾“å…¥å±‚),1,...,N_hidden,N_hidden+1(è¾“å‡ºå±‚).
+//æƒå€¼åç½®çŸ©é˜µå¯¼æ•°å˜é‡çŸ©é˜µ		P_NablaWbMat	Mat*		åˆ—è¡¨ç´¢å¼•i = 0(è¾“å…¥å±‚), 1, ..., N hiddenï¼ŒN hidden + 1(è¾“å‡ºå±‚)
+//i = 0 æ—¶è¾“å…¥å±‚æ±‚å’ŒçŸ©é˜µè¡Œåˆ—ç½®é›¶æ— å®é™…å«ä¹‰
+//ç¥ç»ç½‘ç»œæ±‚å’ŒçŸ©é˜µ				P_SumMat		Mat*		åˆ—è¡¨ç´¢å¼•i = 0(è¾“å…¥å±‚), 1, ..., N hiddenï¼ŒN hidden + 1(è¾“å‡ºå±‚)
+//i = 0 æ—¶è¾“å…¥å±‚æ±‚å’ŒçŸ©é˜µè¡Œåˆ—ç½®é›¶æ— å®é™…å«ä¹‰
+//ç¥ç»ç½‘ç»œæ¿€æ´»å€¼çŸ©é˜µ			P_ActiMat		Mat*		åˆ—è¡¨ç´¢å¼•i = 0(è¾“å…¥å±‚), 1, ..., N hiddenï¼ŒN hidden + 1(è¾“å‡ºå±‚)
+//ç¥ç»ç½‘ç»œæ¿€æ´»å€¼çŸ©é˜µåŠ åç½®åˆ—	P_ActiMatPlus	Mat*		åˆ—è¡¨ç´¢å¼•i = 0(è¾“å…¥å±‚), 1, ..., N hidden
+//å„å±‚æ¿€æ´»å‡½æ•°ï¼š				NStr_ActiFsHidden[i], i=0,1,...,N_hidden,N_hidden+1(è¾“å‡ºå±‚).
+//0  -> no activation
+//1  -> sigmoid
+//2  -> tanh
+//3  -> relu
+//4  -> leaky relu
+//5  -> softmax (output layer)
+//è¾“å‡ºå±‚æŸå¤±å‡½æ•°ï¼š				Nstr_LossF 
+//0  -> MSE
+//1  -> CE
+//åå‘ä¼ æ’­ä¸­é—´å˜é‡çŸ©é˜µ			P_DeltaMat		Mat*		åˆ—è¡¨ç´¢å¼•i = 0(è¾“å…¥å±‚), 1, ..., N hiddenï¼ŒN hidden + 1(è¾“å‡ºå±‚)
+//i = 0 æ—¶è¾“å…¥å±‚æ±‚å’ŒçŸ©é˜µè¡Œåˆ—ç½®é›¶æ— å®é™…å«ä¹‰
+//è®­ç»ƒæ•°æ®æ ‡ç­¾					Mat_oneHot		Mat			row = N_sample col = N_out
+//æ¿€æ´»å‡½æ•°å¯¹æ±‚å’Œå€¼å¯¼æ•°çŸ©é˜µ      P_ActiFunDerivation	Mat*		åˆ—è¡¨ç´¢å¼•i = 0(è¾“å…¥å±‚), 1, ..., N hiddenï¼ŒN hidden + 1(è¾“å‡ºå±‚)
+//i = 0 æ—¶è¾“å…¥å±‚æ±‚å’ŒçŸ©é˜µè¡Œåˆ—ç½®é›¶æ— å®é™…å«ä¹‰
 
 
-Mat * ActiFunDerivation(Mat Mat_Sum, Mat* Mat_ActiFunDerivation, int option){
-	if (option == 0){
+Mat * ActiFunDerivation(Mat Mat_Sum, Mat* Mat_ActiFunDerivation, int option) {
+	if (option == 0) {
 		return MatDerivationNoneActi(&Mat_Sum, Mat_ActiFunDerivation);
 	}
-	else if (option == 1){
+	else if (option == 1) {
 		return MatDerivationSigmoid(&Mat_Sum, Mat_ActiFunDerivation);
 	}
-	else if (option == 2){
+	else if (option == 2) {
 		return MatDerivationTanh(&Mat_Sum, Mat_ActiFunDerivation);
 	}
-	else if (option == 3){
+	else if (option == 3) {
 		return MatDerivationRelu(&Mat_Sum, Mat_ActiFunDerivation);
 	}
-	else if (option == 4){
+	else if (option == 4) {
 		return MatDerivationLeakyRelu(0.1f, &Mat_Sum, Mat_ActiFunDerivation);
 	}
-	else if (option == 5){
+	else if (option == 5) {
 		return MatDerivationSoftmax(&Mat_Sum, Mat_ActiFunDerivation);
 	}
-	else{
+	else {
 		printf("error for ActiFunDerivation, please check ActiFsHidden  variable!\n");
 	}
 	return NULL;
 }
 
-Mat * LossFunDerivation(Mat *ActiMat, Mat *DerivativeActiMat, Mat One_hotMat, int option){
-	if (option == 0){
+Mat * LossFunDerivation(Mat *ActiMat, Mat *DerivativeActiMat, Mat One_hotMat, int option) {
+	if (option == 0) {
 		return MSEDerivative(ActiMat, DerivativeActiMat, One_hotMat);
 	}
-	else if (option == 1){
+	else if (option == 1) {
 		return CrossEntropyDerivative(ActiMat, DerivativeActiMat, One_hotMat);
 	}
-	else{
+	else {
 		printf("error for LossFunDerivation, please check Nstr_LossF  variable!\n");
 	}
 	return NULL;
@@ -2380,8 +2381,8 @@ Mat * LossFunDerivation(Mat *ActiMat, Mat *DerivativeActiMat, Mat One_hotMat, in
 
 Mat * NNOuputLayerBackward(FCNN *fcnn) {
 
-	if (fcnn->Layer[fcnn->HiddenLayerNum+1].AcitFuncNum == 5 && fcnn->LossFuncNum == 1) {//softmax+crossentropy
-		MatSub(&fcnn->Layer[fcnn->HiddenLayerNum + 1].ActiMat, &fcnn->OnehotMat, &fcnn->Layer[fcnn->HiddenLayerNum+1].DeltaMat);
+	if (fcnn->Layer[fcnn->HiddenLayerNum + 1].AcitFuncNum == 5 && fcnn->LossFuncNum == 1) {//softmax+crossentropy
+		MatSub(&fcnn->Layer[fcnn->HiddenLayerNum + 1].ActiMat, &fcnn->OnehotMat, &fcnn->Layer[fcnn->HiddenLayerNum + 1].DeltaMat);
 	}
 	else {
 		Mat tempMat;
@@ -2448,27 +2449,27 @@ Mat * NNOuputLayerBackward(FCNN *fcnn) {
 //}
 
 
-Mat * NNBackward(FCNN *fcnn){
+Mat * NNBackward(FCNN *fcnn) {
 
 	//printf("NN Start to backward......\n");
 
-	//Êä³ö²ã·´Ïò´«²¥
+	//è¾“å‡ºå±‚åå‘ä¼ æ’­
 	NNOuputLayerBackward(fcnn);
 
 	//MatDump(&fcnn->Layer[fcnn->HiddenLayerNum+1].NablaWbMat);
-	//Òş²Ø²ã·´Ïò´«²¥
-	for (int i = fcnn->HiddenLayerNum; i > 0; --i){
+	//éšè—å±‚åå‘ä¼ æ’­
+	for (int i = fcnn->HiddenLayerNum; i > 0; --i) {
 		Mat tempTransW;
 		Mat ActiFuncMat;
 		Mat tempMulMat;
 		Mat tempProdMat;
 		Mat tempTransActi;
 
-		MatCreate(&tempTransW, fcnn->Layer[i+1].WeightMat.col, fcnn->Layer[i + 1].WeightMat.row);
+		MatCreate(&tempTransW, fcnn->Layer[i + 1].WeightMat.col, fcnn->Layer[i + 1].WeightMat.row);
 		MatCreate(&ActiFuncMat, fcnn->Layer[i].SumMat.row, fcnn->Layer[i].SumMat.col);
 		MatCreate(&tempMulMat, fcnn->Layer[i + 1].DeltaMat.row, fcnn->Layer[i + 1].WeightMat.row);
 		MatCreate(&tempProdMat, fcnn->Layer[i].SumMat.row, fcnn->Layer[i].SumMat.col);
-		MatCreate(&tempTransActi, fcnn->Layer[i-1].ActiMatPlus.col, fcnn->Layer[i - 1].ActiMatPlus.row);
+		MatCreate(&tempTransActi, fcnn->Layer[i - 1].ActiMatPlus.col, fcnn->Layer[i - 1].ActiMatPlus.row);
 
 		MatTrans(&fcnn->Layer[i + 1].WeightMat, &tempTransW);
 		ActiFunDerivation(fcnn->Layer[i].SumMat, &ActiFuncMat, fcnn->Layer[i].AcitFuncNum);
@@ -2498,12 +2499,12 @@ Mat * NNBackward(FCNN *fcnn){
 //
 //	//printf("NN Start to backward......\n");
 //
-//	//Êä³ö²ã·´Ïò´«²¥
+//	//è¾“å‡ºå±‚åå‘ä¼ æ’­
 //	NNOuputLayerBackward(N_hidden, N_sample, N_layerNeuron, NStr_ActiFsHidden, Nstr_LossF, P_NablaWbMat, P_ActiMatPlus, P_SumMat, P_DeltaMat, 
 //P_ActiMat, P_ActiFunDerivation, Mat_oneHot);
 //
 //	//MatDump(&P_NablaWbMat[N_hidden + 1]);
-//	//Òş²Ø²ã·´Ïò´«²¥
+//	//éšè—å±‚åå‘ä¼ æ’­
 //	for (int i = N_hidden; i > 0; --i){
 //		Mat tempTransW;
 //		Mat ActiFuncMat;
@@ -2540,7 +2541,7 @@ Mat * NNBackward(FCNN *fcnn){
 //}
 
 /************************************************************************/
-/*                           Éñ¾­ÍøÂç·´Ïò´«²¥                           */
+/*                           ç¥ç»ç½‘ç»œåå‘ä¼ æ’­                           */
 /************************************************************************/
 
 
@@ -2561,30 +2562,30 @@ Mat * NNBackward(FCNN *fcnn){
 
 
 /************************************************************************/
-/*                           Éñ¾­ÍøÂçÓÅ»¯Ëã·¨                           */
+/*                           ç¥ç»ç½‘ç»œä¼˜åŒ–ç®—æ³•                           */
 /************************************************************************/
-//ËùĞè²ÎÊı
-//Éñ¾­ÍøÂçÒş²Ø²ã²ãÊı:			N_hidden.
-//È¨ÖµÆ«ÖÃ¾ØÕóµ¼Êı±äÁ¿¾ØÕó		P_NablaWbMat	Mat*		ÁĞ±íË÷Òıi = 0(ÊäÈë²ã), 1, ..., N hidden£¬N hidden + 1(Êä³ö²ã)
-															//i = 0 Ê±ÊäÈë²ãÇóºÍ¾ØÕóĞĞÁĞÖÃÁãÎŞÊµ¼Êº¬Òå
-//Éñ¾­ÍøÂçÈ¨ÖµÆ«ÖÃ¾ØÕó			P_WeightBiasMat	Mat*		ÁĞ±íË÷Òıi = 0(ÊäÈë²ã), 1, ..., N hidden£¬N hidden + 1(Êä³ö²ã)
-															//i = 0 Ê±ÊäÈë²ãÇóºÍ¾ØÕóĞĞÁĞÖÃÁãÎŞÊµ¼Êº¬Òå
+//æ‰€éœ€å‚æ•°
+//ç¥ç»ç½‘ç»œéšè—å±‚å±‚æ•°:			N_hidden.
+//æƒå€¼åç½®çŸ©é˜µå¯¼æ•°å˜é‡çŸ©é˜µ		P_NablaWbMat	Mat*		åˆ—è¡¨ç´¢å¼•i = 0(è¾“å…¥å±‚), 1, ..., N hiddenï¼ŒN hidden + 1(è¾“å‡ºå±‚)
+//i = 0 æ—¶è¾“å…¥å±‚æ±‚å’ŒçŸ©é˜µè¡Œåˆ—ç½®é›¶æ— å®é™…å«ä¹‰
+//ç¥ç»ç½‘ç»œæƒå€¼åç½®çŸ©é˜µ			P_WeightBiasMat	Mat*		åˆ—è¡¨ç´¢å¼•i = 0(è¾“å…¥å±‚), 1, ..., N hiddenï¼ŒN hidden + 1(è¾“å‡ºå±‚)
+//i = 0 æ—¶è¾“å…¥å±‚æ±‚å’ŒçŸ©é˜µè¡Œåˆ—ç½®é›¶æ— å®é™…å«ä¹‰
 
 
-//ÅúÁ¿Ìİ¶ÈÏÂ½µ
-void  MBGD(FCNN *fcnn, float alpha){
+//æ‰¹é‡æ¢¯åº¦ä¸‹é™
+void  MBGD(FCNN *fcnn, float alpha) {
 	Mat temp;
-	for (int i = 1; i <= fcnn->HiddenLayerNum + 1; ++i){
+	for (int i = 1; i <= fcnn->HiddenLayerNum + 1; ++i) {
 		//MatDump(&P_WeightBiasMat[i]);
 		MatCreate(&temp, fcnn->Layer[i].NablaWbMat.row, fcnn->Layer[i].NablaWbMat.col);
 		MatNumMul(alpha, &fcnn->Layer[i].NablaWbMat, &temp);
-		MatSub(&fcnn->Layer[i].WeightBiasMat,&temp , &fcnn->Layer[i].WeightBiasMat);
+		MatSub(&fcnn->Layer[i].WeightBiasMat, &temp, &fcnn->Layer[i].WeightBiasMat);
 		MatDelete(&temp);
 	}
 
 }
 /************************************************************************/
-/*                          Éñ¾­ÍøÂçÓÅ»¯Ëã·¨                            */
+/*                          ç¥ç»ç½‘ç»œä¼˜åŒ–ç®—æ³•                            */
 /************************************************************************/
 
 
@@ -2592,54 +2593,161 @@ void  MBGD(FCNN *fcnn, float alpha){
 
 
 
-int main(){
-	
 
-	/*ÓÃ»§×Ô¶¨ÒåÏà¹ØÊı¾İÂ¼Èë*/
-	float Xval[] = {
-		0.f, 0.f, 0.f, 0.f, 0.f,
-		0.f, 0.f, 0.f, 0.f, 1.f,
-		0.f, 0.f, 0.f, 1.f, 0.f,
-		0.f, 0.f, 0.f, 1.f, 1.f,
-		0.f, 0.f, 1.f, 0.f, 0.f,
-		0.f, 0.f, 1.f, 0.f, 1.f,
-		0.f, 0.f, 1.f, 1.f, 0.f,
-		0.f, 0.f, 1.f, 1.f, 1.f,
-		0.f, 1.f, 0.f, 0.f, 0.f,
-		0.f, 1.f, 0.f, 0.f, 1.f,
-		0.f, 1.f, 0.f, 1.f, 0.f,
-		0.f, 1.f, 0.f, 1.f, 1.f,
-		0.f, 1.f, 1.f, 0.f, 0.f,
-		0.f, 1.f, 1.f, 0.f, 1.f,
-		0.f, 1.f, 1.f, 1.f, 0.f,
-		0.f, 1.f, 1.f, 1.f, 1.f,
-		1.f, 0.f, 0.f, 0.f, 0.f,
-		1.f, 0.f, 0.f, 0.f, 1.f,
-		1.f, 0.f, 0.f, 1.f, 0.f,
-		1.f, 0.f, 0.f, 1.f, 1.f,
-		1.f, 0.f, 1.f, 0.f, 0.f,
-		1.f, 0.f, 1.f, 0.f, 1.f,
-		1.f, 0.f, 1.f, 1.f, 0.f,
-		1.f, 0.f, 1.f, 1.f, 1.f,
-		1.f, 1.f, 0.f, 0.f, 0.f,
-		1.f, 1.f, 0.f, 0.f, 1.f,
-		1.f, 1.f, 0.f, 1.f, 0.f,
-		1.f, 1.f, 0.f, 1.f, 1.f,
-		1.f, 1.f, 1.f, 0.f, 0.f,
-		1.f, 1.f, 1.f, 0.f, 1.f,
-		1.f, 1.f, 1.f, 1.f, 0.f,
-		1.f, 1.f, 1.f, 1.f, 1.f }; //Ñù±¾ÕæÖµ
+/************************************************************************/
+/*                             å‡†ç¡®ç‡æµ‹è¯•                               */
+/************************************************************************/
+int judge_max(float arr[], int n)
+{
+	int index = 0;
+	int i;
+	float max = arr[0];
+	for (i = 0; i < n; i++)
+	{	
+		if (arr[i] > max)
+		{
+			max = arr[i];
+			index = i;
+		}
+	}
+	return index;
+}
 
 
-	float Yval[] = { 0.f, 1.f, 1.f, 0.f, 1.f, 0.f, 0.f, 1.f, 1.f, 0.f, 0.f, 1.f, 0.f, 1.f, 1.f, 0.f, 1.f, 0.f, 0.f, 1.f, 0.f, 1.f, 1.f, 0.f, 0.f, 1.f, 1.f, 0.f, 1.f, 0.f, 0.f, 1.f };  //Ñù±¾±êÇ©¶ş·ÖÀà
-	int NueronNumArray[] = {5, 6, 8, 6 ,2};
-	int ActiFuncNumArray[] = {0, 3, 3, 3, 5 };// ¸÷²ã¼¤»îº¯ÊıÊ¹ÓÃÕæÖµ£»×¢ÒâÓ³Éä¹ØÏµ¡£ ×îºóÒ»²ã±íÊ¾Êä³ö²ã¼¤»îº¯ÊıSoftMax
+float testAcc(FCNN fcnn, DataSet dataset) {
+	//MatDump(&fcnn.Layer[fcnn.HiddenLayerNum + 1].ActiMat);
+	Mat MatCompare;
+	char buf[20];
+	int i = 0;
+	MatCreate(&MatCompare, dataset.TestLabel.row, 1);
+	MatZeros(&MatCompare);
+
+	for (i = 0; i < dataset.TestLabel.row; ++i) {
+		(MatCompare.element[i])[0] = (float)judge_max(fcnn.Layer[fcnn.HiddenLayerNum + 1].ActiMat.element[i], fcnn.Layer[fcnn.HiddenLayerNum + 1].ActiMat.col);
+		//DumpFloatArray(fcnn.Layer[fcnn.HiddenLayerNum + 1].ActiMat.element[i], fcnn.Layer[fcnn.HiddenLayerNum + 1].ActiMat.col);
+		//printf("%d\n", judge_max(fcnn.Layer[fcnn.HiddenLayerNum + 1].ActiMat.element[i], fcnn.Layer[fcnn.HiddenLayerNum + 1].ActiMat.col));
+		//printf("%s\n", F2S((MatCompare.element[i])[0], buf));
+	}
+
+	//MatShape(&MatCompare);
+	//MatShape(&dataset.TestLabel);
+	int correctNum=0;
+	for (i = 0; i < dataset.TestLabel.row; ++i) {
+		if (equal((MatCompare.element[i])[0], (dataset.TestLabel.element[i])[0])) {
+			correctNum++;
+		}
+	}
+	/*printf("%d\n", correctNum);*/
+
+	return (float)correctNum/(float)dataset.TestLabel.row;
+}
+
+/************************************************************************/
+/*                             å‡†ç¡®ç‡æµ‹è¯•                               */
+/************************************************************************/
+
+
+
+
+
+
+/************************************************************************/
+/*                           MinstHWæ•°æ®åŠ è½½                            */
+/************************************************************************/
+#define MAX_LINE 16
+
+
+//struct _iobuf {
+//	char *_ptr;
+//	int   _cnt;
+//	char *_base;
+//	int   _flag;
+//	int   _file;
+//	int   _charbuf;
+//	int   _bufsiz;
+//	char *_tmpfname;
+//};
+//typedef struct _iobuf FILE;
+
+
+float Xval[54880000] = { 0 };
+float Yval[70000] = { 0 };
+
+void MinstHWDataLoading() {
+	char buf[MAX_LINE];  /*ç¼“å†²åŒº*/
+	FILE *fp = NULL;     /*æ–‡ä»¶æŒ‡é’ˆ*/
+	FILE *fp2 = NULL;
+	int len;             /*è¡Œå­—ç¬¦ä¸ªæ•°*/
+	int i = 0;
+	int j = 0;
+	char * flag;
+
+	//if ((fp = fopen("C:/Users/Administrator/Documents/GitHub/MinstHW/DataFeatrue.txt", "r")) == NULL)
+	//{
+	//	perror("fail to read");
+	//	return 0;
+	//}
+
+	fp = fopen("C:/Users/Administrator/Documents/GitHub/MinstHW/DataFeatrue.txt", "r");
+	flag = fgets(buf, MAX_LINE, fp);
+	while (flag != NULL)
+	{
+		len = strlen(buf);
+		buf[len - 1] = '\0';  /*å»æ‰æ¢è¡Œç¬¦*/
+		//printf("%s %d \n", buf, len - 1);
+		Xval[i++] = (float)atof(buf);
+		flag = fgets(buf, MAX_LINE, fp);
+	}
+	fclose(fp);
+
+	//for (i = 0; i < 54880000; ++i) {
+	//	printf("%d:  %s\n", i, F2S(nums[i], buf));
+	//}
+
+
+
+	// labels
+	fp2 = fopen("C:/Users/Administrator/Documents/GitHub/MinstHW/DataLabel.txt", "r");
+	flag = fgets(buf, MAX_LINE, fp2);
+	while (flag != NULL)
+	{
+		len = strlen(buf);
+		buf[len - 1] = '\0';  /*å»æ‰æ¢è¡Œç¬¦*/
+		//printf("%s %d \n", buf, len - 1);
+		Yval[j++] = (float)atof(buf);
+		flag = fgets(buf, MAX_LINE, fp2);
+	}
+	fclose(fp2);
+}
+
+/************************************************************************/
+/*                           MinstHWæ•°æ®åŠ è½½                            */
+/************************************************************************/
+
+
+
+
+
+int main() {
+
+
+	/*æ•°æ®é›†å¯¼å…¥*/
+	char buf3[20];
+	char buf4[20];
+	MinstHWDataLoading();
+	//for (int i = 0; i < 70000; ++i) {
+	//	printf("%d, %s, %s\n", i, F2S(Xval[i], buf3), F2S(Yval[i],buf4));
+	//}
+
+
+	int NueronNumArray[] = { 784, 512, 256 ,10 };
+	int ActiFuncNumArray[] = { 0, 3, 3, 5 };// å„å±‚æ¿€æ´»å‡½æ•°ä½¿ç”¨çœŸå€¼ï¼›æ³¨æ„æ˜ å°„å…³ç³»ã€‚ æœ€åä¸€å±‚è¡¨ç¤ºè¾“å‡ºå±‚æ¿€æ´»å‡½æ•°SoftMax
 	char buf1[40];
 	char buf2[40];
 
 
 
-	/*ÓÃ»§×Ô¶¨Òå²ÎÊıÊäÈë*/
+	/*ç”¨æˆ·è‡ªå®šä¹‰å‚æ•°è¾“å…¥*/
 	Custom userDefine;
 	DataSet dataSet;
 	FCNN fcnn;
@@ -2650,16 +2758,16 @@ int main(){
 	InitFCNN(&fcnn);
 	InitFCLayer(&fclayer);
 
-	userDefine.CompleteSampleNum = 32;
-	userDefine.TrainSampleNum = 24;
-	userDefine.TestSampleNum = 7;
+	userDefine.CompleteSampleNum = 70000;
+	userDefine.TrainSampleNum = 60000;
+	userDefine.TestSampleNum = 10000;
 	//userDefine.ValidationNum = 0;
-	userDefine.SampleDimensionNum = 5;
-	userDefine.HiddenLayerNum = 3;
-	userDefine.ClassificationNum = 2;
+	userDefine.SampleDimensionNum = 784;
+	userDefine.HiddenLayerNum = 2;
+	userDefine.ClassificationNum = 10;
 	userDefine.LossFuncNum = 1; // CE
 	userDefine.WeightInitWayNum = 3; // KaiMing
-	userDefine.BatchSize = 5;
+	userDefine.BatchSize = 50;
 	userDefine.XValArray = Xval;
 	userDefine.YValArray = Yval;
 	userDefine.NeuronNumArray = NueronNumArray;
@@ -2667,7 +2775,7 @@ int main(){
 
 	DumpCustom(userDefine); // print
 
-	// ´ÓCuston´«Èë²ÎÊıµ½¸÷¸ö½á¹¹Ìå
+							// ä»Custonä¼ å…¥å‚æ•°åˆ°å„ä¸ªç»“æ„ä½“
 	LoadParaFromCustom(userDefine, &dataSet, &fcnn);
 
 
@@ -2681,7 +2789,7 @@ int main(){
 
 	//MatDump(&dataSet.TestFeature);
 	//MatDump(&dataSet.TestLabel);
-	
+
 
 	//MatDump(&dataSet.CompleteFeatureDataSet);
 	//MatDump(&dataSet.CompleteLabelDataSet);
@@ -2710,45 +2818,216 @@ int main(){
 
 
 
-	
-	MatDump(&dataSet.TestFeature);
-	MatDump(&dataSet.TestLabelOneHot);
+
+	//MatDump(&dataSet.TestFeature);
+	//MatDump(&dataSet.TestLabelOneHot);
 
 
-	/*ÑµÁ·*/
+	/*è®­ç»ƒ*/
 	float loss = 0.f;
 	float losstest = 0.f;
-	int trainOperationNum = 100000;
-	for (int i = 0; i < trainOperationNum; ++i){
+	int trainOperationNum = 200;
+
+	for (int i = 0; i < trainOperationNum; ++i) {
 		for (int j = 0; j < dataSet.BatchNum; ++j) {
-			
-			/*Éñ¾­ÍøÂçÇ°Ïî´«²¥*/
-			if (i % 10 == 0) {
-				losstest = NNforward(dataSet.TestFeature, dataSet.TestLabelOneHot, &fcnn);
-			}
+
+			/*ç¥ç»ç½‘ç»œå‰é¡¹ä¼ æ’­*/
 
 			loss = NNforward(dataSet.BatchTrainFeature[j], dataSet.BatchTrainLabelOneHot[j], &fcnn);
 
 			NNBackward(&fcnn);
 			MBGD(&fcnn, 0.1f);
 
-			if (i % 10 == 0) {
-				printf("epoch %d/%d, iteration %d/%d£¬ loss=%s, testloss=%s\n", i + 1, trainOperationNum, j + 1, dataSet.BatchNum, F2S(loss, buf1), F2S(losstest, buf2));
-			}
-			else {
-				printf("epoch %d/%d, iteration %d/%d£¬ loss=%s\n", i + 1, trainOperationNum, j + 1, dataSet.BatchNum, F2S(loss, buf1));
-
-			}
-
-			
+			if ((j+1) % 200 == 0) {
+				printf("epoch %d/%d iteration %d/%d loss=%s\n", i + 1, trainOperationNum, j + 1, dataSet.BatchNum, F2S(loss, buf1));
+			}	
+			//break;
 		}
+		//test
+		losstest = NNforward(dataSet.TestFeature, dataSet.TestLabelOneHot, &fcnn);
+		printf("====== epoch %d/%d  testloss=%s  acc=%s ======\n", i + 1, trainOperationNum, F2S(losstest, buf2), F2S(testAcc(fcnn, dataSet), buf1));
+		//break;
 	}
 
-	MatDump(&fcnn.Layer[fcnn.HiddenLayerNum + 1].ActiMat);
-	losstest = NNforward(dataSet.TestFeature, dataSet.TestLabelOneHot, &fcnn);
-	MatDump(&fcnn.Layer[fcnn.HiddenLayerNum + 1].ActiMat);
-	
+	//MatDump(&fcnn.Layer[fcnn.HiddenLayerNum + 1].ActiMat);
+	//losstest = NNforward(dataSet.TestFeature, dataSet.TestLabelOneHot, &fcnn);
+	//MatDump(&fcnn.Layer[fcnn.HiddenLayerNum + 1].ActiMat);
+
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// demo
+//int main() {
+//
+//
+//	/*ç”¨æˆ·è‡ªå®šä¹‰ç›¸å…³æ•°æ®å½•å…¥*/
+//	float Xval[] = {
+//		0.f, 0.f, 0.f, 0.f, 0.f,
+//		0.f, 0.f, 0.f, 0.f, 1.f,
+//		0.f, 0.f, 0.f, 1.f, 0.f,
+//		0.f, 0.f, 0.f, 1.f, 1.f,
+//		0.f, 0.f, 1.f, 0.f, 0.f,
+//		0.f, 0.f, 1.f, 0.f, 1.f,
+//		0.f, 0.f, 1.f, 1.f, 0.f,
+//		0.f, 0.f, 1.f, 1.f, 1.f,
+//		0.f, 1.f, 0.f, 0.f, 0.f,
+//		0.f, 1.f, 0.f, 0.f, 1.f,
+//		0.f, 1.f, 0.f, 1.f, 0.f,
+//		0.f, 1.f, 0.f, 1.f, 1.f,
+//		0.f, 1.f, 1.f, 0.f, 0.f,
+//		0.f, 1.f, 1.f, 0.f, 1.f,
+//		0.f, 1.f, 1.f, 1.f, 0.f,
+//		0.f, 1.f, 1.f, 1.f, 1.f,
+//		1.f, 0.f, 0.f, 0.f, 0.f,
+//		1.f, 0.f, 0.f, 0.f, 1.f,
+//		1.f, 0.f, 0.f, 1.f, 0.f,
+//		1.f, 0.f, 0.f, 1.f, 1.f,
+//		1.f, 0.f, 1.f, 0.f, 0.f,
+//		1.f, 0.f, 1.f, 0.f, 1.f,
+//		1.f, 0.f, 1.f, 1.f, 0.f,
+//		1.f, 0.f, 1.f, 1.f, 1.f,
+//		1.f, 1.f, 0.f, 0.f, 0.f,
+//		1.f, 1.f, 0.f, 0.f, 1.f,
+//		1.f, 1.f, 0.f, 1.f, 0.f,
+//		1.f, 1.f, 0.f, 1.f, 1.f,
+//		1.f, 1.f, 1.f, 0.f, 0.f,
+//		1.f, 1.f, 1.f, 0.f, 1.f,
+//		1.f, 1.f, 1.f, 1.f, 0.f,
+//		1.f, 1.f, 1.f, 1.f, 1.f }; //æ ·æœ¬çœŸå€¼
+//
+//
+//	float Yval[] = { 0.f, 1.f, 1.f, 0.f, 1.f, 0.f, 0.f, 1.f, 1.f, 0.f, 0.f, 1.f, 0.f, 1.f, 1.f, 0.f, 1.f, 0.f, 0.f, 1.f, 0.f, 1.f, 1.f, 0.f, 0.f, 1.f, 1.f, 0.f, 1.f, 0.f, 0.f, 1.f };  //æ ·æœ¬æ ‡ç­¾äºŒåˆ†ç±»
+//	int NueronNumArray[] = { 5, 6, 8, 6 ,2 };
+//	int ActiFuncNumArray[] = { 0, 3, 3, 3, 5 };// å„å±‚æ¿€æ´»å‡½æ•°ä½¿ç”¨çœŸå€¼ï¼›æ³¨æ„æ˜ å°„å…³ç³»ã€‚ æœ€åä¸€å±‚è¡¨ç¤ºè¾“å‡ºå±‚æ¿€æ´»å‡½æ•°SoftMax
+//	char buf1[40];
+//	char buf2[40];
+//
+//
+//
+//	/*ç”¨æˆ·è‡ªå®šä¹‰å‚æ•°è¾“å…¥*/
+//	Custom userDefine;
+//	DataSet dataSet;
+//	FCNN fcnn;
+//	FCLayer fclayer;
+//
+//	InitCustom(&userDefine);   // custom initial
+//	InitDataSet(&dataSet);
+//	InitFCNN(&fcnn);
+//	InitFCLayer(&fclayer);
+//
+//	userDefine.CompleteSampleNum = 32;
+//	userDefine.TrainSampleNum = 24;
+//	userDefine.TestSampleNum = 7;
+//	//userDefine.ValidationNum = 0;
+//	userDefine.SampleDimensionNum = 5;
+//	userDefine.HiddenLayerNum = 3;
+//	userDefine.ClassificationNum = 2;
+//	userDefine.LossFuncNum = 1; // CE
+//	userDefine.WeightInitWayNum = 3; // KaiMing
+//	userDefine.BatchSize = 5;
+//	userDefine.XValArray = Xval;
+//	userDefine.YValArray = Yval;
+//	userDefine.NeuronNumArray = NueronNumArray;
+//	userDefine.ActiFuncNumArray = ActiFuncNumArray;
+//
+//	DumpCustom(userDefine); // print
+//
+//							// ä»Custonä¼ å…¥å‚æ•°åˆ°å„ä¸ªç»“æ„ä½“
+//	LoadParaFromCustom(userDefine, &dataSet, &fcnn);
+//
+//
+//	DatasetConstruction(userDefine, &dataSet);
+//
+//	//MatDump(&dataSet.CompleteFeatureDataSet);
+//	//MatDump(&dataSet.CompleteLabelDataSet);
+//
+//	//MatDump(&dataSet.CompleteTrainFeature);
+//	//MatDump(&dataSet.CompleteTrainLabel);
+//
+//	//MatDump(&dataSet.TestFeature);
+//	//MatDump(&dataSet.TestLabel);
+//
+//
+//	//MatDump(&dataSet.CompleteFeatureDataSet);
+//	//MatDump(&dataSet.CompleteLabelDataSet);
+//
+//	//MatDump(&dataSet.CompleteTrainFeature);
+//	//MatDump(&dataSet.CompleteTrainLabel);
+//
+//	//for (int i = 0; i < batchNum; ++i){
+//	//	MatDump(&(dataSet.BatchTrainFeature)[i]);
+//	//	MatDump(&(dataSet.BatchTrainLabel)[i]);
+//	//}
+//	//MatDump(&dataSet.TestFeature);
+//	//MatDump(&dataSet.TestLabel);
+//
+//
+//	//printf("Change the platform succesfully!\n");
+//
+//
+//
+//
+//	CreateNNSpaceAndLoadinPara2FCLayer(&fcnn, userDefine);
+//	////printf("%d\n", fcnn.Layer[4].NeuronNum);
+//
+//
+//	NNWeightinit(&fcnn);
+//
+//
+//
+//
+//	MatDump(&dataSet.TestFeature);
+//	MatDump(&dataSet.TestLabelOneHot);
+//
+//
+//	/*è®­ç»ƒ*/
+//	float loss = 0.f;
+//	float losstest = 0.f;
+//	int trainOperationNum = 100000;
+//	for (int i = 0; i < trainOperationNum; ++i) {
+//		for (int j = 0; j < dataSet.BatchNum; ++j) {
+//
+//			/*ç¥ç»ç½‘ç»œå‰é¡¹ä¼ æ’­*/
+//			if (i % 10 == 0) {
+//				losstest = NNforward(dataSet.TestFeature, dataSet.TestLabelOneHot, &fcnn);
+//			}
+//
+//			loss = NNforward(dataSet.BatchTrainFeature[j], dataSet.BatchTrainLabelOneHot[j], &fcnn);
+//
+//			NNBackward(&fcnn);
+//			MBGD(&fcnn, 0.1f);
+//
+//			if (i % 10 == 0) {
+//				printf("epoch %d/%d iteration %d/%d loss=%s  testloss=%s\n", i + 1, trainOperationNum, j + 1, dataSet.BatchNum, F2S(loss, buf1), F2S(losstest, buf2));
+//			}
+//			else {
+//				printf("epoch %d/%d iteration %d/%d loss=%s\n", i + 1, trainOperationNum, j + 1, dataSet.BatchNum, F2S(loss, buf1));
+//
+//			}
+//
+//
+//		}
+//	}
+//
+//	MatDump(&fcnn.Layer[fcnn.HiddenLayerNum + 1].ActiMat);
+//	losstest = NNforward(dataSet.TestFeature, dataSet.TestLabelOneHot, &fcnn);
+//	MatDump(&fcnn.Layer[fcnn.HiddenLayerNum + 1].ActiMat);
+//
+//}
 
 
 
@@ -2757,10 +3036,10 @@ int main(){
 //int main(){
 //
 //
-//	/*ÓÃ»§×Ô¶¨Òå²ÎÊıÊäÈë*/
-//	int N_sample = 16; //Ñù±¾ÊıÁ¿
-//	int D_sample = 4;  //Ñù±¾Î¬¶È
-//	int N_out = 2;   //¶ş·ÖÀà
+//	/*ç”¨æˆ·è‡ªå®šä¹‰å‚æ•°è¾“å…¥*/
+//	int N_sample = 16; //æ ·æœ¬æ•°é‡
+//	int D_sample = 4;  //æ ·æœ¬ç»´åº¦
+//	int N_out = 2;   //äºŒåˆ†ç±»
 //
 //	float Xval[] = {
 //		0.f, 0.f, 0.f, 0.f,
@@ -2778,7 +3057,7 @@ int main(){
 //		1.f, 1.f, 0.f, 0.f,
 //		1.f, 1.f, 0.f, 1.f,
 //		1.f, 1.f, 1.f, 0.f,
-//		1.f, 1.f, 1.f, 1.f }; //Ñù±¾ÕæÖµ
+//		1.f, 1.f, 1.f, 1.f }; //æ ·æœ¬çœŸå€¼
 //
 //	//float Xval[] = {
 //	//	0.4f, 0.4f, 0.4f, 0.4f,
@@ -2796,27 +3075,27 @@ int main(){
 //	//	0.6f, 0.6f, 0.4f, 0.4f,
 //	//	0.6f, 0.6f, 0.4f, 0.6f,
 //	//	0.6f, 0.6f, 0.6f, 0.4f,
-//	//	0.6f, 0.6f, 0.6f, 0.6f }; //Ñù±¾ÕæÖµ
+//	//	0.6f, 0.6f, 0.6f, 0.6f }; //æ ·æœ¬çœŸå€¼
 //
-//	float Yval[] = { 0, 1, 1, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0, 1, 1, 0 };  //Ñù±¾±êÇ©¶ş·ÖÀà
+//	float Yval[] = { 0, 1, 1, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0, 1, 1, 0 };  //æ ·æœ¬æ ‡ç­¾äºŒåˆ†ç±»
 //
-//	int N_hidden = 3;//Éñ¾­ÍøÂçÒş²Ø²ã²ãÊı
+//	int N_hidden = 3;//ç¥ç»ç½‘ç»œéšè—å±‚å±‚æ•°
 //
-//	int *N_layerNeuron = NULL; // ¸÷²ãÉñ¾­Ôª¸öÊı  0(ÊäÈë²ã),1,...,N_hidden,N_hidden+1(Êä³ö²ã).
-//	int Nval[] = { 4, 5, 6, 5, 2 };// ¸÷Òş²Ø²ãÉñ¾­Ôª¸öÊıÕæÖµ
+//	int *N_layerNeuron = NULL; // å„å±‚ç¥ç»å…ƒä¸ªæ•°  0(è¾“å…¥å±‚),1,...,N_hidden,N_hidden+1(è¾“å‡ºå±‚).
+//	int Nval[] = { 4, 5, 6, 5, 2 };// å„éšè—å±‚ç¥ç»å…ƒä¸ªæ•°çœŸå€¼
 //
 //	N_layerNeuron = intVal2List(N_hidden + 2, Nval, N_layerNeuron);
-//	////²âÊÔ´«ÈëÕıÈ·ĞÔ
+//	////æµ‹è¯•ä¼ å…¥æ­£ç¡®æ€§
 //	//for (int i = 0; i < N_hidden + 2; ++i){
 //	//	printf("%d\n", N_layerNeuron[i]);
 //	//}
 //
-//	int *Nstr_ActiFsHidden = NULL;// ¸÷²ã¼¤»îº¯ÊıÊ¹ÓÃ£»
-//	int Aval[] = { 0, 3, 3, 3, 5 };// ¸÷²ã¼¤»îº¯ÊıÊ¹ÓÃÕæÖµ£»×¢ÒâÓ³Éä¹ØÏµ¡£
+//	int *Nstr_ActiFsHidden = NULL;// å„å±‚æ¿€æ´»å‡½æ•°ä½¿ç”¨ï¼›
+//	int Aval[] = { 0, 3, 3, 3, 5 };// å„å±‚æ¿€æ´»å‡½æ•°ä½¿ç”¨çœŸå€¼ï¼›æ³¨æ„æ˜ å°„å…³ç³»ã€‚
 //
 //	Nstr_ActiFsHidden = intVal2List(N_hidden + 2, Aval, Nstr_ActiFsHidden);
 //
-//	////²âÊÔ´«ÈëÕıÈ·ĞÔ
+//	////æµ‹è¯•ä¼ å…¥æ­£ç¡®æ€§
 //	//for (int i = 0; i < N_hidden + 2; ++i){
 //	//	printf("%d\n", NStr_ActiFsHidden[i]);
 //	//}
@@ -2838,26 +3117,26 @@ int main(){
 //
 //
 //
-//	/*¹¹½¨Éñ¾­ÍøÂçËùĞè¿Õ¼ä²¢³õÊ¼»¯ËùĞè²ÎÊı*/
-//	//Éñ¾­ÍøÂçËùĞè¿Õ¼ä±äÁ¿
-//	Mat* P_ActiMat=NULL;			//Éñ¾­ÍøÂç¼¤»îÖµ¾ØÕó
-//	Mat* P_ActiMatPlus = NULL;		//Éñ¾­ÍøÂç¼¤»îÖµ¾ØÕó¼ÓÆ«ÖÃÁĞ	
-//	Mat* P_SumMat = NULL;			//Éñ¾­ÍøÂçÇóºÍ¾ØÕó				
-//	Mat* P_WeightMat = NULL;		//Éñ¾­ÍøÂçÈ¨Öµ¾ØÕó		
-//	Mat* P_WeightBiasMat = NULL;	//Éñ¾­ÍøÂçÈ¨ÖµÆ«ÖÃ¾ØÕó	
-//	Mat Mat_oneHot;					//ÑµÁ·Êı¾İ±êÇ©	
+//	/*æ„å»ºç¥ç»ç½‘ç»œæ‰€éœ€ç©ºé—´å¹¶åˆå§‹åŒ–æ‰€éœ€å‚æ•°*/
+//	//ç¥ç»ç½‘ç»œæ‰€éœ€ç©ºé—´å˜é‡
+//	Mat* P_ActiMat=NULL;			//ç¥ç»ç½‘ç»œæ¿€æ´»å€¼çŸ©é˜µ
+//	Mat* P_ActiMatPlus = NULL;		//ç¥ç»ç½‘ç»œæ¿€æ´»å€¼çŸ©é˜µåŠ åç½®åˆ—	
+//	Mat* P_SumMat = NULL;			//ç¥ç»ç½‘ç»œæ±‚å’ŒçŸ©é˜µ				
+//	Mat* P_WeightMat = NULL;		//ç¥ç»ç½‘ç»œæƒå€¼çŸ©é˜µ		
+//	Mat* P_WeightBiasMat = NULL;	//ç¥ç»ç½‘ç»œæƒå€¼åç½®çŸ©é˜µ	
+//	Mat Mat_oneHot;					//è®­ç»ƒæ•°æ®æ ‡ç­¾	
 //	MatCreate(&Mat_oneHot, N_sample, N_out);
 //	Mat Mat_Y;
 //	MatCreate(&Mat_Y, N_sample, 1);
-//	Mat* P_DeltaMat = NULL;			//·´Ïò´«²¥ÖĞ¼ä±äÁ¿¾ØÕó	
-//	Mat* P_NablaWbMat = NULL;		//·´Ïò´«²¥È¨ÖµÆ«ÖÃµ¼Êı¾ØÕó
-//	Mat* P_ActiFunDerivation = NULL; //¼¤»îº¯Êı¶ÔÇóºÍÖµÇóµ¼Êı¾ØÕó
+//	Mat* P_DeltaMat = NULL;			//åå‘ä¼ æ’­ä¸­é—´å˜é‡çŸ©é˜µ	
+//	Mat* P_NablaWbMat = NULL;		//åå‘ä¼ æ’­æƒå€¼åç½®å¯¼æ•°çŸ©é˜µ
+//	Mat* P_ActiFunDerivation = NULL; //æ¿€æ´»å‡½æ•°å¯¹æ±‚å’Œå€¼æ±‚å¯¼æ•°çŸ©é˜µ
 //
-//	//ÓÃ»§ÊäÈë²ÎÊı
-//	//Ñù±¾ÊıÁ¿			N_sample			int
-//	//Òş²Ø²ã²ãÊı		N_hidden			int
-//	//¸÷²ãÉñ¾­Ôª¸öÊı	N_layerNeuron		int*
-//	//¸÷²ã¼¤»îº¯Êı		NStr_ActiFsHidden	int*
+//	//ç”¨æˆ·è¾“å…¥å‚æ•°
+//	//æ ·æœ¬æ•°é‡			N_sample			int
+//	//éšè—å±‚å±‚æ•°		N_hidden			int
+//	//å„å±‚ç¥ç»å…ƒä¸ªæ•°	N_layerNeuron		int*
+//	//å„å±‚æ¿€æ´»å‡½æ•°		NStr_ActiFsHidden	int*
 //
 //
 //	P_ActiMat = SpaceCreateActi(P_ActiMat, N_sample, N_hidden, N_layerNeuron);
@@ -2870,7 +3149,7 @@ int main(){
 //
 //	P_SumMat = SpaceCreateSum(P_SumMat, N_sample, N_hidden, N_layerNeuron);
 //
-//	//MatDump(&P_SumMat[0]);    //P_SumMat[0] ÎŞÒâÒå
+//	//MatDump(&P_SumMat[0]);    //P_SumMat[0] æ— æ„ä¹‰
 //
 //	P_WeightMat = SpaceCreateWeight(P_WeightMat, N_hidden, N_layerNeuron);
 //
@@ -2898,8 +3177,8 @@ int main(){
 //
 //
 //
-//	/*³õÊ¼»¯Éñ¾­ÍøÂç²ÎÊı*/
-//	//ÊäÈë¾ØÕó Êä³ö¾ØÕó È¨ÖµÈ¨Öµ¾ØÕó
+//	/*åˆå§‹åŒ–ç¥ç»ç½‘ç»œå‚æ•°*/
+//	//è¾“å…¥çŸ©é˜µ è¾“å‡ºçŸ©é˜µ æƒå€¼æƒå€¼çŸ©é˜µ
 //	NNinit(P_ActiMat, P_ActiMatPlus, &Mat_Y, &Mat_oneHot, P_WeightMat, P_WeightBiasMat, N_out, N_hidden, Xval, Yval, Style_initWeight);
 //
 //	//MatDump(&P_ActiMat[0]);
@@ -2915,14 +3194,14 @@ int main(){
 //	
 //	for (int i = 0; i <= 100000; ++i){
 //		float loss = 0.f;
-//		/*Éñ¾­ÍøÂçÇ°Ïî´«²¥*/
+//		/*ç¥ç»ç½‘ç»œå‰é¡¹ä¼ æ’­*/
 //		loss = NNforward(P_ActiMat, P_ActiMatPlus, P_SumMat, P_WeightBiasMat, Mat_oneHot, N_hidden, Nstr_ActiFsHidden, Nstr_LossF);
 //		if (i == 0){
 //			MatDump(&P_ActiMat[N_hidden + 1]);
 //			MatDump(&Mat_oneHot);
 //		}
 //		if (i % 2000 == 0){
-//			printf("µÚ%d´ÎÑµÁ·£º%f\n", i,loss);
+//			printf("ç¬¬%dæ¬¡è®­ç»ƒï¼š%f\n", i,loss);
 //			//MatDump(&P_ActiMat[N_hidden + 1]);
 //			//MatDump(&Mat_oneHot);
 //			//printf("%f\n", CrossEntropy(&P_ActiMat[N_hidden + 1], &Mat_oneHot));
@@ -2966,7 +3245,7 @@ int main(){
 
 
 /************************************************************************/
-/*                        ¶şÎ¬¾ØÕó²âÊÔÖ÷º¯Êı                            */
+/*                        äºŒç»´çŸ©é˜µæµ‹è¯•ä¸»å‡½æ•°                            */
 /************************************************************************/
 //int main(void)
 //{
@@ -3005,17 +3284,17 @@ int main(){
 //	printf("d= ");
 //	MatDump(MatSetVal(&d, val3));
 //
-//	printf("¾ØÕó a1 = a+a:\n");
+//	printf("çŸ©é˜µ a1 = a+a:\n");
 //	MatDump(MatAdd(&a, &a, &a1));
-//	printf("¾ØÕó b1 = b-b:\n");
+//	printf("çŸ©é˜µ b1 = b-b:\n");
 //	MatDump(MatSub(&b, &b, &b1));
-//	printf("¾ØÕó c = bxa:\n");
+//	printf("çŸ©é˜µ c = bxa:\n");
 //	MatDump(MatMul(&b, &a, &c));
 //
-//	printf("¾ØÕó b = a×ªÖÃ:\n");
+//	printf("çŸ©é˜µ b = aè½¬ç½®:\n");
 //	MatDump(MatTrans(&a, &b));
 //
-//	printf("¾ØÕó¸´ÖÆ a1 = a.\n");
+//	printf("çŸ©é˜µå¤åˆ¶ a1 = a.\n");
 //	MatCopy(&a, &a1);
 //	MatDump(&a1);
 //
@@ -3037,10 +3316,10 @@ int main(){
 //
 //
 //	MatCreate(&e, 2, 1);
-//	printf("Ã¿Ò»ĞĞÔªËØÇóºÍ e = sum(a)\n");
+//	printf("æ¯ä¸€è¡Œå…ƒç´ æ±‚å’Œ e = sum(a)\n");
 //	MatDump(MatSum(&a, &e));
 //
-//	printf("Ã¿Ò»ĞĞÔªËØÇó×î´óÖµ e = MatMax(a)\n");
+//	printf("æ¯ä¸€è¡Œå…ƒç´ æ±‚æœ€å¤§å€¼ e = MatMax(a)\n");
 //	MatDump(MatMax(&a, &e));
 //
 //	printf("MatExp a1 = Matexp(a)\n");
@@ -3078,7 +3357,7 @@ int main(){
 
 
 /************************************************************************/
-/*                        ¼¤»îº¯Êı²âÊÔÖ÷º¯Êı                            */
+/*                        æ¿€æ´»å‡½æ•°æµ‹è¯•ä¸»å‡½æ•°                            */
 /************************************************************************/
 //int main() {
 //	//float z = 1.6;
@@ -3102,50 +3381,50 @@ int main(){
 //	MatCreate(&act, 3, 3);
 //	MatSetVal(&a, val);
 //
-//	printf("Softmax ¼¤»î\n");
-//	printf("Ô­¾ØÕó£º\n");
+//	printf("Softmax æ¿€æ´»\n");
+//	printf("åŸçŸ©é˜µï¼š\n");
 //	MatDump(&a);
-//	printf("¼¤»îºóµÄ¾ØÕó£º\n");
+//	printf("æ¿€æ´»åçš„çŸ©é˜µï¼š\n");
 //	MatDump(MatSoftmax(&a, &act));
-//	printf("ĞĞÇóºÍ¾ØÕó£º\n");
+//	printf("è¡Œæ±‚å’ŒçŸ©é˜µï¼š\n");
 //	MatDump(MatRowSum(&act, &b));
-//	printf("Çóµ¼ºóµÄ¾ØÕó£º\n");
+//	printf("æ±‚å¯¼åçš„çŸ©é˜µï¼š\n");
 //	MatDump(MatDerivationSoftmax(&a, &act));
 //
 //	printf("===================================================\n");
-//	printf("Sigmoid ¼¤»î\n");
-//	printf("Ô­¾ØÕó£º\n");
+//	printf("Sigmoid æ¿€æ´»\n");
+//	printf("åŸçŸ©é˜µï¼š\n");
 //	MatDump(&a);
-//	printf("¼¤»îºóµÄ¾ØÕó£º\n");
+//	printf("æ¿€æ´»åçš„çŸ©é˜µï¼š\n");
 //	MatDump(MatSigmoid(&a, &act));
-//	printf("Çóµ¼ºóµÄ¾ØÕó£º\n");
+//	printf("æ±‚å¯¼åçš„çŸ©é˜µï¼š\n");
 //	MatDump(MatDerivationSigmoid(&a, &act));
 //
 //	printf("===================================================\n");
-//	printf("Tanh ¼¤»î\n");
-//	printf("Ô­¾ØÕó£º\n");
+//	printf("Tanh æ¿€æ´»\n");
+//	printf("åŸçŸ©é˜µï¼š\n");
 //	MatDump(&a);
-//	printf("¼¤»îºóµÄ¾ØÕó£º\n");
+//	printf("æ¿€æ´»åçš„çŸ©é˜µï¼š\n");
 //	MatDump(MatTanh(&a, &act));
-//	printf("Çóµ¼ºóµÄ¾ØÕó£º\n");
+//	printf("æ±‚å¯¼åçš„çŸ©é˜µï¼š\n");
 //	MatDump(MatDerivationTanh(&a, &act));
 //
 //	printf("===================================================\n");
-//	printf("Relu ¼¤»î\n");
-//	printf("Ô­¾ØÕó£º\n");
+//	printf("Relu æ¿€æ´»\n");
+//	printf("åŸçŸ©é˜µï¼š\n");
 //	MatDump(&a);
-//	printf("¼¤»îºóµÄ¾ØÕó£º\n");
+//	printf("æ¿€æ´»åçš„çŸ©é˜µï¼š\n");
 //	MatDump(MatRelu(&a, &act));
-//	printf("Çóµ¼ºóµÄ¾ØÕó£º\n");
+//	printf("æ±‚å¯¼åçš„çŸ©é˜µï¼š\n");
 //	MatDump(MatDerivationRelu(&a, &act));
 //
 //	printf("===================================================\n");
-//	printf("LeakyRelu ¼¤»î\n");
-//	printf("Ô­¾ØÕó£º\n");
+//	printf("LeakyRelu æ¿€æ´»\n");
+//	printf("åŸçŸ©é˜µï¼š\n");
 //	MatDump(&a);
-//	printf("¼¤»îºóµÄ¾ØÕó£º\n");
+//	printf("æ¿€æ´»åçš„çŸ©é˜µï¼š\n");
 //	MatDump(MatLeakyRelu(0.2f, &a, &act));
-//	printf("Çóµ¼ºóµÄ¾ØÕó£º\n");
+//	printf("æ±‚å¯¼åçš„çŸ©é˜µï¼š\n");
 //	MatDump(MatDerivationLeakyRelu(0.2f, &a, &act));
 //
 //	return 0;
@@ -3159,7 +3438,7 @@ int main(){
 
 
 /************************************************************************/
-/*                       ËğÊ§º¯Êı²âÊÔÖ÷º¯Êı                             */
+/*                       æŸå¤±å‡½æ•°æµ‹è¯•ä¸»å‡½æ•°                             */
 /************************************************************************/
 //int main()
 //{
@@ -3243,7 +3522,7 @@ int main(){
 
 
 /************************************************************************/
-/*                       È¨Öµ³õÊ¼»¯²âÊÔÖ÷º¯Êı                           */
+/*                       æƒå€¼åˆå§‹åŒ–æµ‹è¯•ä¸»å‡½æ•°                           */
 /************************************************************************/
 //int main()
 //{

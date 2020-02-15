@@ -1,3 +1,4 @@
+frame(Xval,Yval) and (
 struct Mat {
 int row,col and 
 float **element 
@@ -2413,7 +2414,6 @@ int remainder
                                          if(return=0)   then 
                                          {
                                              output ("XValArray:(length = ",UserDefine.CompleteSampleNum*UserDefine.SampleDimensionNum,")\t\n") and skip;
-                                             DumpFloatArray(UserDefine.XValArray,UserDefine.CompleteSampleNum*UserDefine.SampleDimensionNum);
                                              if(UserDefine.YValArray=NULL) then 
                                              {
                                                  output ("\t\t\tCustom parameter 'YValArray' uninitialized!!!\n") and skip;
@@ -2428,7 +2428,6 @@ int remainder
                                              if(return=0)   then 
                                              {
                                                  output ("YValArray:(length = ",UserDefine.CompleteSampleNum,")\t\n") and skip;
-                                                 DumpFloatArray(UserDefine.YValArray,UserDefine.CompleteSampleNum);
                                                  if(UserDefine.NeuronNumArray=NULL) then 
                                                  {
                                                      output ("\t\t\tCustom parameter 'NeuronNumArray' uninitialized!!!\n") and skip;
@@ -2457,7 +2456,7 @@ int remainder
                                                      };
                                                      if(return=0)   then 
                                                      {
-                                                         output ("ActiFuncNumArray:£¨include output layer Acti-Function£©\t\n") and skip;
+                                                         output ("ActiFuncNumArray:(include output layer Acti-Function)\t\n") and skip;
                                                          DumpIntArray(UserDefine.ActiFuncNumArray,UserDefine.HiddenLayerNum+2);
                                                          output ("================================================================= Custom Dump finish =================================================================\n") and skip;
                                                          return<==1 and RValue:=0;
@@ -3346,84 +3345,74 @@ int remainder
      }
      )
      }; 
-  function main ( int  RValue )
+  function judge_max ( float *arr,int n,int RValue )
  {
-     frame(main_Xval,main_Yval,main_NueronNumArray,main_ActiFuncNumArray,main_buf1,main_buf2,main_userDefine,main_dataSet,main_fcnn,main_fclayer,main_loss,main_losstest,main_trainOperationNum,main_i,main_j) and (
-     float main_Xval[160]<=={0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,0.0,0.0,0.0,1.0,0.0,0.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,0.0,0.0,0.0,0.0,1.0,0.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,1.0,0.0,1.0,0.0,0.0,0.0,0.0,1.0,0.0,0.0,1.0,0.0,1.0,0.0,1.0,0.0,0.0,1.0,0.0,1.0,1.0,0.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,0.0,1.0,0.0,1.0,1.0,1.0,0.0,0.0,1.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,1.0,0.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,0.0,1.0,0.0,0.0,1.0,1.0,1.0,0.0,1.0,0.0,0.0,1.0,0.0,1.0,0.0,1.0,1.0,0.0,1.0,1.0,0.0,1.0,0.0,1.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,1.0,0.0,1.0,0.0,1.0,1.0,0.0,1.0,1.0,1.0,1.0,1.0,0.0,0.0,1.0,1.0,1.0,0.0,1.0,1.0,1.0,1.0,1.0,0.0,1.0,1.0,1.0,1.0,1.0} and skip;
-     float main_Yval[32]<=={0.0,1.0,1.0,0.0,1.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,0.0,1.0,1.0,0.0,1.0,0.0,0.0,1.0,0.0,1.0,1.0,0.0,0.0,1.0,1.0,0.0,1.0,0.0,0.0,1.0} and skip;
-     int main_NueronNumArray[5]<=={5,6,8,6,2} and skip;
-     int main_ActiFuncNumArray[5]<=={0,3,3,3,5} and skip;
-     char main_buf1[40] and skip;
-     char main_buf2[40] and skip;
-     Custom main_userDefine and skip;
-     DataSet main_dataSet and skip;
-     FCNN main_fcnn and skip;
-     FCLayer main_fclayer and skip;
-     InitCustom(&main_userDefine,RValue);
-     InitDataSet(&main_dataSet,RValue);
-     InitFCNN(&main_fcnn,RValue);
-     InitFCLayer(&main_fclayer,RValue);
-     main_userDefine.CompleteSampleNum:=32;
-     main_userDefine.TrainSampleNum:=24;
-     main_userDefine.TestSampleNum:=7;
-     main_userDefine.SampleDimensionNum:=5;
-     main_userDefine.HiddenLayerNum:=3;
-     main_userDefine.ClassificationNum:=2;
-     main_userDefine.LossFuncNum:=1;
-     main_userDefine.WeightInitWayNum:=3;
-     main_userDefine.BatchSize:=5;
-     main_userDefine.XValArray:=main_Xval;
-     main_userDefine.YValArray:=main_Yval;
-     main_userDefine.NeuronNumArray:=main_NueronNumArray;
-     main_userDefine.ActiFuncNumArray:=main_ActiFuncNumArray;
-     DumpCustom(main_userDefine,RValue);
-     LoadParaFromCustom(main_userDefine,&main_dataSet,&main_fcnn);
-     DatasetConstruction(main_userDefine,&main_dataSet);
-     CreateNNSpaceAndLoadinPara2FCLayer(&main_fcnn,main_userDefine,RValue);
-     NNWeightinit(&main_fcnn,RValue);
-     MatDump(&main_dataSet.TestFeature);
-     MatDump(&main_dataSet.TestLabelOneHot);
-     float main_loss<==0.0 and skip;
-     float main_losstest<==0.0 and skip;
-     int main_trainOperationNum<==100000 and skip;
-     int main_i<==0 and skip;
+     frame(judge_max_index,judge_max_i,judge_max_max,return) and ( 
+     int return<==0 and skip;
+     int judge_max_index<==0 and skip;
+     int judge_max_i and skip;
+     float judge_max_max<==arr[0] and skip;
+     judge_max_i:=0;
      
-     while( (main_i<main_trainOperationNum) )
+     while( (judge_max_i<n) )
      {
-         int main_j<==0 and skip;
-         
-         while( (main_j<main_dataSet.BatchNum) )
+         if(arr[judge_max_i]>judge_max_max) then 
          {
-             if(main_i % 10=0) then 
-             {
-                 main_losstest:=NNforward(main_dataSet.TestFeature,main_dataSet.TestLabelOneHot,&main_fcnn,RValue)
-                 
-             }
-             else 
-             {
-                  skip 
-             };
-             main_loss:=NNforward(main_dataSet.BatchTrainFeature[main_j],main_dataSet.BatchTrainLabelOneHot[main_j],&main_fcnn,RValue);
-             NNBackward(&main_fcnn,RValue);
-             MBGD(&main_fcnn,0.1);
-             if(main_i % 10=0) then 
-             {
-                 output ("epoch ",main_i+1,"/",main_trainOperationNum,", iteration ",main_j+1,"/",main_dataSet.BatchNum,"£¬ loss=",F2S(main_loss,main_buf1,RValue),", testloss=",F2S(main_losstest,main_buf2,RValue),"\n") and skip
-                 
-             }
-             else
-             {
-                 output ("epoch ",main_i+1,"/",main_trainOperationNum,", iteration ",main_j+1,"/",main_dataSet.BatchNum,"£¬ loss=",F2S(main_loss,main_buf1,RValue),"\n") and skip
-             };
-             main_j:=main_j+1
+             judge_max_max:=arr[judge_max_i];
+             judge_max_index:=judge_max_i
              
+         }
+         else 
+         {
+              skip 
          };
-         main_i:=main_i+1
+         judge_max_i:=judge_max_i+1
          
      };
-     MatDump(&main_fcnn.Layer[main_fcnn.HiddenLayerNum+1].ActiMat);
-     main_losstest:=NNforward(main_dataSet.TestFeature,main_dataSet.TestLabelOneHot,&main_fcnn,RValue);
-     MatDump(&main_fcnn.Layer[main_fcnn.HiddenLayerNum+1].ActiMat)
+     return<==1 and RValue:=judge_max_index;
+     skip
      )
- };
-  main(RValue)
+     }; 
+  function testAcc ( FCNN fcnn,DataSet dataset,float RValue )
+ {
+     frame(testAcc_MatCompare,testAcc_buf,testAcc_i,testAcc_correctNum,testAcc_1_temp$_1,return) and ( 
+     int return<==0 and skip;
+     Mat testAcc_MatCompare and skip;
+     char testAcc_buf[20] and skip;
+     int testAcc_i<==0 and skip;
+     MatCreate(&testAcc_MatCompare,dataset.TestLabel.row,1,RValue);
+     MatZeros(&testAcc_MatCompare,RValue);
+     testAcc_i:=0;
+     
+     while( (testAcc_i<dataset.TestLabel.row) )
+     {
+         (testAcc_MatCompare.element[testAcc_i])[0]:=(float)judge_max(fcnn.Layer[fcnn.HiddenLayerNum+1].ActiMat.element[testAcc_i],fcnn.Layer[fcnn.HiddenLayerNum+1].ActiMat.col,RValue);
+         testAcc_i:=testAcc_i+1
+         
+     };
+     int testAcc_correctNum<==0 and skip;
+     testAcc_i:=0;
+     
+     while( (testAcc_i<dataset.TestLabel.row) )
+     {
+         int testAcc_1_temp$_1 and skip;
+         testAcc_1_temp$_1:=equal((testAcc_MatCompare.element[testAcc_i])[0],(dataset.TestLabel.element[testAcc_i])[0],RValue);
+         if(testAcc_1_temp$_1) then 
+         {
+             testAcc_correctNum:=testAcc_correctNum+1
+             
+         }
+         else 
+         {
+              skip 
+         };
+         testAcc_i:=testAcc_i+1
+         
+     };
+     return<==1 and RValue:=(float)testAcc_correctNum/ (float)dataset.TestLabel.row;
+     skip
+     )
+     }; 
+      float Xval[54880000]<=={0} and skip;
+     float Yval[70000]<=={0} and skip
+     )
