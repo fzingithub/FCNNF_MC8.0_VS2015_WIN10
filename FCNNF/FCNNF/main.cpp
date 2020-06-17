@@ -5,7 +5,7 @@
 #include <time.h>
 
 #define MAT_LEGAL_CHECKING
-//#undef MAT_LEGAL_CHECKING
+#undef MAT_LEGAL_CHECKING
 
 typedef struct {
 	int row, col;      // rowNum and columnNum [int]
@@ -28,7 +28,7 @@ typedef struct {
 
 
 typedef struct {
-	int CurrentSampleNum;             // number of current samples [int]
+	int sampleCapacity;             // number of current samples [int]
 	int SampleDimensionNum;    // dimensions(features) of sample [int]
 	int HiddenLayerNum;        // number of hidden layer [int]
 	int WeightInitWayNum;      // weight initialization mode [int]
@@ -319,6 +319,50 @@ void MatDump(const Mat* mat)
 	//printf("\n");
 }
 
+/*全0阵*/
+Mat* MatZeros(Mat* mat)
+{
+	int row, col;
+
+	for (row = 0; row < mat->row; row++) {
+		for (col = 0; col < mat->col; col++) {
+			(mat->element[row])[col] = 0.0f;
+		}
+	}
+
+	return mat;
+}
+
+
+
+/*全1阵*/
+Mat* MatOnes(Mat* mat)
+{
+	int row, col;
+
+	for (row = 0; row < mat->row; row++) {
+		for (col = 0; col < mat->col; col++) {
+			(mat->element[row])[col] = 1.0f;
+		}
+	}
+
+	return mat;
+}
+
+
+/*对角1矩阵*/
+Mat* MatEye(Mat* mat)
+{
+	int i;
+
+	MatZeros(mat);
+	for (i = 0; i < min(float(mat->row), float(mat->col)); i++) {
+		(mat->element[i])[i] = 1.0f;
+	}
+
+	return mat;
+}
+
 
 /* dst = src1 + src2 */
 Mat* MatAdd(Mat* src1, Mat* src2, Mat* dst)
@@ -375,9 +419,43 @@ Mat* MatSub(Mat* src1, Mat* src2, Mat* dst)
 	return dst;
 }
 
-
 /* dst = src1 x src2 */
 Mat* MatMul(Mat* src1, Mat* src2, Mat* dst)
+{
+	int row, col;
+	int i;
+
+#ifdef MAT_LEGAL_CHECKING
+	if (src1->col != src2->row || src1->row != dst->row || src2->col != dst->col) {
+		printf("\t\terr check, unmatch matrix for MatMul\n");
+		printf("\t\tsrcMatShape:\n\t\t\t");
+		MatShape(src1);
+		printf("\t\t\t");
+		MatShape(src2);
+		printf("\t\tdstMatShape:\n\t\t\t");
+		MatShape(dst);
+		return NULL;
+	}
+#endif
+	MatZeros(dst);
+
+	for (row = 0; row < src1->row; row++) {
+		for (col = 0; col < src1->col; col++) {
+			if (equal((src1->element[row])[col], 0) == 0) {
+				for (i = 0; i < src2->col; i++) {
+					(dst->element[row])[i] += (src1->element[row])[col] * (src2->element[col])[i];
+				}
+			}
+
+		}
+	}
+
+	return dst;
+}
+
+
+/* dst = src1 x src2 */
+Mat* MatMul2(Mat* src1, Mat* src2, Mat* dst)
 {
 	int row, col;
 	int i;
@@ -431,6 +509,34 @@ Mat* MatProduct(Mat* src1, Mat* src2, Mat* dst)
 	for (row = 0; row < src1->row; row++) {
 		for (col = 0; col < src1->col; col++) {
 			(dst->element[row])[col] = (src1->element[row])[col] * (src2->element[row])[col];
+		}
+	}
+
+	return dst;
+}
+
+
+/* dst = src1 / src2 */   
+Mat* MatDiv(Mat* src1, Mat* src2, Mat* dst)
+{
+	int row, col;
+
+#ifdef MAT_LEGAL_CHECKING
+	if (!(src1->row == src2->row && src2->row == dst->row && src1->col == src2->col && src2->col == dst->col)) {
+		printf("\t\terr check, unmatch matrix for MatDiv\n");
+		printf("\t\tsrcMatShape:\n\t\t\t");
+		MatShape(src1);
+		printf("\t\t\t");
+		MatShape(src2);
+		printf("\t\tdstMatShape:\n\t\t\t");
+		MatShape(dst);
+		return NULL;
+	}
+#endif
+
+	for (row = 0; row < src1->row; row++) {
+		for (col = 0; col < src1->col; col++) {
+			(dst->element[row])[col] = (src1->element[row])[col] / (src2->element[row])[col];
 		}
 	}
 
@@ -514,48 +620,8 @@ Mat* MatTrans(Mat* src, Mat* dst)
 }
 
 
-/*全0阵*/
-Mat* MatZeros(Mat* mat)
-{
-	int row, col;
-
-	for (row = 0; row < mat->row; row++) {
-		for (col = 0; col < mat->col; col++) {
-			(mat->element[row])[col] = 0.0f;
-		}
-	}
-
-	return mat;
-}
 
 
-/*全1阵*/
-Mat* MatOnes(Mat* mat)
-{
-	int row, col;
-
-	for (row = 0; row < mat->row; row++) {
-		for (col = 0; col < mat->col; col++) {
-			(mat->element[row])[col] = 1.0f;
-		}
-	}
-
-	return mat;
-}
-
-
-/*对角1矩阵*/
-Mat* MatEye(Mat* mat)
-{
-	int i;
-
-	MatZeros(mat);
-	for (i = 0; i < min(float(mat->row), float(mat->col)); i++) {
-		(mat->element[i])[i] = 1.0f;
-	}
-
-	return mat;
-}
 
 
 /*dst = sum(src)  src 矩阵的每一行相加*/
@@ -645,6 +711,32 @@ Mat* MatSquare(Mat* src, Mat* dst)
 }
 
 
+/* dst = Sqrt(src) */
+Mat* MatSqrt(Mat* src, Mat* dst)
+{
+	int row, col;
+
+#ifdef MAT_LEGAL_CHECKING
+	if (src->row != dst->row || src->col != dst->col) {
+		printf("err check, unmatch matrix for MatSqrt\n");
+		printf("\t\tsrcMatShape:\n\t\t\t");
+		MatShape(src);
+		printf("\t\tdstMatShape:\n\t\t\t");
+		MatShape(dst);
+		return NULL;
+	}
+#endif
+
+	for (row = 0; row < src->row; row++) {
+		for (col = 0; col < src->col; col++) {
+			(dst->element[row])[col] = sqrt(float((src->element[row])[col]));
+		}
+	}
+
+	return dst;
+}
+
+
 /*dst = MatExp(src)  指数作用*/
 Mat* MatExp(Mat* src, Mat* dst)
 {
@@ -669,6 +761,8 @@ Mat* MatExp(Mat* src, Mat* dst)
 
 	return dst;
 }
+
+
 
 
 /* dst = src - vector   矩阵减向量 行减*/
@@ -1438,10 +1532,6 @@ Mat* MatInitRandomNormalization(Mat *src)
 			(src->element[row])[col] = gaussrand(0.f, 0.1f);  // mean stdc
 		}
 	}
-	//set bias row 0
-	//for (col = 0; col < src->col; ++col){
-	//	(src->element[0])[col] = 0.f;
-	//}
 	return src;
 }
 
@@ -1671,7 +1761,7 @@ void LoadParaFromCustom(Custom userDefine, DataSet *dataSet, FCNN *fcnn) {
 	dataSet->ClassificationNum = userDefine.ClassificationNum;
 
 	// Custom ==>> FCNN
-	fcnn->CurrentSampleNum = userDefine.BatchSize; //代表当前神经网络前向传播时的数据样本的个数
+	fcnn->sampleCapacity = userDefine.BatchSize; //代表当前神经网络前向传播时的数据样本的个数
 	fcnn->SampleDimensionNum = userDefine.SampleDimensionNum;
 	fcnn->HiddenLayerNum = userDefine.HiddenLayerNum;
 	fcnn->WeightInitWayNum = userDefine.WeightInitWayNum;
@@ -1887,7 +1977,7 @@ void DatasetConstruction(Custom userDefine, DataSet *dataSet) {
 
 //初始化FCNN结构体
 int InitFCNN(FCNN *fcnn) {
-	fcnn->CurrentSampleNum = -1;
+	fcnn->sampleCapacity = -1;
 	fcnn->SampleDimensionNum = -1;
 	fcnn->HiddenLayerNum = -1;
 	fcnn->WeightInitWayNum = -1;
@@ -1927,7 +2017,7 @@ FCLayer * SpaceCreateFCLayer(FCNN *fcnn) {
 // malloc并初始化激活值矩阵空间
 void SpaceCreateActi(FCNN *fcnn) {
 	for (int i = 0; i < fcnn->HiddenLayerNum + 2; ++i) {
-		MatCreate(&fcnn->Layer[i].ActiMat, fcnn->CurrentSampleNum, fcnn->Layer[i].NeuronNum);
+		MatCreate(&fcnn->Layer[i].ActiMat, fcnn->sampleCapacity, fcnn->Layer[i].NeuronNum);
 		MatZeros(&fcnn->Layer[i].ActiMat);
 	}
 }
@@ -1942,7 +2032,7 @@ void SpaceDeleteActi(FCNN *fcnn) {
 // malloc并初始化激活值Plus矩阵空间
 void SpaceCreateActiPlus(FCNN *fcnn) {
 	for (int i = 0; i < fcnn->HiddenLayerNum + 2; ++i) {
-		MatCreate(&fcnn->Layer[i].ActiMatPlus, fcnn->CurrentSampleNum, fcnn->Layer[i].NeuronNum + 1);
+		MatCreate(&fcnn->Layer[i].ActiMatPlus, fcnn->sampleCapacity, fcnn->Layer[i].NeuronNum + 1);
 		MatZeros(&fcnn->Layer[i].ActiMatPlus);
 	}
 }
@@ -1957,7 +2047,7 @@ void SpaceDeleteActiPlus(FCNN *fcnn) {
 // malloc并初始化求和值矩阵空间
 void SpaceCreateSum(FCNN *fcnn) {
 	for (int i = 0; i < fcnn->HiddenLayerNum + 2; ++i) {
-		MatCreate(&fcnn->Layer[i].SumMat, fcnn->CurrentSampleNum, fcnn->Layer[i].NeuronNum);
+		MatCreate(&fcnn->Layer[i].SumMat, fcnn->sampleCapacity, fcnn->Layer[i].NeuronNum);
 		MatZeros(&fcnn->Layer[i].SumMat);
 	}
 }
@@ -1972,7 +2062,7 @@ void SpaceDeleteSum(FCNN *fcnn) {
 // malloc并初始化激活函数对求和值导数矩阵
 void SpaceCreateActiFunDerivation(FCNN *fcnn) {
 	for (int i = 0; i < fcnn->HiddenLayerNum + 2; ++i) {
-		MatCreate(&fcnn->Layer[i].ActiFunDerivationMat, fcnn->CurrentSampleNum, fcnn->Layer[i].NeuronNum);
+		MatCreate(&fcnn->Layer[i].ActiFunDerivationMat, fcnn->sampleCapacity, fcnn->Layer[i].NeuronNum);
 		MatZeros(&fcnn->Layer[i].ActiFunDerivationMat);
 	}
 }
@@ -1988,7 +2078,7 @@ void SpaceDeleteActiFunDerivation(FCNN *fcnn) {
 // malloc并初始化反向传播中间变量空间
 void SpaceCreateDelta(FCNN *fcnn) {
 	for (int i = 0; i < fcnn->HiddenLayerNum + 2; ++i) {
-		MatCreate(&fcnn->Layer[i].DeltaMat, fcnn->CurrentSampleNum, fcnn->Layer[i].NeuronNum);
+		MatCreate(&fcnn->Layer[i].DeltaMat, fcnn->sampleCapacity, fcnn->Layer[i].NeuronNum);
 		MatZeros(&fcnn->Layer[i].DeltaMat);
 	}
 }
@@ -2002,7 +2092,7 @@ void SpaceDeleteDelta(FCNN *fcnn) {
 
 //malloc并初始化FCNN OneHotMat
 void SpaceCreateFCNNOneHotMat(FCNN *fcnn) {
-	MatCreate(&fcnn->OnehotMat, fcnn->CurrentSampleNum, fcnn->ClassificationNum);
+	MatCreate(&fcnn->OnehotMat, fcnn->sampleCapacity, fcnn->ClassificationNum);
 }
 
 //free FCNN OneHotMat
@@ -2202,7 +2292,7 @@ int NNWeightinit(FCNN *fcnn) {
 //训练数据标签					Mat_oneHot		Mat			row = N_sample col = N_out
 
 
-Mat* *MatActivate(Mat *src, Mat *dst, int way) {
+Mat* MatActivate(Mat *src, Mat *dst, int way) {
 	if (way == 0) {
 		MatNoneActi(src, dst);
 	}
@@ -2255,8 +2345,8 @@ float NNforward(Mat featureMat, Mat labelMatOneHot, FCNN *fcnn) {
 	}
 #endif
 	//MatDump(&featureMat);
-	if (featureMat.row != fcnn->CurrentSampleNum) {// 处理小批量的余数
-		fcnn->CurrentSampleNum = featureMat.row;
+	if (featureMat.row != fcnn->sampleCapacity) {// 处理小批量的余数
+		fcnn->sampleCapacity = featureMat.row;
 
 		DeleteNNOperationSpace(fcnn);
 		CreateNNOperationSpace(fcnn);
@@ -2386,7 +2476,7 @@ Mat * NNOuputLayerBackward(FCNN *fcnn) {
 	}
 	else {
 		Mat tempMat;
-		MatCreate(&tempMat, fcnn->CurrentSampleNum, fcnn->Layer[fcnn->HiddenLayerNum + 1].NeuronNum);
+		MatCreate(&tempMat, fcnn->sampleCapacity, fcnn->Layer[fcnn->HiddenLayerNum + 1].NeuronNum);
 
 		LossFunDerivation(&fcnn->Layer[fcnn->HiddenLayerNum + 1].ActiMat, &tempMat, fcnn->OnehotMat, fcnn->LossFuncNum);
 
@@ -2399,11 +2489,11 @@ Mat * NNOuputLayerBackward(FCNN *fcnn) {
 	}
 
 	Mat ActiPlusTrans;
-	MatCreate(&ActiPlusTrans, fcnn->Layer[fcnn->HiddenLayerNum].NeuronNum + 1, fcnn->CurrentSampleNum);
+	MatCreate(&ActiPlusTrans, fcnn->Layer[fcnn->HiddenLayerNum].NeuronNum + 1, fcnn->sampleCapacity);
 	MatTrans(&fcnn->Layer[fcnn->HiddenLayerNum].ActiMatPlus, &ActiPlusTrans);
 	MatMul(&ActiPlusTrans, &fcnn->Layer[fcnn->HiddenLayerNum + 1].DeltaMat, &fcnn->Layer[fcnn->HiddenLayerNum + 1].NablaWbMat);
 	//MatDump(&P_NablaWbMat[N_hidden + 1]);
-	MatNumMul(1.f / fcnn->CurrentSampleNum, &fcnn->Layer[fcnn->HiddenLayerNum + 1].NablaWbMat, &fcnn->Layer[fcnn->HiddenLayerNum + 1].NablaWbMat);
+	MatNumMul(1.f / fcnn->sampleCapacity, &fcnn->Layer[fcnn->HiddenLayerNum + 1].NablaWbMat, &fcnn->Layer[fcnn->HiddenLayerNum + 1].NablaWbMat);
 	//MatDump(&P_NablaWbMat[N_hidden + 1]);
 
 	MatDelete(&ActiPlusTrans);
@@ -2481,7 +2571,7 @@ Mat * NNBackward(FCNN *fcnn) {
 		MatTrans(&fcnn->Layer[i - 1].ActiMatPlus, &tempTransActi);
 		MatMul(&tempTransActi, &fcnn->Layer[i].DeltaMat, &fcnn->Layer[i].NablaWbMat);
 		/*MatDump(&fcnn->Layer[i].NablaWbMat);*/
-		MatNumMul(1.f / fcnn->CurrentSampleNum, &fcnn->Layer[i].NablaWbMat, &fcnn->Layer[i].NablaWbMat);
+		MatNumMul(1.f / fcnn->sampleCapacity, &fcnn->Layer[i].NablaWbMat, &fcnn->Layer[i].NablaWbMat);
 		//MatDump(&fcnn->Layer[i].NablaWbMat);
 
 		MatDelete(&tempTransW);
@@ -2582,7 +2672,102 @@ void  MBGD(FCNN *fcnn, float alpha) {
 		MatSub(&fcnn->Layer[i].WeightBiasMat, &temp, &fcnn->Layer[i].WeightBiasMat);
 		MatDelete(&temp);
 	}
+}
 
+
+// Adam优化器
+typedef struct {
+	float beta1;
+	float beta2;
+	float eta;
+	float epsilon;
+
+	int time;
+
+	Mat *v;
+	Mat *hat_v;
+	Mat *s;
+	Mat *hat_s;
+	Mat *hat_g;
+}AdamPara;
+
+
+
+void SpaceCreateAdamPara(FCNN *fcnn, AdamPara *adamPara) {
+
+	adamPara->v = (Mat *)malloc((fcnn->HiddenLayerNum + 2) * sizeof(Mat));
+	adamPara->hat_v = (Mat *)malloc((fcnn->HiddenLayerNum + 2) * sizeof(Mat));
+	adamPara->s = (Mat *)malloc((fcnn->HiddenLayerNum + 2) * sizeof(Mat));
+	adamPara->hat_s = (Mat *)malloc((fcnn->HiddenLayerNum + 2) * sizeof(Mat));
+	adamPara->hat_g = (Mat *)malloc((fcnn->HiddenLayerNum + 2) * sizeof(Mat));
+
+
+
+	adamPara->v[0].row = 0;
+	adamPara->v[0].col = 0;
+	adamPara->hat_v[0].row = 0;
+	adamPara->hat_v[0].col = 0;
+	adamPara->s[0].row = 0;
+	adamPara->s[0].col = 0;
+	adamPara->hat_s[0].row = 0;
+	adamPara->hat_s[0].col = 0;
+	adamPara->hat_g[0].row = 0;
+	adamPara->hat_g[0].col = 0;
+
+	for (int i = 1; i < fcnn->HiddenLayerNum + 2; ++i) {
+		MatCreate(&adamPara->v[i], fcnn->Layer[i - 1].NeuronNum + 1, fcnn->Layer[i].NeuronNum);
+		MatZeros(&adamPara->v[i]);
+		MatCreate(&adamPara->hat_v[i], fcnn->Layer[i - 1].NeuronNum + 1, fcnn->Layer[i].NeuronNum);
+		MatZeros(&adamPara->hat_v[i]);
+		MatCreate(&adamPara->s[i], fcnn->Layer[i - 1].NeuronNum + 1, fcnn->Layer[i].NeuronNum);
+		MatZeros(&adamPara->s[i]);
+		MatCreate(&adamPara->hat_s[i], fcnn->Layer[i - 1].NeuronNum + 1, fcnn->Layer[i].NeuronNum);
+		MatZeros(&adamPara->hat_s[i]);
+		MatCreate(&adamPara->hat_g[i], fcnn->Layer[i - 1].NeuronNum + 1, fcnn->Layer[i].NeuronNum);
+		MatZeros(&adamPara->hat_g[i]);
+	}
+}
+
+void initAdam(FCNN fcnn, AdamPara *adamPara) {
+	adamPara->beta1 = 0.9;
+	adamPara->beta2 = 0.999;
+	adamPara->eta = 0.0001;
+	adamPara->epsilon = 0.00000008;
+	SpaceCreateAdamPara(&fcnn, adamPara);
+
+	adamPara->time = 1;
+}
+
+// Adam
+void Adam(FCNN *fcnn, AdamPara *adamPara){
+	//Mat temp;
+	for (int i = 1; i <= fcnn->HiddenLayerNum + 1; ++i) {
+		// formula (1)
+		MatNumMul(adamPara->beta1, &adamPara->v[i], &adamPara->v[i]);
+		MatNumMul(1-adamPara->beta1, &fcnn->Layer[i].NablaWbMat, &adamPara->hat_g[i]);
+		MatAdd(&adamPara->v[i], &adamPara->hat_g[i], &adamPara->v[i]);
+
+
+		// formula (2)
+		MatNumMul(adamPara->beta2, &adamPara->s[i], &adamPara->s[i]);
+		MatSquare(&adamPara->hat_g[i], &adamPara->hat_g[i]);
+		MatNumMul(1 - adamPara->beta2, &adamPara->hat_g[i], &adamPara->hat_g[i]);
+		MatAdd(&adamPara->s[i], &adamPara->hat_g[i], &adamPara->s[i]);
+
+		// formula (3)(4)
+		MatNumMul((1 / (1 - pow(adamPara->beta1, adamPara->time))), &adamPara->v[i], &adamPara->hat_v[i]);
+		MatNumMul((1 / (1 - pow(adamPara->beta2, adamPara->time))), &adamPara->s[i], &adamPara->hat_s[i]);
+
+		// formula (5)
+		MatNumMul(adamPara->eta, &adamPara->hat_v[i], &adamPara->hat_v[i]);
+		MatSqrt(&adamPara->hat_s[i], &adamPara->hat_s[i]);
+		MatNumAdd(adamPara->epsilon, &adamPara->hat_s[i], &adamPara->hat_s[i]);
+		MatDiv(&adamPara->hat_v[i], &adamPara->hat_s[i], &adamPara->hat_g[i]);
+
+		MatSub(&fcnn->Layer[i].WeightBiasMat, &adamPara->hat_g[i], &fcnn->Layer[i].WeightBiasMat);
+	}
+
+	adamPara->time = adamPara->time + 1;
 }
 /************************************************************************/
 /*                          神经网络优化算法                            */
@@ -2688,7 +2873,7 @@ void MinstHWDataLoading() {
 	//	return 0;
 	//}
 
-	fp = fopen("C:/Users/Administrator/Documents/GitHub/MinstHW/DataFeatrue.txt", "r");
+	fp = fopen("../../DataSet/MinstHandWriting/Transformation/MinstHW-70000/DataFeatrue.msd", "r");
 	flag = fgets(buf, MAX_LINE, fp);
 	while (flag != NULL)
 	{
@@ -2707,7 +2892,7 @@ void MinstHWDataLoading() {
 
 
 	// labels
-	fp2 = fopen("C:/Users/Administrator/Documents/GitHub/MinstHW/DataLabel.txt", "r");
+	fp2 = fopen("../../DataSet/MinstHandWriting/Transformation/MinstHW-70000/DataLabel.msd", "r");
 	flag = fgets(buf, MAX_LINE, fp2);
 	while (flag != NULL)
 	{
@@ -2728,8 +2913,137 @@ void MinstHWDataLoading() {
 
 
 
-int main() {
+//int main() {
+//
+//
+//	/*数据集导入*/
+//	char buf3[20];
+//	char buf4[20];
+//	MinstHWDataLoading();
+//	//for (int i = 0; i < 70000; ++i) {
+//	//	printf("%d, %s, %s\n", i, F2S(Xval[i], buf3), F2S(Yval[i],buf4));
+//	//}
+//
+//
+//	int NueronNumArray[] = { 784, 512, 256 ,10 };
+//	int ActiFuncNumArray[] = { 0, 3, 3, 5 };// 各层激活函数使用真值；注意映射关系。 最后一层表示输出层激活函数SoftMax
+//	char buf1[40];
+//	char buf2[40];
+//
+//
+//
+//	/*用户自定义参数输入*/
+//	Custom userDefine;
+//	DataSet dataSet;
+//	FCNN fcnn;
+//	FCLayer fclayer;
+//
+//	InitCustom(&userDefine);   // custom initial
+//	InitDataSet(&dataSet);
+//	InitFCNN(&fcnn);
+//	InitFCLayer(&fclayer);
+//
+//	userDefine.CompleteSampleNum = 70000;
+//	userDefine.TrainSampleNum = 60000;
+//	userDefine.TestSampleNum = 10000;
+//	//userDefine.ValidationNum = 0;
+//	userDefine.SampleDimensionNum = 784;
+//	userDefine.HiddenLayerNum = 2;
+//	userDefine.ClassificationNum = 10;
+//	userDefine.LossFuncNum = 1; // CE
+//	userDefine.WeightInitWayNum = 3; // KaiMing
+//	userDefine.BatchSize = 200;
+//	userDefine.XValArray = Xval;
+//	userDefine.YValArray = Yval;
+//	userDefine.NeuronNumArray = NueronNumArray;
+//	userDefine.ActiFuncNumArray = ActiFuncNumArray;
+//
+//	DumpCustom(userDefine); // print
+//
+//							// 从Custon传入参数到各个结构体
+//	LoadParaFromCustom(userDefine, &dataSet, &fcnn);
+//
+//
+//	DatasetConstruction(userDefine, &dataSet);
+//
+//	//MatDump(&dataSet.CompleteFeatureDataSet);
+//	//MatDump(&dataSet.CompleteLabelDataSet);
+//
+//	//MatDump(&dataSet.CompleteTrainFeature);
+//	//MatDump(&dataSet.CompleteTrainLabel);
+//
+//	//MatDump(&dataSet.TestFeature);
+//	//MatDump(&dataSet.TestLabel);
+//
+//
+//	//MatDump(&dataSet.CompleteFeatureDataSet);
+//	//MatDump(&dataSet.CompleteLabelDataSet);
+//
+//	//MatDump(&dataSet.CompleteTrainFeature);
+//	//MatDump(&dataSet.CompleteTrainLabel);
+//
+//	//for (int i = 0; i < batchNum; ++i){
+//	//	MatDump(&(dataSet.BatchTrainFeature)[i]);
+//	//	MatDump(&(dataSet.BatchTrainLabel)[i]);
+//	//}
+//	//MatDump(&dataSet.TestFeature);
+//	//MatDump(&dataSet.TestLabel);
+//
+//
+//	//printf("Change the platform succesfully!\n");
+//
+//
+//
+//
+//	CreateNNSpaceAndLoadinPara2FCLayer(&fcnn, userDefine);
+//	////printf("%d\n", fcnn.Layer[4].NeuronNum);
+//
+//
+//	NNWeightinit(&fcnn);
+//
+//
+//
+//
+//	//MatDump(&dataSet.TestFeature);
+//	//MatDump(&dataSet.TestLabelOneHot);
+//
+//	
+//
+//	/*训练*/
+//	float loss = 0.f;
+//	float losstest = 0.f;
+//	int trainOperationNum = 6;
+//
+//	for (int i = 0; i < trainOperationNum; ++i) {
+//		for (int j = 0; j < dataSet.BatchNum; ++j) {
+//
+//			/*神经网络前项传播*/
+//
+//			loss = NNforward(dataSet.BatchTrainFeature[j], dataSet.BatchTrainLabelOneHot[j], &fcnn);
+//
+//			NNBackward(&fcnn);
+//			MBGD(&fcnn, 0.1f);
+//
+//			if ((j+1) % 200 == 0) {
+//				printf("epoch %d/%d iteration %d/%d loss=%s\n", i + 1, trainOperationNum, j + 1, dataSet.BatchNum, F2S(loss, buf1));
+//			}	
+//			//break;
+//		}
+//		//test
+//		losstest = NNforward(dataSet.TestFeature, dataSet.TestLabelOneHot, &fcnn);
+//		printf("====== epoch %d/%d  testloss=%s  acc=%s ======\n", i + 1, trainOperationNum, F2S(losstest, buf2), F2S(testAcc(fcnn, dataSet), buf1));
+//		//break;
+//	}
+//
+//	//MatDump(&fcnn.Layer[fcnn.HiddenLayerNum + 1].ActiMat);
+//	//losstest = NNforward(dataSet.TestFeature, dataSet.TestLabelOneHot, &fcnn);
+//	//MatDump(&fcnn.Layer[fcnn.HiddenLayerNum + 1].ActiMat);
+//
+//}
 
+
+int main() {
+	// adam
 
 	/*数据集导入*/
 	char buf3[20];
@@ -2761,13 +3075,12 @@ int main() {
 	userDefine.CompleteSampleNum = 70000;
 	userDefine.TrainSampleNum = 60000;
 	userDefine.TestSampleNum = 10000;
-	//userDefine.ValidationNum = 0;
 	userDefine.SampleDimensionNum = 784;
 	userDefine.HiddenLayerNum = 2;
 	userDefine.ClassificationNum = 10;
 	userDefine.LossFuncNum = 1; // CE
 	userDefine.WeightInitWayNum = 3; // KaiMing
-	userDefine.BatchSize = 50;
+	userDefine.BatchSize = 200;
 	userDefine.XValArray = Xval;
 	userDefine.YValArray = Yval;
 	userDefine.NeuronNumArray = NueronNumArray;
@@ -2781,31 +3094,6 @@ int main() {
 
 	DatasetConstruction(userDefine, &dataSet);
 
-	//MatDump(&dataSet.CompleteFeatureDataSet);
-	//MatDump(&dataSet.CompleteLabelDataSet);
-
-	//MatDump(&dataSet.CompleteTrainFeature);
-	//MatDump(&dataSet.CompleteTrainLabel);
-
-	//MatDump(&dataSet.TestFeature);
-	//MatDump(&dataSet.TestLabel);
-
-
-	//MatDump(&dataSet.CompleteFeatureDataSet);
-	//MatDump(&dataSet.CompleteLabelDataSet);
-
-	//MatDump(&dataSet.CompleteTrainFeature);
-	//MatDump(&dataSet.CompleteTrainLabel);
-
-	//for (int i = 0; i < batchNum; ++i){
-	//	MatDump(&(dataSet.BatchTrainFeature)[i]);
-	//	MatDump(&(dataSet.BatchTrainLabel)[i]);
-	//}
-	//MatDump(&dataSet.TestFeature);
-	//MatDump(&dataSet.TestLabel);
-
-
-	//printf("Change the platform succesfully!\n");
 
 
 
@@ -2818,15 +3106,15 @@ int main() {
 
 
 
-
-	//MatDump(&dataSet.TestFeature);
-	//MatDump(&dataSet.TestLabelOneHot);
+	AdamPara adamPara;
+	initAdam(fcnn, &adamPara);
+	//MatShape(&adamPara.hat_g[1]);
 
 
 	/*训练*/
 	float loss = 0.f;
 	float losstest = 0.f;
-	int trainOperationNum = 200;
+	int trainOperationNum = 20;
 
 	for (int i = 0; i < trainOperationNum; ++i) {
 		for (int j = 0; j < dataSet.BatchNum; ++j) {
@@ -2836,9 +3124,9 @@ int main() {
 			loss = NNforward(dataSet.BatchTrainFeature[j], dataSet.BatchTrainLabelOneHot[j], &fcnn);
 
 			NNBackward(&fcnn);
-			MBGD(&fcnn, 0.1f);
+			Adam(&fcnn, &adamPara);
 
-			if ((j+1) % 200 == 0) {
+			if ((j+1) % 30 == 0) {
 				printf("epoch %d/%d iteration %d/%d loss=%s\n", i + 1, trainOperationNum, j + 1, dataSet.BatchNum, F2S(loss, buf1));
 			}	
 			//break;
@@ -2854,9 +3142,6 @@ int main() {
 	//MatDump(&fcnn.Layer[fcnn.HiddenLayerNum + 1].ActiMat);
 
 }
-
-
-
 
 
 
@@ -3244,9 +3529,9 @@ int main() {
 
 
 
-/************************************************************************/
-/*                        二维矩阵测试主函数                            */
-/************************************************************************/
+///************************************************************************/
+///*                        二维矩阵测试主函数                            */
+///************************************************************************/
 //int main(void)
 //{
 //	Mat a;

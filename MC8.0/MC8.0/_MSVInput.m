@@ -16,7 +16,7 @@ int NeuronNum and
 int AcitFuncNum 
 };
 struct FCNN {
-int CurrentSampleNum and 
+int sampleCapacity and 
 int SampleDimensionNum and 
 int HiddenLayerNum and 
 int WeightInitWayNum and 
@@ -184,16 +184,13 @@ int remainder
      }; 
   function MatCreate ( Mat *mat,int row,int col,Mat* RValue )
  {
-     frame(MatCreate_i,MatCreate_3_j,return) and ( 
+     frame(MatCreate_i,MatCreate_2_j,return) and ( 
      int return<==0 and skip;
      int MatCreate_i and skip;
-     if(row<=0 OR col<=0) then 
+     mat->element:=(float **)malloc(row*sizeof(float *));
+     if(mat->element=NULL) then 
      {
-         output ("err check, unmatch matrix for MatCreate\n") and skip;
-         output ("\t\trow:\n\t\t\t") and skip;
-         output (row,"\n","\n") and skip;
-         output ("\t\tcol:\n\t\t\t") and skip;
-         output (col,"\n","\n") and skip;
+         output ("mat create fail!\n") and skip;
          return<==1 and RValue:=NULL;
          skip
          
@@ -204,67 +201,48 @@ int remainder
      };
      if(return=0)   then 
      {
-         mat->element:=(float **)malloc(row*sizeof(float *));
-         if(mat->element=NULL) then 
+         MatCreate_i:=0;
+         
+         while( return=0 AND   (MatCreate_i<row) )
          {
-             output ("mat create fail!\n") and skip;
-             return<==1 and RValue:=NULL;
-             skip
-             
-         }
-         else 
-         {
-              skip 
-         };
-         if(return=0)   then 
-         {
-             MatCreate_i:=0;
-             
-             while( return=0 AND   (MatCreate_i<row) )
+             mat->element[MatCreate_i]:=(float *)malloc(col*sizeof(float));
+             if(mat->element[MatCreate_i]=NULL) then 
              {
-                 mat->element[MatCreate_i]:=(float *)malloc(col*sizeof(float));
-                 if(mat->element[MatCreate_i]=NULL) then 
-                 {
-                     int MatCreate_3_j and skip;
-                     output ("mat create fail!\n") and skip;
-                     MatCreate_3_j:=0;
-                     
-                     while( (MatCreate_3_j<MatCreate_i) )
-                     {
-                         free(mat->element[MatCreate_3_j]) and skip;
-                         MatCreate_3_j:=MatCreate_3_j+1
-                         
-                     };
-                     free(mat->element) and skip;
-                     return<==1 and RValue:=NULL;
-                     skip
-                     
-                 }
-                 else 
-                 {
-                      skip 
-                 };
-                 if(return=0)   then 
-                 {
-                     MatCreate_i:=MatCreate_i+1
-                 }
-                 else
-                 {
-                     skip
-                 }
+                 int MatCreate_2_j and skip;
+                 output ("mat create fail!\n") and skip;
+                 MatCreate_2_j:=0;
                  
+                 while( (MatCreate_2_j<MatCreate_i) )
+                 {
+                     free(mat->element[MatCreate_2_j]) and skip;
+                     MatCreate_2_j:=MatCreate_2_j+1
+                     
+                 };
+                 free(mat->element) and skip;
+                 return<==1 and RValue:=NULL;
+                 skip
+                 
+             }
+             else 
+             {
+                  skip 
              };
              if(return=0)   then 
              {
-                 mat->row:=row;
-                 mat->col:=col;
-                 return<==1 and RValue:=mat;
-                 skip
+                 MatCreate_i:=MatCreate_i+1
              }
              else
              {
                  skip
              }
+             
+         };
+         if(return=0)   then 
+         {
+             mat->row:=row;
+             mat->col:=col;
+             return<==1 and RValue:=mat;
+             skip
          }
          else
          {
@@ -318,420 +296,42 @@ int remainder
      }; 
   function MatShape ( Mat *mat )
  {
-     frame(return) and ( 
-     int return<==0 and skip;
-     if(mat=NULL) then 
-     {
-         output ("err check for MatShape\n") and skip;
-          return<==1 and skip
-         
-     }
-     else 
-     {
-          skip 
-     };
-     if(return=0)   then 
-     {
-         output ("Mat ",mat->row,"x",mat->col,":\n") and skip
-     }
-     else
-     {
-         skip
-     }
-     )
-     }; 
-  function MatDump ( Mat *mat )
+     output ("Mat ",mat->row,"x",mat->col,":\n") and skip
+     
+ };
+ function MatDump ( Mat *mat )
  {
-     frame(MatDump_row,MatDump_col,MatDump_str,MatDump_data,return) and ( 
-     int return<==0 and skip;
+     frame(MatDump_row,MatDump_col,MatDump_str,MatDump_data) and ( 
      int MatDump_row,MatDump_col and skip;
      char MatDump_str[40] and skip;
      char *MatDump_data and skip;
-     if(mat=NULL) then 
+     output ("Mat ",mat->row,"x",mat->col,":\n") and skip;
+     MatDump_row:=0;
+     
+     while( (MatDump_row<mat->row) )
      {
-         output ("err check for MatDump\n") and skip;
-          return<==1 and skip
+         MatDump_col:=0;
          
-     }
-     else 
-     {
-          skip 
-     };
-     if(return=0)   then 
-     {
-         output ("Mat ",mat->row,"x",mat->col,":\n") and skip;
-         MatDump_row:=0;
-         
-         while( (MatDump_row<mat->row) )
+         while( (MatDump_col<mat->col) )
          {
-             MatDump_col:=0;
-             
-             while( (MatDump_col<mat->col) )
+             MatDump_data:=F2S((mat->element[MatDump_row])[MatDump_col],MatDump_str,RValue);
+             if(MatDump_data[0]='-') then 
              {
-                 MatDump_data:=F2S((mat->element[MatDump_row])[MatDump_col],MatDump_str,RValue);
-                 if(MatDump_data[0]='-') then 
-                 {
-                     output (" ",F2S((mat->element[MatDump_row])[MatDump_col],MatDump_str,RValue),"\t") and skip
-                     
-                 }
-                 else
-                 {
-                     output ("  ",F2S((mat->element[MatDump_row])[MatDump_col],MatDump_str,RValue),"\t") and skip
-                 };
-                 MatDump_col:=MatDump_col+1
+                 output (" ",F2S((mat->element[MatDump_row])[MatDump_col],MatDump_str,RValue),"\t") and skip
                  
+             }
+             else
+             {
+                 output ("  ",F2S((mat->element[MatDump_row])[MatDump_col],MatDump_str,RValue),"\t") and skip
              };
-             output ("\n") and skip;
-             MatDump_row:=MatDump_row+1
+             MatDump_col:=MatDump_col+1
              
          };
-         output ("\n") and skip
-     }
-     else
-     {
-         skip
-     }
-     )
-     }; 
-  function MatAdd ( Mat *src1,Mat *src2,Mat *dst,Mat* RValue )
- {
-     frame(MatAdd_row,MatAdd_col,return) and ( 
-     int return<==0 and skip;
-     int MatAdd_row,MatAdd_col and skip;
-     if(!(src1->row=src2->row AND src2->row=dst->row AND src1->col=src2->col AND src2->col=dst->col)) then 
-     {
-         output ("\t\terr check, unmatch matrix for MatAdd\n") and skip;
-         output ("\t\tsrcMatShape:\n\t\t\t") and skip;
-         MatShape(src1);
-         output ("\t\t\t") and skip;
-         MatShape(src2);
-         output ("\t\tdstMatShape:\n\t\t\t") and skip;
-         MatShape(dst);
-         return<==1 and RValue:=NULL;
-         skip
+         output ("\n") and skip;
+         MatDump_row:=MatDump_row+1
          
-     }
-     else 
-     {
-          skip 
      };
-     if(return=0)   then 
-     {
-         MatAdd_row:=0;
-         
-         while( (MatAdd_row<src1->row) )
-         {
-             MatAdd_col:=0;
-             
-             while( (MatAdd_col<src1->col) )
-             {
-                 (dst->element[MatAdd_row])[MatAdd_col]:=(src1->element[MatAdd_row])[MatAdd_col]+(src2->element[MatAdd_row])[MatAdd_col];
-                 MatAdd_col:=MatAdd_col+1
-                 
-             };
-             MatAdd_row:=MatAdd_row+1
-             
-         };
-         return<==1 and RValue:=dst;
-         skip
-     }
-     else
-     {
-         skip
-     }
-     )
-     }; 
-  function MatSub ( Mat *src1,Mat *src2,Mat *dst,Mat* RValue )
- {
-     frame(MatSub_row,MatSub_col,return) and ( 
-     int return<==0 and skip;
-     int MatSub_row,MatSub_col and skip;
-     if(!(src1->row=src2->row AND src2->row=dst->row AND src1->col=src2->col AND src2->col=dst->col)) then 
-     {
-         output ("\t\terr check, unmatch matrix for MatSub\n") and skip;
-         output ("\t\tsrcMatShape:\n\t\t\t") and skip;
-         MatShape(src1);
-         output ("\t\t\t") and skip;
-         MatShape(src2);
-         output ("\t\tdstMatShape:\n\t\t\t") and skip;
-         MatShape(dst);
-         return<==1 and RValue:=NULL;
-         skip
-         
-     }
-     else 
-     {
-          skip 
-     };
-     if(return=0)   then 
-     {
-         MatSub_row:=0;
-         
-         while( (MatSub_row<src1->row) )
-         {
-             MatSub_col:=0;
-             
-             while( (MatSub_col<src1->col) )
-             {
-                 (dst->element[MatSub_row])[MatSub_col]:=(src1->element[MatSub_row])[MatSub_col]-(src2->element[MatSub_row])[MatSub_col];
-                 MatSub_col:=MatSub_col+1
-                 
-             };
-             MatSub_row:=MatSub_row+1
-             
-         };
-         return<==1 and RValue:=dst;
-         skip
-     }
-     else
-     {
-         skip
-     }
-     )
-     }; 
-  function MatMul ( Mat *src1,Mat *src2,Mat *dst,Mat* RValue )
- {
-     frame(MatMul_row,MatMul_col,MatMul_i,MatMul_temp,return) and ( 
-     int return<==0 and skip;
-     int MatMul_row,MatMul_col and skip;
-     int MatMul_i and skip;
-     float MatMul_temp and skip;
-     if(src1->col!=src2->row OR src1->row!=dst->row OR src2->col!=dst->col) then 
-     {
-         output ("\t\terr check, unmatch matrix for MatMul\n") and skip;
-         output ("\t\tsrcMatShape:\n\t\t\t") and skip;
-         MatShape(src1);
-         output ("\t\t\t") and skip;
-         MatShape(src2);
-         output ("\t\tdstMatShape:\n\t\t\t") and skip;
-         MatShape(dst);
-         return<==1 and RValue:=NULL;
-         skip
-         
-     }
-     else 
-     {
-          skip 
-     };
-     if(return=0)   then 
-     {
-         MatMul_row:=0;
-         
-         while( (MatMul_row<dst->row) )
-         {
-             MatMul_col:=0;
-             
-             while( (MatMul_col<dst->col) )
-             {
-                 MatMul_temp:=0.0;
-                 MatMul_i:=0;
-                 
-                 while( (MatMul_i<src1->col) )
-                 {
-                     MatMul_temp:=MatMul_temp+(src1->element[MatMul_row])[MatMul_i]*(src2->element[MatMul_i])[MatMul_col];
-                     MatMul_i:=MatMul_i+1
-                     
-                 };
-                 (dst->element[MatMul_row])[MatMul_col]:=MatMul_temp;
-                 MatMul_col:=MatMul_col+1
-                 
-             };
-             MatMul_row:=MatMul_row+1
-             
-         };
-         return<==1 and RValue:=dst;
-         skip
-     }
-     else
-     {
-         skip
-     }
-     )
-     }; 
-  function MatProduct ( Mat *src1,Mat *src2,Mat *dst,Mat* RValue )
- {
-     frame(MatProduct_row,MatProduct_col,return) and ( 
-     int return<==0 and skip;
-     int MatProduct_row,MatProduct_col and skip;
-     if(!(src1->row=src2->row AND src2->row=dst->row AND src1->col=src2->col AND src2->col=dst->col)) then 
-     {
-         output ("\t\terr check, unmatch matrix for MatAdd\n") and skip;
-         output ("\t\tsrcMatShape:\n\t\t\t") and skip;
-         MatShape(src1);
-         output ("\t\t\t") and skip;
-         MatShape(src2);
-         output ("\t\tdstMatShape:\n\t\t\t") and skip;
-         MatShape(dst);
-         return<==1 and RValue:=NULL;
-         skip
-         
-     }
-     else 
-     {
-          skip 
-     };
-     if(return=0)   then 
-     {
-         MatProduct_row:=0;
-         
-         while( (MatProduct_row<src1->row) )
-         {
-             MatProduct_col:=0;
-             
-             while( (MatProduct_col<src1->col) )
-             {
-                 (dst->element[MatProduct_row])[MatProduct_col]:=(src1->element[MatProduct_row])[MatProduct_col]*(src2->element[MatProduct_row])[MatProduct_col];
-                 MatProduct_col:=MatProduct_col+1
-                 
-             };
-             MatProduct_row:=MatProduct_row+1
-             
-         };
-         return<==1 and RValue:=dst;
-         skip
-     }
-     else
-     {
-         skip
-     }
-     )
-     }; 
-  function MatNumMul ( float num,Mat *src,Mat *dst,Mat* RValue )
- {
-     frame(MatNumMul_row,MatNumMul_col,return) and ( 
-     int return<==0 and skip;
-     int MatNumMul_row,MatNumMul_col and skip;
-     if(src->row!=dst->row OR src->col!=dst->col) then 
-     {
-         output ("\t\terr check, unmathed matrix for MatNumMul\t\t\n") and skip;
-         output ("\t\tsrcMatShape:\n\t\t\t") and skip;
-         MatShape(src);
-         output ("\t\tdstMatShape:\n\t\t\t") and skip;
-         MatShape(dst);
-         return<==1 and RValue:=NULL;
-         skip
-         
-     }
-     else 
-     {
-          skip 
-     };
-     if(return=0)   then 
-     {
-         MatNumMul_row:=0;
-         
-         while( (MatNumMul_row<src->row) )
-         {
-             MatNumMul_col:=0;
-             
-             while( (MatNumMul_col<src->col) )
-             {
-                 (dst->element[MatNumMul_row])[MatNumMul_col]:=num*(src->element[MatNumMul_row])[MatNumMul_col];
-                 MatNumMul_col:=MatNumMul_col+1
-                 
-             };
-             MatNumMul_row:=MatNumMul_row+1
-             
-         };
-         return<==1 and RValue:=dst;
-         skip
-     }
-     else
-     {
-         skip
-     }
-     )
-     }; 
-  function MatNumAdd ( float num,Mat *src,Mat *dst,Mat* RValue )
- {
-     frame(MatNumAdd_row,MatNumAdd_col,return) and ( 
-     int return<==0 and skip;
-     int MatNumAdd_row,MatNumAdd_col and skip;
-     if(src->row!=dst->row OR src->col!=dst->col) then 
-     {
-         output ("\t\terr check, unmathed matrix for MatNumAdd\t\t\n") and skip;
-         output ("\t\tsrcMatShape:\n\t\t\t") and skip;
-         MatShape(src);
-         output ("\t\tdstMatShape:\n\t\t\t") and skip;
-         MatShape(dst);
-         return<==1 and RValue:=NULL;
-         skip
-         
-     }
-     else 
-     {
-          skip 
-     };
-     if(return=0)   then 
-     {
-         MatNumAdd_row:=0;
-         
-         while( (MatNumAdd_row<src->row) )
-         {
-             MatNumAdd_col:=0;
-             
-             while( (MatNumAdd_col<src->col) )
-             {
-                 (dst->element[MatNumAdd_row])[MatNumAdd_col]:=num+(src->element[MatNumAdd_row])[MatNumAdd_col];
-                 MatNumAdd_col:=MatNumAdd_col+1
-                 
-             };
-             MatNumAdd_row:=MatNumAdd_row+1
-             
-         };
-         return<==1 and RValue:=dst;
-         skip
-     }
-     else
-     {
-         skip
-     }
-     )
-     }; 
-  function MatTrans ( Mat *src,Mat *dst,Mat* RValue )
- {
-     frame(MatTrans_row,MatTrans_col,return) and ( 
-     int return<==0 and skip;
-     int MatTrans_row,MatTrans_col and skip;
-     if(src->row!=dst->col OR src->col!=dst->row) then 
-     {
-         output ("err check, unmatch matrix for MatTranspose\n") and skip;
-         output ("\t\tsrcMatShape:\n\t\t\t") and skip;
-         MatShape(src);
-         output ("\t\tdstMatShape:\n\t\t\t") and skip;
-         MatShape(dst);
-         return<==1 and RValue:=NULL;
-         skip
-         
-     }
-     else 
-     {
-          skip 
-     };
-     if(return=0)   then 
-     {
-         MatTrans_row:=0;
-         
-         while( (MatTrans_row<dst->row) )
-         {
-             MatTrans_col:=0;
-             
-             while( (MatTrans_col<dst->col) )
-             {
-                 (dst->element[MatTrans_row])[MatTrans_col]:=(src->element[MatTrans_col])[MatTrans_row];
-                 MatTrans_col:=MatTrans_col+1
-                 
-             };
-             MatTrans_row:=MatTrans_row+1
-             
-         };
-         return<==1 and RValue:=dst;
-         skip
-     }
-     else
-     {
-         skip
-     }
+     output ("\n") and skip
      )
      }; 
   function MatZeros ( Mat *mat,Mat* RValue )
@@ -800,53 +400,277 @@ int remainder
      skip
      )
      }; 
+  function MatAdd ( Mat *src1,Mat *src2,Mat *dst,Mat* RValue )
+ {
+     frame(MatAdd_row,MatAdd_col,return) and ( 
+     int return<==0 and skip;
+     int MatAdd_row,MatAdd_col and skip;
+     MatAdd_row:=0;
+     
+     while( (MatAdd_row<src1->row) )
+     {
+         MatAdd_col:=0;
+         
+         while( (MatAdd_col<src1->col) )
+         {
+             (dst->element[MatAdd_row])[MatAdd_col]:=(src1->element[MatAdd_row])[MatAdd_col]+(src2->element[MatAdd_row])[MatAdd_col];
+             MatAdd_col:=MatAdd_col+1
+             
+         };
+         MatAdd_row:=MatAdd_row+1
+         
+     };
+     return<==1 and RValue:=dst;
+     skip
+     )
+     }; 
+  function MatSub ( Mat *src1,Mat *src2,Mat *dst,Mat* RValue )
+ {
+     frame(MatSub_row,MatSub_col,return) and ( 
+     int return<==0 and skip;
+     int MatSub_row,MatSub_col and skip;
+     MatSub_row:=0;
+     
+     while( (MatSub_row<src1->row) )
+     {
+         MatSub_col:=0;
+         
+         while( (MatSub_col<src1->col) )
+         {
+             (dst->element[MatSub_row])[MatSub_col]:=(src1->element[MatSub_row])[MatSub_col]-(src2->element[MatSub_row])[MatSub_col];
+             MatSub_col:=MatSub_col+1
+             
+         };
+         MatSub_row:=MatSub_row+1
+         
+     };
+     return<==1 and RValue:=dst;
+     skip
+     )
+     }; 
+  function MatMul ( Mat *src1,Mat *src2,Mat *dst,Mat* RValue )
+ {
+     frame(MatMul_row,MatMul_col,MatMul_i,MatMul_1_temp$_1,return) and ( 
+     int return<==0 and skip;
+     int MatMul_row,MatMul_col and skip;
+     int MatMul_i and skip;
+     MatZeros(dst,RValue);
+     MatMul_row:=0;
+     
+     while( (MatMul_row<src1->row) )
+     {
+         MatMul_col:=0;
+         
+         while( (MatMul_col<src1->col) )
+         {
+             int MatMul_1_temp$_1 and skip;
+             MatMul_1_temp$_1:=equal((src1->element[MatMul_row])[MatMul_col],0,RValue);
+             if(MatMul_1_temp$_1=0) then 
+             {
+                 MatMul_i:=0;
+                 
+                 while( (MatMul_i<src2->col) )
+                 {
+                     (dst->element[MatMul_row])[MatMul_i]:=(dst->element[MatMul_row])[MatMul_i]+(src1->element[MatMul_row])[MatMul_col]*(src2->element[MatMul_col])[MatMul_i];
+                     MatMul_i:=MatMul_i+1
+                     
+                 }
+                 
+             }
+             else 
+             {
+                  skip 
+             };
+             MatMul_col:=MatMul_col+1
+             
+         };
+         MatMul_row:=MatMul_row+1
+         
+     };
+     return<==1 and RValue:=dst;
+     skip
+     )
+     }; 
+  function MatMul2 ( Mat *src1,Mat *src2,Mat *dst,Mat* RValue )
+ {
+     frame(MatMul2_row,MatMul2_col,MatMul2_i,MatMul2_temp,return) and ( 
+     int return<==0 and skip;
+     int MatMul2_row,MatMul2_col and skip;
+     int MatMul2_i and skip;
+     float MatMul2_temp and skip;
+     MatMul2_row:=0;
+     
+     while( (MatMul2_row<dst->row) )
+     {
+         MatMul2_col:=0;
+         
+         while( (MatMul2_col<dst->col) )
+         {
+             MatMul2_temp:=0.0;
+             MatMul2_i:=0;
+             
+             while( (MatMul2_i<src1->col) )
+             {
+                 MatMul2_temp:=MatMul2_temp+(src1->element[MatMul2_row])[MatMul2_i]*(src2->element[MatMul2_i])[MatMul2_col];
+                 MatMul2_i:=MatMul2_i+1
+                 
+             };
+             (dst->element[MatMul2_row])[MatMul2_col]:=MatMul2_temp;
+             MatMul2_col:=MatMul2_col+1
+             
+         };
+         MatMul2_row:=MatMul2_row+1
+         
+     };
+     return<==1 and RValue:=dst;
+     skip
+     )
+     }; 
+  function MatProduct ( Mat *src1,Mat *src2,Mat *dst,Mat* RValue )
+ {
+     frame(MatProduct_row,MatProduct_col,return) and ( 
+     int return<==0 and skip;
+     int MatProduct_row,MatProduct_col and skip;
+     MatProduct_row:=0;
+     
+     while( (MatProduct_row<src1->row) )
+     {
+         MatProduct_col:=0;
+         
+         while( (MatProduct_col<src1->col) )
+         {
+             (dst->element[MatProduct_row])[MatProduct_col]:=(src1->element[MatProduct_row])[MatProduct_col]*(src2->element[MatProduct_row])[MatProduct_col];
+             MatProduct_col:=MatProduct_col+1
+             
+         };
+         MatProduct_row:=MatProduct_row+1
+         
+     };
+     return<==1 and RValue:=dst;
+     skip
+     )
+     }; 
+  function MatDiv ( Mat *src1,Mat *src2,Mat *dst,Mat* RValue )
+ {
+     frame(MatDiv_row,MatDiv_col,return) and ( 
+     int return<==0 and skip;
+     int MatDiv_row,MatDiv_col and skip;
+     MatDiv_row:=0;
+     
+     while( (MatDiv_row<src1->row) )
+     {
+         MatDiv_col:=0;
+         
+         while( (MatDiv_col<src1->col) )
+         {
+             (dst->element[MatDiv_row])[MatDiv_col]:=(src1->element[MatDiv_row])[MatDiv_col]/ (src2->element[MatDiv_row])[MatDiv_col];
+             MatDiv_col:=MatDiv_col+1
+             
+         };
+         MatDiv_row:=MatDiv_row+1
+         
+     };
+     return<==1 and RValue:=dst;
+     skip
+     )
+     }; 
+  function MatNumMul ( float num,Mat *src,Mat *dst,Mat* RValue )
+ {
+     frame(MatNumMul_row,MatNumMul_col,return) and ( 
+     int return<==0 and skip;
+     int MatNumMul_row,MatNumMul_col and skip;
+     MatNumMul_row:=0;
+     
+     while( (MatNumMul_row<src->row) )
+     {
+         MatNumMul_col:=0;
+         
+         while( (MatNumMul_col<src->col) )
+         {
+             (dst->element[MatNumMul_row])[MatNumMul_col]:=num*(src->element[MatNumMul_row])[MatNumMul_col];
+             MatNumMul_col:=MatNumMul_col+1
+             
+         };
+         MatNumMul_row:=MatNumMul_row+1
+         
+     };
+     return<==1 and RValue:=dst;
+     skip
+     )
+     }; 
+  function MatNumAdd ( float num,Mat *src,Mat *dst,Mat* RValue )
+ {
+     frame(MatNumAdd_row,MatNumAdd_col,return) and ( 
+     int return<==0 and skip;
+     int MatNumAdd_row,MatNumAdd_col and skip;
+     MatNumAdd_row:=0;
+     
+     while( (MatNumAdd_row<src->row) )
+     {
+         MatNumAdd_col:=0;
+         
+         while( (MatNumAdd_col<src->col) )
+         {
+             (dst->element[MatNumAdd_row])[MatNumAdd_col]:=num+(src->element[MatNumAdd_row])[MatNumAdd_col];
+             MatNumAdd_col:=MatNumAdd_col+1
+             
+         };
+         MatNumAdd_row:=MatNumAdd_row+1
+         
+     };
+     return<==1 and RValue:=dst;
+     skip
+     )
+     }; 
+  function MatTrans ( Mat *src,Mat *dst,Mat* RValue )
+ {
+     frame(MatTrans_row,MatTrans_col,return) and ( 
+     int return<==0 and skip;
+     int MatTrans_row,MatTrans_col and skip;
+     MatTrans_row:=0;
+     
+     while( (MatTrans_row<dst->row) )
+     {
+         MatTrans_col:=0;
+         
+         while( (MatTrans_col<dst->col) )
+         {
+             (dst->element[MatTrans_row])[MatTrans_col]:=(src->element[MatTrans_col])[MatTrans_row];
+             MatTrans_col:=MatTrans_col+1
+             
+         };
+         MatTrans_row:=MatTrans_row+1
+         
+     };
+     return<==1 and RValue:=dst;
+     skip
+     )
+     }; 
   function MatRowSum ( Mat *src,Mat *dst,Mat* RValue )
  {
      frame(MatRowSum_row,MatRowSum_col,MatRowSum_temp,return) and ( 
      int return<==0 and skip;
      int MatRowSum_row,MatRowSum_col and skip;
      float MatRowSum_temp and skip;
-     if(src->row!=dst->row OR dst->col!=1) then 
+     MatRowSum_row:=0;
+     
+     while( (MatRowSum_row<src->row) )
      {
-         output ("err check, unmatch matrix for MatSum\n") and skip;
-         output ("\t\tsrcMatShape:\n\t\t\t") and skip;
-         MatShape(src);
-         output ("\t\tdstMatShape:\n\t\t\t") and skip;
-         MatShape(dst);
-         return<==1 and RValue:=NULL;
-         skip
+         MatRowSum_temp:=0;
+         MatRowSum_col:=0;
          
-     }
-     else 
-     {
-          skip 
-     };
-     if(return=0)   then 
-     {
-         MatRowSum_row:=0;
-         
-         while( (MatRowSum_row<src->row) )
+         while( (MatRowSum_col<src->col) )
          {
-             MatRowSum_temp:=0;
-             MatRowSum_col:=0;
-             
-             while( (MatRowSum_col<src->col) )
-             {
-                 MatRowSum_temp:=MatRowSum_temp+(src->element[MatRowSum_row])[MatRowSum_col];
-                 MatRowSum_col:=MatRowSum_col+1
-                 
-             };
-             (dst->element[MatRowSum_row])[0]:=MatRowSum_temp;
-             MatRowSum_row:=MatRowSum_row+1
+             MatRowSum_temp:=MatRowSum_temp+(src->element[MatRowSum_row])[MatRowSum_col];
+             MatRowSum_col:=MatRowSum_col+1
              
          };
-         return<==1 and RValue:=dst;
-         skip
-     }
-     else
-     {
-         skip
-     }
+         (dst->element[MatRowSum_row])[0]:=MatRowSum_temp;
+         MatRowSum_row:=MatRowSum_row+1
+         
+     };
+     return<==1 and RValue:=dst;
+     skip
      )
      }; 
   function MatRowMax ( Mat *src,Mat *dst,Mat* RValue )
@@ -855,55 +679,33 @@ int remainder
      int return<==0 and skip;
      int MatRowMax_row,MatRowMax_col and skip;
      float MatRowMax_temp and skip;
-     if(src->row!=dst->row OR dst->col!=1) then 
+     MatRowMax_row:=0;
+     
+     while( (MatRowMax_row<src->row) )
      {
-         output ("err check, unmatch matrix for MatMax\n") and skip;
-         output ("\t\tsrcMatShape:\n\t\t\t") and skip;
-         MatShape(src);
-         output ("\t\tdstMatShape:\n\t\t\t") and skip;
-         MatShape(dst);
-         return<==1 and RValue:=NULL;
-         skip
+         MatRowMax_temp:=(src->element[MatRowMax_row])[0];
+         MatRowMax_col:=1;
          
-     }
-     else 
-     {
-          skip 
-     };
-     if(return=0)   then 
-     {
-         MatRowMax_row:=0;
-         
-         while( (MatRowMax_row<src->row) )
+         while( (MatRowMax_col<src->col) )
          {
-             MatRowMax_temp:=(src->element[MatRowMax_row])[0];
-             MatRowMax_col:=1;
-             
-             while( (MatRowMax_col<src->col) )
+             if((src->element[MatRowMax_row])[MatRowMax_col]>MatRowMax_temp) then 
              {
-                 if((src->element[MatRowMax_row])[MatRowMax_col]>MatRowMax_temp) then 
-                 {
-                     MatRowMax_temp:=(src->element[MatRowMax_row])[MatRowMax_col]
-                     
-                 }
-                 else 
-                 {
-                      skip 
-                 };
-                 MatRowMax_col:=MatRowMax_col+1
+                 MatRowMax_temp:=(src->element[MatRowMax_row])[MatRowMax_col]
                  
+             }
+             else 
+             {
+                  skip 
              };
-             (dst->element[MatRowMax_row])[0]:=MatRowMax_temp;
-             MatRowMax_row:=MatRowMax_row+1
+             MatRowMax_col:=MatRowMax_col+1
              
          };
-         return<==1 and RValue:=dst;
-         skip
-     }
-     else
-     {
-         skip
-     }
+         (dst->element[MatRowMax_row])[0]:=MatRowMax_temp;
+         MatRowMax_row:=MatRowMax_row+1
+         
+     };
+     return<==1 and RValue:=dst;
+     skip
      )
      }; 
   function MatSquare ( Mat *src,Mat *dst,Mat* RValue )
@@ -911,45 +713,47 @@ int remainder
      frame(MatSquare_row,MatSquare_col,return) and ( 
      int return<==0 and skip;
      int MatSquare_row,MatSquare_col and skip;
-     if(src->row!=dst->row OR src->col!=dst->col) then 
+     MatSquare_row:=0;
+     
+     while( (MatSquare_row<src->row) )
      {
-         output ("err check, unmatch matrix for MatSquare\n") and skip;
-         output ("\t\tsrcMatShape:\n\t\t\t") and skip;
-         MatShape(src);
-         output ("\t\tdstMatShape:\n\t\t\t") and skip;
-         MatShape(dst);
-         return<==1 and RValue:=NULL;
-         skip
+         MatSquare_col:=0;
          
-     }
-     else 
-     {
-          skip 
-     };
-     if(return=0)   then 
-     {
-         MatSquare_row:=0;
-         
-         while( (MatSquare_row<src->row) )
+         while( (MatSquare_col<src->col) )
          {
-             MatSquare_col:=0;
-             
-             while( (MatSquare_col<src->col) )
-             {
-                 (dst->element[MatSquare_row])[MatSquare_col]:=(src->element[MatSquare_row])[MatSquare_col]*(src->element[MatSquare_row])[MatSquare_col];
-                 MatSquare_col:=MatSquare_col+1
-                 
-             };
-             MatSquare_row:=MatSquare_row+1
+             (dst->element[MatSquare_row])[MatSquare_col]:=(src->element[MatSquare_row])[MatSquare_col]*(src->element[MatSquare_row])[MatSquare_col];
+             MatSquare_col:=MatSquare_col+1
              
          };
-         return<==1 and RValue:=dst;
-         skip
-     }
-     else
+         MatSquare_row:=MatSquare_row+1
+         
+     };
+     return<==1 and RValue:=dst;
+     skip
+     )
+     }; 
+  function MatSqrt ( Mat *src,Mat *dst,Mat* RValue )
+ {
+     frame(MatSqrt_row,MatSqrt_col,return) and ( 
+     int return<==0 and skip;
+     int MatSqrt_row,MatSqrt_col and skip;
+     MatSqrt_row:=0;
+     
+     while( (MatSqrt_row<src->row) )
      {
-         skip
-     }
+         MatSqrt_col:=0;
+         
+         while( (MatSqrt_col<src->col) )
+         {
+             (dst->element[MatSqrt_row])[MatSqrt_col]:=sqrt((float)((src->element[MatSqrt_row])[MatSqrt_col]));
+             MatSqrt_col:=MatSqrt_col+1
+             
+         };
+         MatSqrt_row:=MatSqrt_row+1
+         
+     };
+     return<==1 and RValue:=dst;
+     skip
      )
      }; 
   function MatExp ( Mat *src,Mat *dst,Mat* RValue )
@@ -957,45 +761,23 @@ int remainder
      frame(MatExp_row,MatExp_col,return) and ( 
      int return<==0 and skip;
      int MatExp_row,MatExp_col and skip;
-     if(src->row!=dst->row OR src->col!=dst->col) then 
+     MatExp_row:=0;
+     
+     while( (MatExp_row<src->row) )
      {
-         output ("err check, unmatch matrix for MatExp\n") and skip;
-         output ("\t\tsrcMatShape:\n\t\t\t") and skip;
-         MatShape(src);
-         output ("\t\tdstMatShape:\n\t\t\t") and skip;
-         MatShape(dst);
-         return<==1 and RValue:=NULL;
-         skip
+         MatExp_col:=0;
          
-     }
-     else 
-     {
-          skip 
-     };
-     if(return=0)   then 
-     {
-         MatExp_row:=0;
-         
-         while( (MatExp_row<src->row) )
+         while( (MatExp_col<src->col) )
          {
-             MatExp_col:=0;
-             
-             while( (MatExp_col<src->col) )
-             {
-                 (dst->element[MatExp_row])[MatExp_col]:=(float)(exp((float)((src->element[MatExp_row])[MatExp_col])));
-                 MatExp_col:=MatExp_col+1
-                 
-             };
-             MatExp_row:=MatExp_row+1
+             (dst->element[MatExp_row])[MatExp_col]:=(float)(exp((float)((src->element[MatExp_row])[MatExp_col])));
+             MatExp_col:=MatExp_col+1
              
          };
-         return<==1 and RValue:=dst;
-         skip
-     }
-     else
-     {
-         skip
-     }
+         MatExp_row:=MatExp_row+1
+         
+     };
+     return<==1 and RValue:=dst;
+     skip
      )
      }; 
   function MatVectorSub ( Mat *src,Mat *vector,Mat *dst,Mat* RValue )
@@ -1003,271 +785,123 @@ int remainder
      frame(MatVectorSub_row,MatVectorSub_col,return) and ( 
      int return<==0 and skip;
      int MatVectorSub_row,MatVectorSub_col and skip;
-     if(src->row!=dst->row OR src->col!=dst->col OR vector->row!=src->row OR vector->col!=1) then 
+     MatVectorSub_row:=0;
+     
+     while( (MatVectorSub_row<src->row) )
      {
-         output ("err check, unmatch matrix for MatVectorSub\n") and skip;
-         output ("\t\tsrcMatShape:\n\t\t\t") and skip;
-         MatShape(src);
-         output ("\t\tvectorShape:\n\t\t\t") and skip;
-         MatShape(vector);
-         output ("\t\tdstMatShape:\n\t\t\t") and skip;
-         MatShape(dst);
-         return<==1 and RValue:=NULL;
-         skip
+         MatVectorSub_col:=0;
          
-     }
-     else 
-     {
-          skip 
-     };
-     if(return=0)   then 
-     {
-         MatVectorSub_row:=0;
-         
-         while( (MatVectorSub_row<src->row) )
+         while( (MatVectorSub_col<src->col) )
          {
-             MatVectorSub_col:=0;
-             
-             while( (MatVectorSub_col<src->col) )
-             {
-                 (dst->element[MatVectorSub_row])[MatVectorSub_col]:=(src->element[MatVectorSub_row])[MatVectorSub_col]-(vector->element[MatVectorSub_row])[0];
-                 MatVectorSub_col:=MatVectorSub_col+1
-                 
-             };
-             MatVectorSub_row:=MatVectorSub_row+1
+             (dst->element[MatVectorSub_row])[MatVectorSub_col]:=(src->element[MatVectorSub_row])[MatVectorSub_col]-(vector->element[MatVectorSub_row])[0];
+             MatVectorSub_col:=MatVectorSub_col+1
              
          };
-         return<==1 and RValue:=dst;
-         skip
-     }
-     else
-     {
-         skip
-     }
+         MatVectorSub_row:=MatVectorSub_row+1
+         
+     };
+     return<==1 and RValue:=dst;
+     skip
      )
      }; 
   function MatVectorDiv ( Mat *src,Mat *vector,Mat *dst,Mat* RValue )
  {
-     frame(MatVectorDiv_row,MatVectorDiv_col,MatVectorDiv_2_temp$_1,return) and ( 
+     frame(MatVectorDiv_row,MatVectorDiv_col,return) and ( 
      int return<==0 and skip;
      int MatVectorDiv_row,MatVectorDiv_col and skip;
-     if(src->row!=dst->row OR src->col!=dst->col OR vector->row!=src->row OR vector->col!=1) then 
+     MatVectorDiv_row:=0;
+     
+     while( (MatVectorDiv_row<src->row) )
      {
-         output ("err check, unmatch matrix for MatVectorSub\n") and skip;
-         output ("\t\tsrcMatShape:\n\t\t\t") and skip;
-         MatShape(src);
-         output ("\t\tvectorShape:\n\t\t\t") and skip;
-         MatShape(vector);
-         output ("\t\tdstMatShape:\n\t\t\t") and skip;
-         MatShape(dst);
-         return<==1 and RValue:=NULL;
-         skip
+         MatVectorDiv_col:=0;
          
-     }
-     else 
-     {
-          skip 
-     };
-     if(return=0)   then 
-     {
-         MatVectorDiv_row:=0;
-         
-         while( return=0 AND   (MatVectorDiv_row<src->row) )
+         while( (MatVectorDiv_col<src->col) )
          {
-             float MatVectorDiv_2_temp$_1 and skip;
-             MatVectorDiv_2_temp$_1:=absolute((vector->element[MatVectorDiv_row])[0],RValue);
-             if(MatVectorDiv_2_temp$_1<0.000001) then 
-             {
-                 output ("err check, Divisor vector has zero.\n") and skip;
-                 return<==1 and RValue:=NULL;
-                 skip
-                 
-             }
-             else 
-             {
-                  skip 
-             };
-             if(return=0)   then 
-             {
-                 MatVectorDiv_row:=MatVectorDiv_row+1
-             }
-             else
-             {
-                 skip
-             }
+             (dst->element[MatVectorDiv_row])[MatVectorDiv_col]:=(src->element[MatVectorDiv_row])[MatVectorDiv_col]/ (vector->element[MatVectorDiv_row])[0];
+             MatVectorDiv_col:=MatVectorDiv_col+1
              
          };
-         if(return=0)   then 
-         {
-             MatVectorDiv_row:=0;
-             
-             while( (MatVectorDiv_row<src->row) )
-             {
-                 MatVectorDiv_col:=0;
-                 
-                 while( (MatVectorDiv_col<src->col) )
-                 {
-                     (dst->element[MatVectorDiv_row])[MatVectorDiv_col]:=(src->element[MatVectorDiv_row])[MatVectorDiv_col]/ (vector->element[MatVectorDiv_row])[0];
-                     MatVectorDiv_col:=MatVectorDiv_col+1
-                     
-                 };
-                 MatVectorDiv_row:=MatVectorDiv_row+1
-                 
-             };
-             return<==1 and RValue:=dst;
-             skip
-         }
-         else
-         {
-             skip
-         }
-     }
-     else
-     {
-         skip
-     }
+         MatVectorDiv_row:=MatVectorDiv_row+1
+         
+     };
+     return<==1 and RValue:=dst;
+     skip
      )
      }; 
   function MatCopy ( Mat *src,Mat *dst )
  {
-     frame(MatCopy_row,MatCopy_col,return) and ( 
-     int return<==0 and skip;
+     frame(MatCopy_row,MatCopy_col) and ( 
      int MatCopy_row,MatCopy_col and skip;
-     if(src->row!=dst->row OR src->col!=dst->col) then 
+     MatCopy_row:=0;
+     
+     while( (MatCopy_row<src->row) )
      {
-         output ("\t\terr check, unmathed matrix for MatCopy\t\t\n") and skip;
-         output ("\t\tsrcMatShape:\n\t\t\t") and skip;
-         MatShape(src);
-         output ("\t\tdstMatShape:\n\t\t\t") and skip;
-         MatShape(dst);
-          return<==1 and skip
+         MatCopy_col:=0;
          
-     }
-     else 
-     {
-          skip 
-     };
-     if(return=0)   then 
-     {
-         MatCopy_row:=0;
-         
-         while( (MatCopy_row<src->row) )
+         while( (MatCopy_col<src->col) )
          {
-             MatCopy_col:=0;
+             (dst->element[MatCopy_row])[MatCopy_col]:=(src->element[MatCopy_row])[MatCopy_col];
+             MatCopy_col:=MatCopy_col+1
              
-             while( (MatCopy_col<src->col) )
-             {
-                 (dst->element[MatCopy_row])[MatCopy_col]:=(src->element[MatCopy_row])[MatCopy_col];
-                 MatCopy_col:=MatCopy_col+1
-                 
-             };
-             MatCopy_row:=MatCopy_row+1
-             
-         }
-     }
-     else
-     {
-         skip
+         };
+         MatCopy_row:=MatCopy_row+1
+         
      }
      )
      }; 
   function MatPlusCol ( Mat *src,Mat *dst )
  {
-     frame(MatPlusCol_row,MatPlusCol_col,return) and ( 
-     int return<==0 and skip;
+     frame(MatPlusCol_row,MatPlusCol_col) and ( 
      int MatPlusCol_row,MatPlusCol_col and skip;
-     if(src->row!=dst->row OR (src->col)+1!=dst->col) then 
+     MatPlusCol_row:=0 and MatPlusCol_col:=0;
+     while( (MatPlusCol_row<dst->row) )
      {
-         output ("\t\terr check, unmathed matrix for MatPlus\t\t\n") and skip;
-         output ("\t\tsrcMatShape:\n\t\t\t") and skip;
-         MatShape(src);
-         output ("\t\tdstMatShape:\n\t\t\t") and skip;
-         MatShape(dst);
-          return<==1 and skip
+         (dst->element[MatPlusCol_row])[MatPlusCol_col]:=1;
+         MatPlusCol_row:=MatPlusCol_row+1
          
-     }
-     else 
-     {
-          skip 
      };
-     if(return=0)   then 
+     MatPlusCol_row:=0;
+     
+     while( (MatPlusCol_row<src->row) )
      {
-         MatPlusCol_row:=0 and MatPlusCol_col:=0;
-         while( (MatPlusCol_row<dst->row) )
+         MatPlusCol_col:=0;
+         
+         while( (MatPlusCol_col<src->col) )
          {
-             (dst->element[MatPlusCol_row])[MatPlusCol_col]:=1;
-             MatPlusCol_row:=MatPlusCol_row+1
+             (dst->element[MatPlusCol_row])[MatPlusCol_col+1]:=(src->element[MatPlusCol_row])[MatPlusCol_col];
+             MatPlusCol_col:=MatPlusCol_col+1
              
          };
-         MatPlusCol_row:=0;
+         MatPlusCol_row:=MatPlusCol_row+1
          
-         while( (MatPlusCol_row<src->row) )
-         {
-             MatPlusCol_col:=0;
-             
-             while( (MatPlusCol_col<src->col) )
-             {
-                 (dst->element[MatPlusCol_row])[MatPlusCol_col+1]:=(src->element[MatPlusCol_row])[MatPlusCol_col];
-                 MatPlusCol_col:=MatPlusCol_col+1
-                 
-             };
-             MatPlusCol_row:=MatPlusCol_row+1
-             
-         }
-     }
-     else
-     {
-         skip
      }
      )
      }; 
   function MatPlusRow ( Mat *src,Mat *dst )
  {
-     frame(MatPlusRow_row,MatPlusRow_col,return) and ( 
-     int return<==0 and skip;
+     frame(MatPlusRow_row,MatPlusRow_col) and ( 
      int MatPlusRow_row,MatPlusRow_col and skip;
-     if(src->row+1!=dst->row OR (src->col)!=dst->col) then 
+     MatPlusRow_row:=0 and MatPlusRow_col:=0;
+     while( (MatPlusRow_col<dst->col) )
      {
-         output ("\t\terr check, unmathed matrix for MatPlus\t\t\n") and skip;
-         output ("\t\tsrcMatShape:\n\t\t\t") and skip;
-         MatShape(src);
-         output ("\t\tdstMatShape:\n\t\t\t") and skip;
-         MatShape(dst);
-          return<==1 and skip
+         (dst->element[MatPlusRow_row])[MatPlusRow_col]:=0.0;
+         MatPlusRow_col:=MatPlusRow_col+1
          
-     }
-     else 
-     {
-          skip 
      };
-     if(return=0)   then 
+     MatPlusRow_row:=0;
+     
+     while( (MatPlusRow_row<src->row) )
      {
-         MatPlusRow_row:=0 and MatPlusRow_col:=0;
-         while( (MatPlusRow_col<dst->col) )
+         MatPlusRow_col:=0;
+         
+         while( (MatPlusRow_col<src->col) )
          {
-             (dst->element[MatPlusRow_row])[MatPlusRow_col]:=0.0;
+             (dst->element[MatPlusRow_row+1])[MatPlusRow_col]:=(src->element[MatPlusRow_row])[MatPlusRow_col];
              MatPlusRow_col:=MatPlusRow_col+1
              
          };
-         MatPlusRow_row:=0;
+         MatPlusRow_row:=MatPlusRow_row+1
          
-         while( (MatPlusRow_row<src->row) )
-         {
-             MatPlusRow_col:=0;
-             
-             while( (MatPlusRow_col<src->col) )
-             {
-                 (dst->element[MatPlusRow_row+1])[MatPlusRow_col]:=(src->element[MatPlusRow_row])[MatPlusRow_col];
-                 MatPlusRow_col:=MatPlusRow_col+1
-                 
-             };
-             MatPlusRow_row:=MatPlusRow_row+1
-             
-         }
-     }
-     else
-     {
-         skip
      }
      )
      }; 
@@ -1299,38 +933,16 @@ int remainder
  {
      frame(MatSoftmax_tempV,return) and ( 
      int return<==0 and skip;
-     if(src->row!=dst->row OR src->col!=dst->col) then 
-     {
-         output ("\t\terr check, unmathed matrix for MatSofmax\t\t\n") and skip;
-         output ("\t\tsrcMatShape:\n\t\t\t") and skip;
-         MatShape(src);
-         output ("\t\tdstMatShape:\n\t\t\t") and skip;
-         MatShape(dst);
-         return<==1 and RValue:=NULL;
-         skip
-         
-     }
-     else 
-     {
-          skip 
-     };
-     if(return=0)   then 
-     {
-         Mat MatSoftmax_tempV and skip;
-         MatCreate(&MatSoftmax_tempV,src->row,1,RValue);
-         MatRowMax(src,&MatSoftmax_tempV,RValue);
-         MatVectorSub(src,&MatSoftmax_tempV,dst,RValue);
-         MatExp(dst,dst,RValue);
-         MatRowSum(dst,&MatSoftmax_tempV,RValue);
-         MatVectorDiv(dst,&MatSoftmax_tempV,dst,RValue);
-         MatDelete(&MatSoftmax_tempV);
-         return<==1 and RValue:=dst;
-         skip
-     }
-     else
-     {
-         skip
-     }
+     Mat MatSoftmax_tempV and skip;
+     MatCreate(&MatSoftmax_tempV,src->row,1,RValue);
+     MatRowMax(src,&MatSoftmax_tempV,RValue);
+     MatVectorSub(src,&MatSoftmax_tempV,dst,RValue);
+     MatExp(dst,dst,RValue);
+     MatRowSum(dst,&MatSoftmax_tempV,RValue);
+     MatVectorDiv(dst,&MatSoftmax_tempV,dst,RValue);
+     MatDelete(&MatSoftmax_tempV);
+     return<==1 and RValue:=dst;
+     skip
      )
      }; 
   function MatNoneActi ( Mat *src,Mat *dst,Mat* RValue )
@@ -1338,45 +950,23 @@ int remainder
      frame(MatNoneActi_row,MatNoneActi_col,return) and ( 
      int return<==0 and skip;
      int MatNoneActi_row,MatNoneActi_col and skip;
-     if(src->row!=dst->row OR src->col!=dst->col) then 
+     MatNoneActi_row:=0;
+     
+     while( (MatNoneActi_row<src->row) )
      {
-         output ("\t\terr check, unmathed matrix for MatNoneActi\t\t\n") and skip;
-         output ("\t\tsrcMatShape:\n\t\t\t") and skip;
-         MatShape(src);
-         output ("\t\tdstMatShape:\n\t\t\t") and skip;
-         MatShape(dst);
-         return<==1 and RValue:=NULL;
-         skip
+         MatNoneActi_col:=0;
          
-     }
-     else 
-     {
-          skip 
-     };
-     if(return=0)   then 
-     {
-         MatNoneActi_row:=0;
-         
-         while( (MatNoneActi_row<src->row) )
+         while( (MatNoneActi_col<src->col) )
          {
-             MatNoneActi_col:=0;
-             
-             while( (MatNoneActi_col<src->col) )
-             {
-                 (dst->element[MatNoneActi_row])[MatNoneActi_col]:=(src->element[MatNoneActi_row])[MatNoneActi_col];
-                 MatNoneActi_col:=MatNoneActi_col+1
-                 
-             };
-             MatNoneActi_row:=MatNoneActi_row+1
+             (dst->element[MatNoneActi_row])[MatNoneActi_col]:=(src->element[MatNoneActi_row])[MatNoneActi_col];
+             MatNoneActi_col:=MatNoneActi_col+1
              
          };
-         return<==1 and RValue:=dst;
-         skip
-     }
-     else
-     {
-         skip
-     }
+         MatNoneActi_row:=MatNoneActi_row+1
+         
+     };
+     return<==1 and RValue:=dst;
+     skip
      )
      }; 
   function MatSigmoid ( Mat *src,Mat *dst,Mat* RValue )
@@ -1384,45 +974,23 @@ int remainder
      frame(MatSigmoid_row,MatSigmoid_col,return) and ( 
      int return<==0 and skip;
      int MatSigmoid_row,MatSigmoid_col and skip;
-     if(src->row!=dst->row OR src->col!=dst->col) then 
+     MatSigmoid_row:=0;
+     
+     while( (MatSigmoid_row<src->row) )
      {
-         output ("\t\terr check, unmathed matrix for MatSigmoid\t\t\n") and skip;
-         output ("\t\tsrcMatShape:\n\t\t\t") and skip;
-         MatShape(src);
-         output ("\t\tdstMatShape:\n\t\t\t") and skip;
-         MatShape(dst);
-         return<==1 and RValue:=NULL;
-         skip
+         MatSigmoid_col:=0;
          
-     }
-     else 
-     {
-          skip 
-     };
-     if(return=0)   then 
-     {
-         MatSigmoid_row:=0;
-         
-         while( (MatSigmoid_row<src->row) )
+         while( (MatSigmoid_col<src->col) )
          {
-             MatSigmoid_col:=0;
-             
-             while( (MatSigmoid_col<src->col) )
-             {
-                 (dst->element[MatSigmoid_row])[MatSigmoid_col]:=sigmoid((src->element[MatSigmoid_row])[MatSigmoid_col],RValue);
-                 MatSigmoid_col:=MatSigmoid_col+1
-                 
-             };
-             MatSigmoid_row:=MatSigmoid_row+1
+             (dst->element[MatSigmoid_row])[MatSigmoid_col]:=sigmoid((src->element[MatSigmoid_row])[MatSigmoid_col],RValue);
+             MatSigmoid_col:=MatSigmoid_col+1
              
          };
-         return<==1 and RValue:=dst;
-         skip
-     }
-     else
-     {
-         skip
-     }
+         MatSigmoid_row:=MatSigmoid_row+1
+         
+     };
+     return<==1 and RValue:=dst;
+     skip
      )
      }; 
   function MatTanh ( Mat *src,Mat *dst,Mat* RValue )
@@ -1430,45 +998,23 @@ int remainder
      frame(MatTanh_row,MatTanh_col,return) and ( 
      int return<==0 and skip;
      int MatTanh_row,MatTanh_col and skip;
-     if(src->row!=dst->row OR src->col!=dst->col) then 
+     MatTanh_row:=0;
+     
+     while( (MatTanh_row<src->row) )
      {
-         output ("\t\terr check, unmathed matrix for MatTanh\t\t\n") and skip;
-         output ("\t\tsrcMatShape:\n\t\t\t") and skip;
-         MatShape(src);
-         output ("\t\tdstMatShape:\n\t\t\t") and skip;
-         MatShape(dst);
-         return<==1 and RValue:=NULL;
-         skip
+         MatTanh_col:=0;
          
-     }
-     else 
-     {
-          skip 
-     };
-     if(return=0)   then 
-     {
-         MatTanh_row:=0;
-         
-         while( (MatTanh_row<src->row) )
+         while( (MatTanh_col<src->col) )
          {
-             MatTanh_col:=0;
-             
-             while( (MatTanh_col<src->col) )
-             {
-                 (dst->element[MatTanh_row])[MatTanh_col]:=(float)tanh((src->element[MatTanh_row])[MatTanh_col]);
-                 MatTanh_col:=MatTanh_col+1
-                 
-             };
-             MatTanh_row:=MatTanh_row+1
+             (dst->element[MatTanh_row])[MatTanh_col]:=(float)tanh((src->element[MatTanh_row])[MatTanh_col]);
+             MatTanh_col:=MatTanh_col+1
              
          };
-         return<==1 and RValue:=dst;
-         skip
-     }
-     else
-     {
-         skip
-     }
+         MatTanh_row:=MatTanh_row+1
+         
+     };
+     return<==1 and RValue:=dst;
+     skip
      )
      }; 
   function MatRelu ( Mat *src,Mat *dst,Mat* RValue )
@@ -1476,45 +1022,23 @@ int remainder
      frame(MatRelu_row,MatRelu_col,return) and ( 
      int return<==0 and skip;
      int MatRelu_row,MatRelu_col and skip;
-     if(src->row!=dst->row OR src->col!=dst->col) then 
+     MatRelu_row:=0;
+     
+     while( (MatRelu_row<src->row) )
      {
-         output ("\t\terr check, unmathed matrix for MatRelu\t\t\n") and skip;
-         output ("\t\tsrcMatShape:\n\t\t\t") and skip;
-         MatShape(src);
-         output ("\t\tdstMatShape:\n\t\t\t") and skip;
-         MatShape(dst);
-         return<==1 and RValue:=NULL;
-         skip
+         MatRelu_col:=0;
          
-     }
-     else 
-     {
-          skip 
-     };
-     if(return=0)   then 
-     {
-         MatRelu_row:=0;
-         
-         while( (MatRelu_row<src->row) )
+         while( (MatRelu_col<src->col) )
          {
-             MatRelu_col:=0;
-             
-             while( (MatRelu_col<src->col) )
-             {
-                 (dst->element[MatRelu_row])[MatRelu_col]:=relu((src->element[MatRelu_row])[MatRelu_col],RValue);
-                 MatRelu_col:=MatRelu_col+1
-                 
-             };
-             MatRelu_row:=MatRelu_row+1
+             (dst->element[MatRelu_row])[MatRelu_col]:=relu((src->element[MatRelu_row])[MatRelu_col],RValue);
+             MatRelu_col:=MatRelu_col+1
              
          };
-         return<==1 and RValue:=dst;
-         skip
-     }
-     else
-     {
-         skip
-     }
+         MatRelu_row:=MatRelu_row+1
+         
+     };
+     return<==1 and RValue:=dst;
+     skip
      )
      }; 
   function MatLeakyRelu ( float a,Mat *src,Mat *dst,Mat* RValue )
@@ -1522,45 +1046,23 @@ int remainder
      frame(MatLeakyRelu_row,MatLeakyRelu_col,return) and ( 
      int return<==0 and skip;
      int MatLeakyRelu_row,MatLeakyRelu_col and skip;
-     if(src->row!=dst->row OR src->col!=dst->col) then 
+     MatLeakyRelu_row:=0;
+     
+     while( (MatLeakyRelu_row<src->row) )
      {
-         output ("\t\terr check, unmathed matrix for MatLeakyRelu\t\t\n") and skip;
-         output ("\t\tsrcMatShape:\n\t\t\t") and skip;
-         MatShape(src);
-         output ("\t\tdstMatShape:\n\t\t\t") and skip;
-         MatShape(dst);
-         return<==1 and RValue:=NULL;
-         skip
+         MatLeakyRelu_col:=0;
          
-     }
-     else 
-     {
-          skip 
-     };
-     if(return=0)   then 
-     {
-         MatLeakyRelu_row:=0;
-         
-         while( (MatLeakyRelu_row<src->row) )
+         while( (MatLeakyRelu_col<src->col) )
          {
-             MatLeakyRelu_col:=0;
-             
-             while( (MatLeakyRelu_col<src->col) )
-             {
-                 (dst->element[MatLeakyRelu_row])[MatLeakyRelu_col]:=leakyRelu((src->element[MatLeakyRelu_row])[MatLeakyRelu_col],a,RValue);
-                 MatLeakyRelu_col:=MatLeakyRelu_col+1
-                 
-             };
-             MatLeakyRelu_row:=MatLeakyRelu_row+1
+             (dst->element[MatLeakyRelu_row])[MatLeakyRelu_col]:=leakyRelu((src->element[MatLeakyRelu_row])[MatLeakyRelu_col],a,RValue);
+             MatLeakyRelu_col:=MatLeakyRelu_col+1
              
          };
-         return<==1 and RValue:=dst;
-         skip
-     }
-     else
-     {
-         skip
-     }
+         MatLeakyRelu_row:=MatLeakyRelu_row+1
+         
+     };
+     return<==1 and RValue:=dst;
+     skip
      )
      }; 
   function MatDerivationSoftmax ( Mat *src,Mat *dst,Mat* RValue )
@@ -1568,62 +1070,40 @@ int remainder
      frame(MatDerivationSoftmax_row,MatDerivationSoftmax_col,MatDerivationSoftmax_i,return) and ( 
      int return<==0 and skip;
      int MatDerivationSoftmax_row,MatDerivationSoftmax_col,MatDerivationSoftmax_i and skip;
-     if(src->row!=dst->row OR src->col!=dst->col) then 
+     MatSoftmax(src,src,RValue);
+     MatZeros(dst,RValue);
+     MatDerivationSoftmax_row:=0;
+     
+     while( (MatDerivationSoftmax_row<src->row) )
      {
-         output ("\t\terr check, unmathed matrix for MatDerivationSofmax\t\t\n") and skip;
-         output ("\t\tsrcMatShape:\n\t\t\t") and skip;
-         MatShape(src);
-         output ("\t\tdstMatShape:\n\t\t\t") and skip;
-         MatShape(dst);
-         return<==1 and RValue:=NULL;
-         skip
+         MatDerivationSoftmax_col:=0;
          
-     }
-     else 
-     {
-          skip 
-     };
-     if(return=0)   then 
-     {
-         MatSoftmax(src,src,RValue);
-         MatZeros(dst,RValue);
-         MatDerivationSoftmax_row:=0;
-         
-         while( (MatDerivationSoftmax_row<src->row) )
+         while( (MatDerivationSoftmax_col<src->col) )
          {
-             MatDerivationSoftmax_col:=0;
+             MatDerivationSoftmax_i:=0;
              
-             while( (MatDerivationSoftmax_col<src->col) )
+             while( (MatDerivationSoftmax_i<src->col) )
              {
-                 MatDerivationSoftmax_i:=0;
-                 
-                 while( (MatDerivationSoftmax_i<src->col) )
+                 if(MatDerivationSoftmax_i=MatDerivationSoftmax_col) then 
                  {
-                     if(MatDerivationSoftmax_i=MatDerivationSoftmax_col) then 
-                     {
-                         (dst->element[MatDerivationSoftmax_row])[MatDerivationSoftmax_col]:=(dst->element[MatDerivationSoftmax_row])[MatDerivationSoftmax_col]+(src->element[MatDerivationSoftmax_row])[MatDerivationSoftmax_i]*(1-(src->element[MatDerivationSoftmax_row])[MatDerivationSoftmax_col])
-                         
-                     }
-                     else
-                     {
-                         (dst->element[MatDerivationSoftmax_row])[MatDerivationSoftmax_col]:=(dst->element[MatDerivationSoftmax_row])[MatDerivationSoftmax_col]+-(src->element[MatDerivationSoftmax_row])[MatDerivationSoftmax_i]*(src->element[MatDerivationSoftmax_row])[MatDerivationSoftmax_col]
-                     };
-                     MatDerivationSoftmax_i:=MatDerivationSoftmax_i+1
+                     (dst->element[MatDerivationSoftmax_row])[MatDerivationSoftmax_col]:=(dst->element[MatDerivationSoftmax_row])[MatDerivationSoftmax_col]+(src->element[MatDerivationSoftmax_row])[MatDerivationSoftmax_i]*(1-(src->element[MatDerivationSoftmax_row])[MatDerivationSoftmax_col])
                      
+                 }
+                 else
+                 {
+                     (dst->element[MatDerivationSoftmax_row])[MatDerivationSoftmax_col]:=(dst->element[MatDerivationSoftmax_row])[MatDerivationSoftmax_col]+-(src->element[MatDerivationSoftmax_row])[MatDerivationSoftmax_i]*(src->element[MatDerivationSoftmax_row])[MatDerivationSoftmax_col]
                  };
-                 MatDerivationSoftmax_col:=MatDerivationSoftmax_col+1
+                 MatDerivationSoftmax_i:=MatDerivationSoftmax_i+1
                  
              };
-             MatDerivationSoftmax_row:=MatDerivationSoftmax_row+1
+             MatDerivationSoftmax_col:=MatDerivationSoftmax_col+1
              
          };
-         return<==1 and RValue:=dst;
-         skip
-     }
-     else
-     {
-         skip
-     }
+         MatDerivationSoftmax_row:=MatDerivationSoftmax_row+1
+         
+     };
+     return<==1 and RValue:=dst;
+     skip
      )
      }; 
   function MatDerivationNoneActi ( Mat *src,Mat *dst,Mat* RValue )
@@ -1631,122 +1111,56 @@ int remainder
      frame(MatDerivationNoneActi_row,MatDerivationNoneActi_col,return) and ( 
      int return<==0 and skip;
      int MatDerivationNoneActi_row,MatDerivationNoneActi_col and skip;
-     if(src->row!=dst->row OR src->col!=dst->col) then 
+     MatDerivationNoneActi_row:=0;
+     
+     while( (MatDerivationNoneActi_row<src->row) )
      {
-         output ("\t\terr check, unmathed matrix for MatDerivationNoneActi\t\t\n") and skip;
-         output ("\t\tsrcMatShape:\n\t\t\t") and skip;
-         MatShape(src);
-         output ("\t\tdstMatShape:\n\t\t\t") and skip;
-         MatShape(dst);
-         return<==1 and RValue:=NULL;
-         skip
+         MatDerivationNoneActi_col:=0;
          
-     }
-     else 
-     {
-          skip 
-     };
-     if(return=0)   then 
-     {
-         MatDerivationNoneActi_row:=0;
-         
-         while( (MatDerivationNoneActi_row<src->row) )
+         while( (MatDerivationNoneActi_col<src->col) )
          {
-             MatDerivationNoneActi_col:=0;
-             
-             while( (MatDerivationNoneActi_col<src->col) )
-             {
-                 (dst->element[MatDerivationNoneActi_row])[MatDerivationNoneActi_col]:=1.0;
-                 MatDerivationNoneActi_col:=MatDerivationNoneActi_col+1
-                 
-             };
-             MatDerivationNoneActi_row:=MatDerivationNoneActi_row+1
+             (dst->element[MatDerivationNoneActi_row])[MatDerivationNoneActi_col]:=1.0;
+             MatDerivationNoneActi_col:=MatDerivationNoneActi_col+1
              
          };
-         return<==1 and RValue:=dst;
-         skip
-     }
-     else
-     {
-         skip
-     }
+         MatDerivationNoneActi_row:=MatDerivationNoneActi_row+1
+         
+     };
+     return<==1 and RValue:=dst;
+     skip
      )
      }; 
   function MatDerivationSigmoid ( Mat *src,Mat *dst,Mat* RValue )
  {
      frame(MatDerivationSigmoid_temp1Mat,MatDerivationSigmoid_temp2Mat,return) and ( 
      int return<==0 and skip;
-     if(src->row!=dst->row OR src->col!=dst->col) then 
-     {
-         output ("\t\terr check, unmathed matrix for MatDerivationSigmoid\t\t\n") and skip;
-         output ("\t\tsrcMatShape:\n\t\t\t") and skip;
-         MatShape(src);
-         output ("\t\tdstMatShape:\n\t\t\t") and skip;
-         MatShape(dst);
-         return<==1 and RValue:=NULL;
-         skip
-         
-     }
-     else 
-     {
-          skip 
-     };
-     if(return=0)   then 
-     {
-         Mat MatDerivationSigmoid_temp1Mat and skip;
-         Mat MatDerivationSigmoid_temp2Mat and skip;
-         MatCreate(&MatDerivationSigmoid_temp1Mat,src->row,src->col,RValue);
-         MatCreate(&MatDerivationSigmoid_temp2Mat,src->row,src->col,RValue);
-         MatSigmoid(src,&MatDerivationSigmoid_temp1Mat,RValue);
-         MatNumMul(-1.0,&MatDerivationSigmoid_temp1Mat,&MatDerivationSigmoid_temp2Mat,RValue);
-         MatNumAdd(1.0,&MatDerivationSigmoid_temp2Mat,&MatDerivationSigmoid_temp2Mat,RValue);
-         MatProduct(&MatDerivationSigmoid_temp1Mat,&MatDerivationSigmoid_temp2Mat,dst,RValue);
-         MatDelete(&MatDerivationSigmoid_temp1Mat);
-         MatDelete(&MatDerivationSigmoid_temp2Mat);
-         return<==1 and RValue:=dst;
-         skip
-     }
-     else
-     {
-         skip
-     }
+     Mat MatDerivationSigmoid_temp1Mat and skip;
+     Mat MatDerivationSigmoid_temp2Mat and skip;
+     MatCreate(&MatDerivationSigmoid_temp1Mat,src->row,src->col,RValue);
+     MatCreate(&MatDerivationSigmoid_temp2Mat,src->row,src->col,RValue);
+     MatSigmoid(src,&MatDerivationSigmoid_temp1Mat,RValue);
+     MatNumMul(-1.0,&MatDerivationSigmoid_temp1Mat,&MatDerivationSigmoid_temp2Mat,RValue);
+     MatNumAdd(1.0,&MatDerivationSigmoid_temp2Mat,&MatDerivationSigmoid_temp2Mat,RValue);
+     MatProduct(&MatDerivationSigmoid_temp1Mat,&MatDerivationSigmoid_temp2Mat,dst,RValue);
+     MatDelete(&MatDerivationSigmoid_temp1Mat);
+     MatDelete(&MatDerivationSigmoid_temp2Mat);
+     return<==1 and RValue:=dst;
+     skip
      )
      }; 
   function MatDerivationTanh ( Mat *src,Mat *dst,Mat* RValue )
  {
      frame(MatDerivationTanh_tempMat,return) and ( 
      int return<==0 and skip;
-     if(src->row!=dst->row OR src->col!=dst->col) then 
-     {
-         output ("\t\terr check, unmathed matrix for MatDerivationTanh\t\t\n") and skip;
-         output ("\t\tsrcMatShape:\n\t\t\t") and skip;
-         MatShape(src);
-         output ("\t\tdstMatShape:\n\t\t\t") and skip;
-         MatShape(dst);
-         return<==1 and RValue:=NULL;
-         skip
-         
-     }
-     else 
-     {
-          skip 
-     };
-     if(return=0)   then 
-     {
-         Mat MatDerivationTanh_tempMat and skip;
-         MatCreate(&MatDerivationTanh_tempMat,src->row,src->col,RValue);
-         MatTanh(src,&MatDerivationTanh_tempMat,RValue);
-         MatSquare(&MatDerivationTanh_tempMat,&MatDerivationTanh_tempMat,RValue);
-         MatNumMul(-1.0,&MatDerivationTanh_tempMat,&MatDerivationTanh_tempMat,RValue);
-         MatNumAdd(1.0,&MatDerivationTanh_tempMat,dst,RValue);
-         MatDelete(&MatDerivationTanh_tempMat);
-         return<==1 and RValue:=dst;
-         skip
-     }
-     else
-     {
-         skip
-     }
+     Mat MatDerivationTanh_tempMat and skip;
+     MatCreate(&MatDerivationTanh_tempMat,src->row,src->col,RValue);
+     MatTanh(src,&MatDerivationTanh_tempMat,RValue);
+     MatSquare(&MatDerivationTanh_tempMat,&MatDerivationTanh_tempMat,RValue);
+     MatNumMul(-1.0,&MatDerivationTanh_tempMat,&MatDerivationTanh_tempMat,RValue);
+     MatNumAdd(1.0,&MatDerivationTanh_tempMat,dst,RValue);
+     MatDelete(&MatDerivationTanh_tempMat);
+     return<==1 and RValue:=dst;
+     skip
      )
      }; 
   function MatDerivationRelu ( Mat *src,Mat *dst,Mat* RValue )
@@ -1754,53 +1168,31 @@ int remainder
      frame(MatDerivationRelu_row,MatDerivationRelu_col,return) and ( 
      int return<==0 and skip;
      int MatDerivationRelu_row,MatDerivationRelu_col and skip;
-     if(src->row!=dst->row OR src->col!=dst->col) then 
+     MatDerivationRelu_row:=0;
+     
+     while( (MatDerivationRelu_row<src->row) )
      {
-         output ("\t\terr check, unmathed matrix for MatDerivationRelu\t\t\n") and skip;
-         output ("\t\tsrcMatShape:\n\t\t\t") and skip;
-         MatShape(src);
-         output ("\t\tdstMatShape:\n\t\t\t") and skip;
-         MatShape(dst);
-         return<==1 and RValue:=NULL;
-         skip
+         MatDerivationRelu_col:=0;
          
-     }
-     else 
-     {
-          skip 
-     };
-     if(return=0)   then 
-     {
-         MatDerivationRelu_row:=0;
-         
-         while( (MatDerivationRelu_row<src->row) )
+         while( (MatDerivationRelu_col<src->col) )
          {
-             MatDerivationRelu_col:=0;
-             
-             while( (MatDerivationRelu_col<src->col) )
+             if((src->element[MatDerivationRelu_row])[MatDerivationRelu_col]>0) then 
              {
-                 if((src->element[MatDerivationRelu_row])[MatDerivationRelu_col]>0) then 
-                 {
-                     (dst->element[MatDerivationRelu_row])[MatDerivationRelu_col]:=1.0
-                     
-                 }
-                 else
-                 {
-                     (dst->element[MatDerivationRelu_row])[MatDerivationRelu_col]:=0.0
-                 };
-                 MatDerivationRelu_col:=MatDerivationRelu_col+1
+                 (dst->element[MatDerivationRelu_row])[MatDerivationRelu_col]:=1.0
                  
+             }
+             else
+             {
+                 (dst->element[MatDerivationRelu_row])[MatDerivationRelu_col]:=0.0
              };
-             MatDerivationRelu_row:=MatDerivationRelu_row+1
+             MatDerivationRelu_col:=MatDerivationRelu_col+1
              
          };
-         return<==1 and RValue:=dst;
-         skip
-     }
-     else
-     {
-         skip
-     }
+         MatDerivationRelu_row:=MatDerivationRelu_row+1
+         
+     };
+     return<==1 and RValue:=dst;
+     skip
      )
      }; 
   function MatDerivationLeakyRelu ( float a,Mat *src,Mat *dst,Mat* RValue )
@@ -1808,53 +1200,31 @@ int remainder
      frame(MatDerivationLeakyRelu_row,MatDerivationLeakyRelu_col,return) and ( 
      int return<==0 and skip;
      int MatDerivationLeakyRelu_row,MatDerivationLeakyRelu_col and skip;
-     if(src->row!=dst->row OR src->col!=dst->col) then 
+     MatDerivationLeakyRelu_row:=0;
+     
+     while( (MatDerivationLeakyRelu_row<src->row) )
      {
-         output ("\t\terr check, unmathed matrix for MatDerivationLeakyRelu\t\t\n") and skip;
-         output ("\t\tsrcMatShape:\n\t\t\t") and skip;
-         MatShape(src);
-         output ("\t\tdstMatShape:\n\t\t\t") and skip;
-         MatShape(dst);
-         return<==1 and RValue:=NULL;
-         skip
+         MatDerivationLeakyRelu_col:=0;
          
-     }
-     else 
-     {
-          skip 
-     };
-     if(return=0)   then 
-     {
-         MatDerivationLeakyRelu_row:=0;
-         
-         while( (MatDerivationLeakyRelu_row<src->row) )
+         while( (MatDerivationLeakyRelu_col<src->col) )
          {
-             MatDerivationLeakyRelu_col:=0;
-             
-             while( (MatDerivationLeakyRelu_col<src->col) )
+             if((src->element[MatDerivationLeakyRelu_row])[MatDerivationLeakyRelu_col]>0) then 
              {
-                 if((src->element[MatDerivationLeakyRelu_row])[MatDerivationLeakyRelu_col]>0) then 
-                 {
-                     (dst->element[MatDerivationLeakyRelu_row])[MatDerivationLeakyRelu_col]:=1.0
-                     
-                 }
-                 else
-                 {
-                     (dst->element[MatDerivationLeakyRelu_row])[MatDerivationLeakyRelu_col]:=a
-                 };
-                 MatDerivationLeakyRelu_col:=MatDerivationLeakyRelu_col+1
+                 (dst->element[MatDerivationLeakyRelu_row])[MatDerivationLeakyRelu_col]:=1.0
                  
+             }
+             else
+             {
+                 (dst->element[MatDerivationLeakyRelu_row])[MatDerivationLeakyRelu_col]:=a
              };
-             MatDerivationLeakyRelu_row:=MatDerivationLeakyRelu_row+1
+             MatDerivationLeakyRelu_col:=MatDerivationLeakyRelu_col+1
              
          };
-         return<==1 and RValue:=dst;
-         skip
-     }
-     else
-     {
-         skip
-     }
+         MatDerivationLeakyRelu_row:=MatDerivationLeakyRelu_row+1
+         
+     };
+     return<==1 and RValue:=dst;
+     skip
      )
      }; 
   function OneHot ( Mat *src,int k,Mat *dst,Mat* RValue )
@@ -1862,41 +1232,17 @@ int remainder
      frame(OneHot_row,return) and ( 
      int return<==0 and skip;
      int OneHot_row and skip;
-     if(src->row!=dst->row OR src->col!=1 OR dst->col!=k) then 
+     MatZeros(dst,RValue);
+     OneHot_row:=0;
+     
+     while( (OneHot_row<dst->row) )
      {
-         output ("\t\terr check, unmathed matrix for Onehot\t\t\n") and skip;
-         output ("\t\tsrcMatShape:\n\t\t\t") and skip;
-         MatShape(src);
-         output ("\t\tThe number of class:\n\t\t\t") and skip;
-         output (k,"\n","\n") and skip;
-         output ("\t\tdstMatShape:\n\t\t\t") and skip;
-         MatShape(dst);
-         return<==1 and RValue:=NULL;
-         skip
+         (dst->element[OneHot_row])[(int)((src->element[OneHot_row])[0])]:=1.0;
+         OneHot_row:=OneHot_row+1
          
-     }
-     else 
-     {
-          skip 
      };
-     if(return=0)   then 
-     {
-         MatZeros(dst,RValue);
-         OneHot_row:=0;
-         
-         while( (OneHot_row<dst->row) )
-         {
-             (dst->element[OneHot_row])[(int)((src->element[OneHot_row])[0])]:=1.0;
-             OneHot_row:=OneHot_row+1
-             
-         };
-         return<==1 and RValue:=dst;
-         skip
-     }
-     else
-     {
-         skip
-     }
+     return<==1 and RValue:=dst;
+     skip
      )
      }; 
   function MSE ( Mat *src,Mat *dst,float RValue )
@@ -1907,46 +1253,24 @@ int remainder
      float MSE_loss<==0.0 and skip;
      Mat MSE_sub_square_mat and skip;
      Mat MSE_sum_row_mat and skip;
-     if(src->row!=dst->row OR src->col!=dst->col) then 
+     MatCreate(&MSE_sub_square_mat,src->row,src->col,RValue);
+     MatCreate(&MSE_sum_row_mat,src->row,1,RValue);
+     MatSub(src,dst,&MSE_sub_square_mat,RValue);
+     MatSquare(&MSE_sub_square_mat,&MSE_sub_square_mat,RValue);
+     MatRowSum(&MSE_sub_square_mat,&MSE_sum_row_mat,RValue);
+     MSE_row:=0;
+     
+     while( (MSE_row<src->row) )
      {
-         output ("\t\terr check, unmathed matrix for Loss Function MSE\t\t\n") and skip;
-         output ("\t\tPredictoinMatShape:\n\t\t\t") and skip;
-         MatShape(src);
-         output ("\t\tOneHotMatShape:\n\t\t\t") and skip;
-         MatShape(dst);
-         return<==1 and RValue:=-1.0;
-         skip
+         MSE_loss:=MSE_loss+(MSE_sum_row_mat.element[MSE_row])[0];
+         MSE_row:=MSE_row+1
          
-     }
-     else 
-     {
-          skip 
      };
-     if(return=0)   then 
-     {
-         MatCreate(&MSE_sub_square_mat,src->row,src->col,RValue);
-         MatCreate(&MSE_sum_row_mat,src->row,1,RValue);
-         MatSub(src,dst,&MSE_sub_square_mat,RValue);
-         MatSquare(&MSE_sub_square_mat,&MSE_sub_square_mat,RValue);
-         MatRowSum(&MSE_sub_square_mat,&MSE_sum_row_mat,RValue);
-         MSE_row:=0;
-         
-         while( (MSE_row<src->row) )
-         {
-             MSE_loss:=MSE_loss+(MSE_sum_row_mat.element[MSE_row])[0];
-             MSE_row:=MSE_row+1
-             
-         };
-         MSE_loss:=MSE_loss/ (float)(src->row);
-         MatDelete(&MSE_sub_square_mat);
-         MatDelete(&MSE_sum_row_mat);
-         return<==1 and RValue:=MSE_loss;
-         skip
-     }
-     else
-     {
-         skip
-     }
+     MSE_loss:=MSE_loss/ (float)(src->row);
+     MatDelete(&MSE_sub_square_mat);
+     MatDelete(&MSE_sum_row_mat);
+     return<==1 and RValue:=MSE_loss;
+     skip
      )
      }; 
   function CrossEntropy ( Mat *src,Mat *dst,float RValue )
@@ -1955,136 +1279,66 @@ int remainder
      int return<==0 and skip;
      int CrossEntropy_row,CrossEntropy_col and skip;
      float CrossEntropy_loss<==0.0 and skip;
-     if(src->row!=dst->row OR src->col!=dst->col) then 
+     CrossEntropy_row:=0;
+     
+     while( (CrossEntropy_row<src->row) )
      {
-         output ("\t\terr check, unmathed matrix for Loss Function CrossEntropy\t\t\n") and skip;
-         output ("\t\tPredictoinMatShape:\n\t\t\t") and skip;
-         MatShape(src);
-         output ("\t\tOneHotMatShape:\n\t\t\t") and skip;
-         MatShape(dst);
-         return<==1 and RValue:=-1.0;
-         skip
+         CrossEntropy_col:=0;
          
-     }
-     else 
-     {
-          skip 
-     };
-     if(return=0)   then 
-     {
-         CrossEntropy_row:=0;
-         
-         while( (CrossEntropy_row<src->row) )
+         while( (CrossEntropy_col<src->col) )
          {
-             CrossEntropy_col:=0;
-             
-             while( (CrossEntropy_col<src->col) )
-             {
-                 CrossEntropy_loss:=CrossEntropy_loss+(float)(-1*(dst->element[CrossEntropy_row])[CrossEntropy_col]*log((src->element[CrossEntropy_row])[CrossEntropy_col]));
-                 CrossEntropy_col:=CrossEntropy_col+1
-                 
-             };
-             CrossEntropy_row:=CrossEntropy_row+1
+             CrossEntropy_loss:=CrossEntropy_loss+(float)(-1*(dst->element[CrossEntropy_row])[CrossEntropy_col]*log((src->element[CrossEntropy_row])[CrossEntropy_col]));
+             CrossEntropy_col:=CrossEntropy_col+1
              
          };
-         CrossEntropy_loss:=CrossEntropy_loss/ (src->row);
-         return<==1 and RValue:=CrossEntropy_loss;
-         skip
-     }
-     else
-     {
-         skip
-     }
+         CrossEntropy_row:=CrossEntropy_row+1
+         
+     };
+     CrossEntropy_loss:=CrossEntropy_loss/ (src->row);
+     return<==1 and RValue:=CrossEntropy_loss;
+     skip
      )
      }; 
   function MSEDerivative ( Mat *ActiMat,Mat *DerivativeActiMat,Mat One_hotMat,Mat* RValue )
  {
      frame(return) and ( 
      int return<==0 and skip;
-     if(ActiMat->row!=DerivativeActiMat->row OR ActiMat->col!=DerivativeActiMat->col OR ActiMat->row!=One_hotMat.row OR ActiMat->col!=One_hotMat.col) then 
-     {
-         output ("\t\terr check, unmathed matrix for Loss Function MSEDerivative\t\t\n") and skip;
-         output ("\t\tActiMatShape:\n\t\t\t") and skip;
-         MatShape(ActiMat);
-         output ("\t\tDerivativeActiMatShape:\n\t\t\t") and skip;
-         MatShape(DerivativeActiMat);
-         output ("\t\tOne_hotMatShape:\n\t\t\t") and skip;
-         MatShape(&One_hotMat);
-         return<==1 and RValue:=NULL;
-         skip
-         
-     }
-     else 
-     {
-          skip 
-     };
-     if(return=0)   then 
-     {
-         return<==1 and RValue:=MatSub(ActiMat,&One_hotMat,DerivativeActiMat,RValue);
-         skip
-     }
-     else
-     {
-         skip
-     }
+     return<==1 and RValue:=MatSub(ActiMat,&One_hotMat,DerivativeActiMat,RValue);
+     skip
      )
      }; 
   function CrossEntropyDerivative ( Mat *ActiMat,Mat *DerivativeActiMat,Mat One_hotMat,Mat* RValue )
  {
-     frame(CrossEntropyDerivative_row,CrossEntropyDerivative_col,CrossEntropyDerivative_2_3_temp$_1,return) and ( 
+     frame(CrossEntropyDerivative_row,CrossEntropyDerivative_col,CrossEntropyDerivative_1_2_temp$_1,return) and ( 
      int return<==0 and skip;
      int CrossEntropyDerivative_row,CrossEntropyDerivative_col and skip;
-     if(ActiMat->row!=DerivativeActiMat->row OR ActiMat->col!=DerivativeActiMat->col OR ActiMat->row!=One_hotMat.row OR ActiMat->col!=One_hotMat.col) then 
+     CrossEntropyDerivative_row:=0;
+     
+     while( (CrossEntropyDerivative_row<ActiMat->row) )
      {
-         output ("\t\terr check, unmathed matrix for Loss Function CrossEntropyDerivative\t\t\n") and skip;
-         output ("\t\tActiMatShape:\n\t\t\t") and skip;
-         MatShape(ActiMat);
-         output ("\t\tDerivativeActiMatShape:\n\t\t\t") and skip;
-         MatShape(DerivativeActiMat);
-         output ("\t\tOne_hotMatShape:\n\t\t\t") and skip;
-         MatShape(&One_hotMat);
-         return<==1 and RValue:=NULL;
-         skip
+         CrossEntropyDerivative_col:=0;
          
-     }
-     else 
-     {
-          skip 
-     };
-     if(return=0)   then 
-     {
-         CrossEntropyDerivative_row:=0;
-         
-         while( (CrossEntropyDerivative_row<ActiMat->row) )
+         while( (CrossEntropyDerivative_col<ActiMat->col) )
          {
-             CrossEntropyDerivative_col:=0;
-             
-             while( (CrossEntropyDerivative_col<ActiMat->col) )
+             int CrossEntropyDerivative_1_2_temp$_1 and skip;
+             CrossEntropyDerivative_1_2_temp$_1:=equal((ActiMat->element[CrossEntropyDerivative_row])[CrossEntropyDerivative_col],0.0,RValue);
+             if(CrossEntropyDerivative_1_2_temp$_1=1) then 
              {
-                 int CrossEntropyDerivative_2_3_temp$_1 and skip;
-                 CrossEntropyDerivative_2_3_temp$_1:=equal((ActiMat->element[CrossEntropyDerivative_row])[CrossEntropyDerivative_col],0.0,RValue);
-                 if(CrossEntropyDerivative_2_3_temp$_1=1) then 
-                 {
-                     (DerivativeActiMat->element[CrossEntropyDerivative_row])[CrossEntropyDerivative_col]:=-(One_hotMat.element[CrossEntropyDerivative_row])[CrossEntropyDerivative_col]*10000000000
-                     
-                 }
-                 else
-                 {
-                     (DerivativeActiMat->element[CrossEntropyDerivative_row])[CrossEntropyDerivative_col]:=-(One_hotMat.element[CrossEntropyDerivative_row])[CrossEntropyDerivative_col]/ (ActiMat->element[CrossEntropyDerivative_row])[CrossEntropyDerivative_col]
-                 };
-                 CrossEntropyDerivative_col:=CrossEntropyDerivative_col+1
+                 (DerivativeActiMat->element[CrossEntropyDerivative_row])[CrossEntropyDerivative_col]:=-(One_hotMat.element[CrossEntropyDerivative_row])[CrossEntropyDerivative_col]*10000000000
                  
+             }
+             else
+             {
+                 (DerivativeActiMat->element[CrossEntropyDerivative_row])[CrossEntropyDerivative_col]:=-(One_hotMat.element[CrossEntropyDerivative_row])[CrossEntropyDerivative_col]/ (ActiMat->element[CrossEntropyDerivative_row])[CrossEntropyDerivative_col]
              };
-             CrossEntropyDerivative_row:=CrossEntropyDerivative_row+1
+             CrossEntropyDerivative_col:=CrossEntropyDerivative_col+1
              
          };
-         return<==1 and RValue:=DerivativeActiMat;
-         skip
-     }
-     else
-     {
-         skip
-     }
+         CrossEntropyDerivative_row:=CrossEntropyDerivative_row+1
+         
+     };
+     return<==1 and RValue:=DerivativeActiMat;
+     skip
      )
      }; 
   function gaussrand_NORMAL ( float  RValue )
@@ -2536,7 +1790,7 @@ int remainder
      dataSet->TrainSampleNum:=userDefine.TrainSampleNum;
      dataSet->TestSampleNum:=userDefine.TestSampleNum;
      dataSet->ClassificationNum:=userDefine.ClassificationNum;
-     fcnn->CurrentSampleNum:=userDefine.BatchSize;
+     fcnn->sampleCapacity:=userDefine.BatchSize;
      fcnn->SampleDimensionNum:=userDefine.SampleDimensionNum;
      fcnn->HiddenLayerNum:=userDefine.HiddenLayerNum;
      fcnn->WeightInitWayNum:=userDefine.WeightInitWayNum;
@@ -2674,7 +1928,7 @@ int remainder
  {
      frame(return) and ( 
      int return<==0 and skip;
-     fcnn->CurrentSampleNum:=-1;
+     fcnn->sampleCapacity:=-1;
      fcnn->SampleDimensionNum:=-1;
      fcnn->HiddenLayerNum:=-1;
      fcnn->WeightInitWayNum:=-1;
@@ -2720,7 +1974,7 @@ int remainder
      
      while( (SpaceCreateActi_i<fcnn->HiddenLayerNum+2) )
      {
-         MatCreate(&fcnn->Layer[SpaceCreateActi_i].ActiMat,fcnn->CurrentSampleNum,fcnn->Layer[SpaceCreateActi_i].NeuronNum,RValue);
+         MatCreate(&fcnn->Layer[SpaceCreateActi_i].ActiMat,fcnn->sampleCapacity,fcnn->Layer[SpaceCreateActi_i].NeuronNum,RValue);
          MatZeros(&fcnn->Layer[SpaceCreateActi_i].ActiMat,RValue);
          SpaceCreateActi_i:=SpaceCreateActi_i+1
          
@@ -2747,7 +2001,7 @@ int remainder
      
      while( (SpaceCreateActiPlus_i<fcnn->HiddenLayerNum+2) )
      {
-         MatCreate(&fcnn->Layer[SpaceCreateActiPlus_i].ActiMatPlus,fcnn->CurrentSampleNum,fcnn->Layer[SpaceCreateActiPlus_i].NeuronNum+1,RValue);
+         MatCreate(&fcnn->Layer[SpaceCreateActiPlus_i].ActiMatPlus,fcnn->sampleCapacity,fcnn->Layer[SpaceCreateActiPlus_i].NeuronNum+1,RValue);
          MatZeros(&fcnn->Layer[SpaceCreateActiPlus_i].ActiMatPlus,RValue);
          SpaceCreateActiPlus_i:=SpaceCreateActiPlus_i+1
          
@@ -2774,7 +2028,7 @@ int remainder
      
      while( (SpaceCreateSum_i<fcnn->HiddenLayerNum+2) )
      {
-         MatCreate(&fcnn->Layer[SpaceCreateSum_i].SumMat,fcnn->CurrentSampleNum,fcnn->Layer[SpaceCreateSum_i].NeuronNum,RValue);
+         MatCreate(&fcnn->Layer[SpaceCreateSum_i].SumMat,fcnn->sampleCapacity,fcnn->Layer[SpaceCreateSum_i].NeuronNum,RValue);
          MatZeros(&fcnn->Layer[SpaceCreateSum_i].SumMat,RValue);
          SpaceCreateSum_i:=SpaceCreateSum_i+1
          
@@ -2801,7 +2055,7 @@ int remainder
      
      while( (SpaceCreateActiFunDerivation_i<fcnn->HiddenLayerNum+2) )
      {
-         MatCreate(&fcnn->Layer[SpaceCreateActiFunDerivation_i].ActiFunDerivationMat,fcnn->CurrentSampleNum,fcnn->Layer[SpaceCreateActiFunDerivation_i].NeuronNum,RValue);
+         MatCreate(&fcnn->Layer[SpaceCreateActiFunDerivation_i].ActiFunDerivationMat,fcnn->sampleCapacity,fcnn->Layer[SpaceCreateActiFunDerivation_i].NeuronNum,RValue);
          MatZeros(&fcnn->Layer[SpaceCreateActiFunDerivation_i].ActiFunDerivationMat,RValue);
          SpaceCreateActiFunDerivation_i:=SpaceCreateActiFunDerivation_i+1
          
@@ -2828,7 +2082,7 @@ int remainder
      
      while( (SpaceCreateDelta_i<fcnn->HiddenLayerNum+2) )
      {
-         MatCreate(&fcnn->Layer[SpaceCreateDelta_i].DeltaMat,fcnn->CurrentSampleNum,fcnn->Layer[SpaceCreateDelta_i].NeuronNum,RValue);
+         MatCreate(&fcnn->Layer[SpaceCreateDelta_i].DeltaMat,fcnn->sampleCapacity,fcnn->Layer[SpaceCreateDelta_i].NeuronNum,RValue);
          MatZeros(&fcnn->Layer[SpaceCreateDelta_i].DeltaMat,RValue);
          SpaceCreateDelta_i:=SpaceCreateDelta_i+1
          
@@ -2850,7 +2104,7 @@ int remainder
      }; 
   function SpaceCreateFCNNOneHotMat ( FCNN *fcnn )
  {
-     MatCreate(&fcnn->OnehotMat,fcnn->CurrentSampleNum,fcnn->ClassificationNum,RValue)
+     MatCreate(&fcnn->OnehotMat,fcnn->sampleCapacity,fcnn->ClassificationNum,RValue)
      
  };
  function SpaceDeleteFCNNOneHotMat ( FCNN *fcnn )
@@ -3009,7 +2263,7 @@ int remainder
      skip
      )
      }; 
-  function MatActivate ( Mat *src,Mat *dst,int way,Mat** RValue )
+  function MatActivate ( Mat *src,Mat *dst,int way,Mat* RValue )
  {
      frame(return) and ( 
      int return<==0 and skip;
@@ -3090,64 +2344,42 @@ int remainder
  {
      frame(NNforward_i,NNforward_loss,return) and ( 
      int return<==0 and skip;
-     if(featureMat.row!=labelMatOneHot.row) then 
+     if(featureMat.row!=fcnn->sampleCapacity) then 
      {
-         output ("\t\terr check, mismatching matrix for NNforward\t\t\n") and skip;
-         output ("\t\tfeatureMatShape:\n\t\t\t") and skip;
-         MatShape(&featureMat);
-         output ("\t\tlabelMatMatShape:\n\t\t\t") and skip;
-         MatShape(&labelMatOneHot);
-         return<==1 and RValue:=-1.0;
-         skip
+         fcnn->sampleCapacity:=featureMat.row;
+         DeleteNNOperationSpace(fcnn);
+         CreateNNOperationSpace(fcnn)
          
      }
      else 
      {
           skip 
      };
-     if(return=0)   then 
+     MatCopy(&featureMat,&fcnn->Layer[0].ActiMat);
+     MatPlusCol(&fcnn->Layer[0].ActiMat,&fcnn->Layer[0].ActiMatPlus);
+     MatCopy(&labelMatOneHot,&fcnn->OnehotMat);
+     int NNforward_i<==0 and skip;
+     
+     while( (NNforward_i<fcnn->HiddenLayerNum+1) )
      {
-         if(featureMat.row!=fcnn->CurrentSampleNum) then 
+         MatMul(&fcnn->Layer[NNforward_i].ActiMatPlus,&fcnn->Layer[NNforward_i+1].WeightBiasMat,&fcnn->Layer[NNforward_i+1].SumMat,RValue);
+         MatActivate(&fcnn->Layer[NNforward_i+1].SumMat,&fcnn->Layer[NNforward_i+1].ActiMat,fcnn->Layer[NNforward_i+1].AcitFuncNum,RValue);
+         if(NNforward_i!=fcnn->HiddenLayerNum) then 
          {
-             fcnn->CurrentSampleNum:=featureMat.row;
-             DeleteNNOperationSpace(fcnn);
-             CreateNNOperationSpace(fcnn)
+             MatPlusCol(&fcnn->Layer[NNforward_i+1].ActiMat,&fcnn->Layer[NNforward_i+1].ActiMatPlus)
              
          }
          else 
          {
               skip 
          };
-         MatCopy(&featureMat,&fcnn->Layer[0].ActiMat);
-         MatPlusCol(&fcnn->Layer[0].ActiMat,&fcnn->Layer[0].ActiMatPlus);
-         MatCopy(&labelMatOneHot,&fcnn->OnehotMat);
-         int NNforward_i<==0 and skip;
+         NNforward_i:=NNforward_i+1
          
-         while( (NNforward_i<fcnn->HiddenLayerNum+1) )
-         {
-             MatMul(&fcnn->Layer[NNforward_i].ActiMatPlus,&fcnn->Layer[NNforward_i+1].WeightBiasMat,&fcnn->Layer[NNforward_i+1].SumMat,RValue);
-             MatActivate(&fcnn->Layer[NNforward_i+1].SumMat,&fcnn->Layer[NNforward_i+1].ActiMat,fcnn->Layer[NNforward_i+1].AcitFuncNum,RValue);
-             if(NNforward_i!=fcnn->HiddenLayerNum) then 
-             {
-                 MatPlusCol(&fcnn->Layer[NNforward_i+1].ActiMat,&fcnn->Layer[NNforward_i+1].ActiMatPlus)
-                 
-             }
-             else 
-             {
-                  skip 
-             };
-             NNforward_i:=NNforward_i+1
-             
-         };
-         float NNforward_loss<==-1.0 and skip;
-         NNforward_loss:=LossFunction(&fcnn->Layer[fcnn->HiddenLayerNum+1].ActiMat,&fcnn->OnehotMat,fcnn->LossFuncNum,RValue);
-         return<==1 and RValue:=NNforward_loss;
-         skip
-     }
-     else
-     {
-         skip
-     }
+     };
+     float NNforward_loss<==-1.0 and skip;
+     NNforward_loss:=LossFunction(&fcnn->Layer[fcnn->HiddenLayerNum+1].ActiMat,&fcnn->OnehotMat,fcnn->LossFuncNum,RValue);
+     return<==1 and RValue:=NNforward_loss;
+     skip
      )
      }; 
   function ActiFunDerivation ( Mat Mat_Sum,Mat *Mat_ActiFunDerivation,int option,Mat* RValue )
@@ -3274,17 +2506,17 @@ int remainder
      else
      {
          Mat NNOuputLayerBackward_2_tempMat and skip;
-         MatCreate(&NNOuputLayerBackward_2_tempMat,fcnn->CurrentSampleNum,fcnn->Layer[fcnn->HiddenLayerNum+1].NeuronNum,RValue);
+         MatCreate(&NNOuputLayerBackward_2_tempMat,fcnn->sampleCapacity,fcnn->Layer[fcnn->HiddenLayerNum+1].NeuronNum,RValue);
          LossFunDerivation(&fcnn->Layer[fcnn->HiddenLayerNum+1].ActiMat,&NNOuputLayerBackward_2_tempMat,fcnn->OnehotMat,fcnn->LossFuncNum,RValue);
          ActiFunDerivation(fcnn->Layer[fcnn->HiddenLayerNum+1].SumMat,&fcnn->Layer[fcnn->HiddenLayerNum+1].ActiFunDerivationMat,fcnn->Layer[fcnn->HiddenLayerNum+1].AcitFuncNum,RValue);
          MatProduct(&fcnn->Layer[fcnn->HiddenLayerNum+1].ActiMat,&fcnn->Layer[fcnn->HiddenLayerNum+1].ActiFunDerivationMat,&fcnn->Layer[fcnn->HiddenLayerNum+1].DeltaMat,RValue);
          MatDelete(&NNOuputLayerBackward_2_tempMat)
      };
      Mat NNOuputLayerBackward_ActiPlusTrans and skip;
-     MatCreate(&NNOuputLayerBackward_ActiPlusTrans,fcnn->Layer[fcnn->HiddenLayerNum].NeuronNum+1,fcnn->CurrentSampleNum,RValue);
+     MatCreate(&NNOuputLayerBackward_ActiPlusTrans,fcnn->Layer[fcnn->HiddenLayerNum].NeuronNum+1,fcnn->sampleCapacity,RValue);
      MatTrans(&fcnn->Layer[fcnn->HiddenLayerNum].ActiMatPlus,&NNOuputLayerBackward_ActiPlusTrans,RValue);
      MatMul(&NNOuputLayerBackward_ActiPlusTrans,&fcnn->Layer[fcnn->HiddenLayerNum+1].DeltaMat,&fcnn->Layer[fcnn->HiddenLayerNum+1].NablaWbMat,RValue);
-     MatNumMul(1.0/ fcnn->CurrentSampleNum,&fcnn->Layer[fcnn->HiddenLayerNum+1].NablaWbMat,&fcnn->Layer[fcnn->HiddenLayerNum+1].NablaWbMat,RValue);
+     MatNumMul(1.0/ fcnn->sampleCapacity,&fcnn->Layer[fcnn->HiddenLayerNum+1].NablaWbMat,&fcnn->Layer[fcnn->HiddenLayerNum+1].NablaWbMat,RValue);
      MatDelete(&NNOuputLayerBackward_ActiPlusTrans);
      return<==1 and RValue:=NULL;
      skip
@@ -3315,7 +2547,7 @@ int remainder
          MatProduct(&NNBackward_tempMulMat,&NNBackward_ActiFuncMat,&fcnn->Layer[NNBackward_i].DeltaMat,RValue);
          MatTrans(&fcnn->Layer[NNBackward_i-1].ActiMatPlus,&NNBackward_tempTransActi,RValue);
          MatMul(&NNBackward_tempTransActi,&fcnn->Layer[NNBackward_i].DeltaMat,&fcnn->Layer[NNBackward_i].NablaWbMat,RValue);
-         MatNumMul(1.0/ fcnn->CurrentSampleNum,&fcnn->Layer[NNBackward_i].NablaWbMat,&fcnn->Layer[NNBackward_i].NablaWbMat,RValue);
+         MatNumMul(1.0/ fcnn->sampleCapacity,&fcnn->Layer[NNBackward_i].NablaWbMat,&fcnn->Layer[NNBackward_i].NablaWbMat,RValue);
          MatDelete(&NNBackward_tempTransW);
          MatDelete(&NNBackward_ActiFuncMat);
          MatDelete(&NNBackward_tempMulMat);
@@ -3343,6 +2575,96 @@ int remainder
          MBGD_i:=MBGD_i+1
          
      }
+     )
+     }; 
+      struct AdamPara {
+     float beta1 and 
+     float beta2 and 
+     float eta and 
+     float epsilon and 
+     int time and 
+     Mat *v and 
+     Mat *hat_v and 
+     Mat *s and 
+     Mat *hat_s and 
+     Mat *hat_g 
+ };
+ function SpaceCreateAdamPara ( FCNN *fcnn,AdamPara *adamPara )
+ {
+     frame(SpaceCreateAdamPara_i) and ( 
+     adamPara->v:=(Mat *)malloc((fcnn->HiddenLayerNum+2)*sizeof(Mat));
+     adamPara->hat_v:=(Mat *)malloc((fcnn->HiddenLayerNum+2)*sizeof(Mat));
+     adamPara->s:=(Mat *)malloc((fcnn->HiddenLayerNum+2)*sizeof(Mat));
+     adamPara->hat_s:=(Mat *)malloc((fcnn->HiddenLayerNum+2)*sizeof(Mat));
+     adamPara->hat_g:=(Mat *)malloc((fcnn->HiddenLayerNum+2)*sizeof(Mat));
+     adamPara->v[0].row:=0;
+     adamPara->v[0].col:=0;
+     adamPara->hat_v[0].row:=0;
+     adamPara->hat_v[0].col:=0;
+     adamPara->s[0].row:=0;
+     adamPara->s[0].col:=0;
+     adamPara->hat_s[0].row:=0;
+     adamPara->hat_s[0].col:=0;
+     adamPara->hat_g[0].row:=0;
+     adamPara->hat_g[0].col:=0;
+     int SpaceCreateAdamPara_i<==1 and skip;
+     
+     while( (SpaceCreateAdamPara_i<fcnn->HiddenLayerNum+2) )
+     {
+         MatCreate(&adamPara->v[SpaceCreateAdamPara_i],fcnn->Layer[SpaceCreateAdamPara_i-1].NeuronNum+1,fcnn->Layer[SpaceCreateAdamPara_i].NeuronNum,RValue);
+         MatZeros(&adamPara->v[SpaceCreateAdamPara_i],RValue);
+         MatCreate(&adamPara->hat_v[SpaceCreateAdamPara_i],fcnn->Layer[SpaceCreateAdamPara_i-1].NeuronNum+1,fcnn->Layer[SpaceCreateAdamPara_i].NeuronNum,RValue);
+         MatZeros(&adamPara->hat_v[SpaceCreateAdamPara_i],RValue);
+         MatCreate(&adamPara->s[SpaceCreateAdamPara_i],fcnn->Layer[SpaceCreateAdamPara_i-1].NeuronNum+1,fcnn->Layer[SpaceCreateAdamPara_i].NeuronNum,RValue);
+         MatZeros(&adamPara->s[SpaceCreateAdamPara_i],RValue);
+         MatCreate(&adamPara->hat_s[SpaceCreateAdamPara_i],fcnn->Layer[SpaceCreateAdamPara_i-1].NeuronNum+1,fcnn->Layer[SpaceCreateAdamPara_i].NeuronNum,RValue);
+         MatZeros(&adamPara->hat_s[SpaceCreateAdamPara_i],RValue);
+         MatCreate(&adamPara->hat_g[SpaceCreateAdamPara_i],fcnn->Layer[SpaceCreateAdamPara_i-1].NeuronNum+1,fcnn->Layer[SpaceCreateAdamPara_i].NeuronNum,RValue);
+         MatZeros(&adamPara->hat_g[SpaceCreateAdamPara_i],RValue);
+         SpaceCreateAdamPara_i:=SpaceCreateAdamPara_i+1
+         
+     }
+     )
+     }; 
+  function initAdam ( FCNN fcnn,AdamPara *adamPara )
+ {
+     adamPara->beta1:=0.75;
+     adamPara->beta2:=0.999;
+     adamPara->eta:=0.00005;
+     adamPara->epsilon:=0.00000008;
+     SpaceCreateAdamPara(&fcnn,adamPara);
+     adamPara->time:=1
+     
+ };
+ function Adam ( FCNN *fcnn,AdamPara *adamPara )
+ {
+     frame(Adam_i,Adam_temp$_1,Adam_temp$_2) and ( 
+     int Adam_i<==1 and skip;
+     
+     while( (Adam_i<=fcnn->HiddenLayerNum+1) )
+     {
+         MatNumMul(adamPara->beta1,&adamPara->v[Adam_i],&adamPara->v[Adam_i],RValue);
+         MatNumMul(1-adamPara->beta1,&fcnn->Layer[Adam_i].NablaWbMat,&adamPara->hat_g[Adam_i],RValue);
+         MatAdd(&adamPara->v[Adam_i],&adamPara->hat_g[Adam_i],&adamPara->v[Adam_i],RValue);
+         MatNumMul(adamPara->beta2,&adamPara->s[Adam_i],&adamPara->s[Adam_i],RValue);
+         MatSquare(&adamPara->hat_g[Adam_i],&adamPara->hat_g[Adam_i],RValue);
+         MatNumMul(1-adamPara->beta2,&adamPara->hat_g[Adam_i],&adamPara->hat_g[Adam_i],RValue);
+         MatAdd(&adamPara->s[Adam_i],&adamPara->hat_g[Adam_i],&adamPara->s[Adam_i],RValue);
+         int Adam_temp$_1 and skip;
+         Adam_temp$_1:=pow(adamPara->beta1,adamPara->time);
+         MatNumMul((1/ (1-Adam_temp$_1)),&adamPara->v[Adam_i],&adamPara->hat_v[Adam_i],RValue);
+         int Adam_temp$_2 and skip;
+         Adam_temp$_2:=pow(adamPara->beta2,adamPara->time);
+         MatNumMul((1/ (1-Adam_temp$_2)),&adamPara->s[Adam_i],&adamPara->hat_s[Adam_i],RValue);
+         MatNumMul(adamPara->eta,&adamPara->hat_v[Adam_i],&adamPara->hat_v[Adam_i],RValue);
+         MatSqrt(&adamPara->hat_s[Adam_i],&adamPara->hat_s[Adam_i],RValue);
+         MatNumAdd(adamPara->epsilon,&adamPara->hat_s[Adam_i],&adamPara->hat_s[Adam_i],RValue);
+         MatDiv(&adamPara->hat_v[Adam_i],&adamPara->hat_s[Adam_i],&adamPara->hat_g[Adam_i],RValue);
+         MatSub(&fcnn->Layer[Adam_i].WeightBiasMat,&adamPara->hat_g[Adam_i],&fcnn->Layer[Adam_i].WeightBiasMat,RValue);
+         Adam_i:=Adam_i+1
+         
+     };
+     adamPara->time:=adamPara->time+1
      )
      }; 
   function judge_max ( float *arr,int n,int RValue )
@@ -3413,6 +2735,124 @@ int remainder
      skip
      )
      }; 
-      float Xval[54880000]<=={0} and skip;
-     float Yval[70000]<=={0} and skip
+      struct _iobuf {
+     char *_ptr and 
+     int _cnt and 
+     char *_base and 
+     int _flag and 
+     int _file and 
+     int _charbuf and 
+     int _bufsiz and 
+     char *_tmpfname 
+ };
+ float Xval[54880000]<=={0} and skip;
+ float Yval[70000]<=={0} and skip;
+ function MinstHWDataLoading (  )
+ {
+     frame(MinstHWDataLoading_buf,MinstHWDataLoading_fp,MinstHWDataLoading_fp2,MinstHWDataLoading_len$,MinstHWDataLoading_i,MinstHWDataLoading_j,MinstHWDataLoading_flag) and ( 
+     char MinstHWDataLoading_buf[16] and skip;
+     FILE *MinstHWDataLoading_fp<==NULL and skip;
+     FILE *MinstHWDataLoading_fp2<==NULL and skip;
+     int MinstHWDataLoading_len$ and skip;
+     int MinstHWDataLoading_i<==0 and skip;
+     int MinstHWDataLoading_j<==0 and skip;
+     char *MinstHWDataLoading_flag and skip;
+     MinstHWDataLoading_fp:=fopen("../../DataSet/MinstHandWriting/Transformation/MinstHW-70000/DataFeatrue.msd","r");
+     MinstHWDataLoading_flag:=fgets(MinstHWDataLoading_buf,16,MinstHWDataLoading_fp);
+     while( (MinstHWDataLoading_flag!=NULL) )
+     {
+         MinstHWDataLoading_len$:=strlen(MinstHWDataLoading_buf);
+         MinstHWDataLoading_buf[MinstHWDataLoading_len$-1]:='\0';
+         Xval[MinstHWDataLoading_i]:=(float)atof(MinstHWDataLoading_buf);
+         MinstHWDataLoading_i:=MinstHWDataLoading_i+1;
+         MinstHWDataLoading_flag:=fgets(MinstHWDataLoading_buf,16,MinstHWDataLoading_fp)
+     };
+     fclose(MinstHWDataLoading_fp) and skip;
+     MinstHWDataLoading_fp2:=fopen("../../DataSet/MinstHandWriting/Transformation/MinstHW-70000/DataLabel.msd","r");
+     MinstHWDataLoading_flag:=fgets(MinstHWDataLoading_buf,16,MinstHWDataLoading_fp2);
+     while( (MinstHWDataLoading_flag!=NULL) )
+     {
+         MinstHWDataLoading_len$:=strlen(MinstHWDataLoading_buf);
+         MinstHWDataLoading_buf[MinstHWDataLoading_len$-1]:='\0';
+         Yval[MinstHWDataLoading_j]:=(float)atof(MinstHWDataLoading_buf);
+         MinstHWDataLoading_j:=MinstHWDataLoading_j+1;
+         MinstHWDataLoading_flag:=fgets(MinstHWDataLoading_buf,16,MinstHWDataLoading_fp2)
+     };
+     fclose(MinstHWDataLoading_fp2) and skip
      )
+     }; 
+  function main ( int  RValue )
+ {
+     frame(main_buf3,main_buf4,main_NueronNumArray,main_ActiFuncNumArray,main_buf1,main_buf2,main_userDefine,main_dataSet,main_fcnn,main_fclayer,main_adamPara,main_loss,main_losstest,main_trainOperationNum,main_i,main_j,main_temp$_1) and (
+     char main_buf3[20] and skip;
+     char main_buf4[20] and skip;
+     MinstHWDataLoading();
+     int main_NueronNumArray[4]<=={784,512,256,10} and skip;
+     int main_ActiFuncNumArray[4]<=={0,3,3,5} and skip;
+     char main_buf1[40] and skip;
+     char main_buf2[40] and skip;
+     Custom main_userDefine and skip;
+     DataSet main_dataSet and skip;
+     FCNN main_fcnn and skip;
+     FCLayer main_fclayer and skip;
+     InitCustom(&main_userDefine,RValue);
+     InitDataSet(&main_dataSet,RValue);
+     InitFCNN(&main_fcnn,RValue);
+     InitFCLayer(&main_fclayer,RValue);
+     main_userDefine.CompleteSampleNum:=70000;
+     main_userDefine.TrainSampleNum:=60000;
+     main_userDefine.TestSampleNum:=10000;
+     main_userDefine.SampleDimensionNum:=784;
+     main_userDefine.HiddenLayerNum:=2;
+     main_userDefine.ClassificationNum:=10;
+     main_userDefine.LossFuncNum:=1;
+     main_userDefine.WeightInitWayNum:=3;
+     main_userDefine.BatchSize:=200;
+     main_userDefine.XValArray:=Xval;
+     main_userDefine.YValArray:=Yval;
+     main_userDefine.NeuronNumArray:=main_NueronNumArray;
+     main_userDefine.ActiFuncNumArray:=main_ActiFuncNumArray;
+     DumpCustom(main_userDefine,RValue);
+     LoadParaFromCustom(main_userDefine,&main_dataSet,&main_fcnn);
+     DatasetConstruction(main_userDefine,&main_dataSet);
+     CreateNNSpaceAndLoadinPara2FCLayer(&main_fcnn,main_userDefine,RValue);
+     NNWeightinit(&main_fcnn,RValue);
+     AdamPara main_adamPara and skip;
+     initAdam(main_fcnn,&main_adamPara);
+     float main_loss<==0.0 and skip;
+     float main_losstest<==0.0 and skip;
+     int main_trainOperationNum<==40 and skip;
+     int main_i<==0 and skip;
+     
+     while( (main_i<main_trainOperationNum) )
+     {
+         int main_j<==0 and skip;
+         
+         while( (main_j<main_dataSet.BatchNum) )
+         {
+             main_loss:=NNforward(main_dataSet.BatchTrainFeature[main_j],main_dataSet.BatchTrainLabelOneHot[main_j],&main_fcnn,RValue);
+             NNBackward(&main_fcnn,RValue);
+             Adam(&main_fcnn,&main_adamPara);
+             if((main_j+1) % 30=0) then 
+             {
+                 output ("epoch ",main_i+1,"/",main_trainOperationNum," iteration ",main_j+1,"/",main_dataSet.BatchNum," loss=",F2S(main_loss,main_buf1,RValue),"\n") and skip
+                 
+             }
+             else 
+             {
+                  skip 
+             };
+             main_j:=main_j+1
+             
+         };
+         main_losstest:=NNforward(main_dataSet.TestFeature,main_dataSet.TestLabelOneHot,&main_fcnn,RValue);
+         float main_temp$_1 and skip;
+         main_temp$_1:=testAcc(main_fcnn,main_dataSet,RValue);
+         output ("====== epoch ",main_i+1,"/",main_trainOperationNum,"  testloss=",F2S(main_losstest,main_buf2,RValue),"  acc=",F2S(main_temp$_1,main_buf1,RValue)," ======\n") and skip;
+         main_i:=main_i+1
+         
+     }
+     )
+ };
+  main(RValue)
+ )
