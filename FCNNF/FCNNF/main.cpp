@@ -419,7 +419,8 @@ Mat* MatSub(Mat* src1, Mat* src2, Mat* dst)
 	return dst;
 }
 
-/* dst = src1 x src2 */
+
+/* dst = src1 x src2  稀疏寄存器缓存优化*/
 Mat* MatMul(Mat* src1, Mat* src2, Mat* dst)
 {
 	int row, col;
@@ -438,15 +439,19 @@ Mat* MatMul(Mat* src1, Mat* src2, Mat* dst)
 	}
 #endif
 	MatZeros(dst);
-
+	float temp1 = 0.f;
+	float temp2 = 0.f;
 	for (row = 0; row < src1->row; row++) {
 		for (col = 0; col < src1->col; col++) {
-			if (equal((src1->element[row])[col], 0) == 0) {
+			temp1 = (src1->element[row])[col];
+			if (equal(temp1, 0) == 0) {
 				for (i = 0; i < src2->col; i++) {
-					(dst->element[row])[i] += (src1->element[row])[col] * (src2->element[col])[i];
+					temp2 = (src2->element[col])[i];
+					if (equal(temp2, 0) == 0) {
+						(dst->element[row])[i] += temp1 * temp2;
+					}
 				}
 			}
-
 		}
 	}
 
@@ -454,7 +459,7 @@ Mat* MatMul(Mat* src1, Mat* src2, Mat* dst)
 }
 
 
-/* dst = src1 x src2 */
+/* dst = src1 x src2 原始 */
 Mat* MatMul2(Mat* src1, Mat* src2, Mat* dst)
 {
 	int row, col;
@@ -476,16 +481,110 @@ Mat* MatMul2(Mat* src1, Mat* src2, Mat* dst)
 
 	for (row = 0; row < dst->row; row++) {
 		for (col = 0; col < dst->col; col++) {
-			temp = 0.0f;
 			for (i = 0; i < src1->col; i++) {
-				temp += (src1->element[row])[i] * (src2->element[i])[col];
-			}
-			(dst->element[row])[col] = temp;
+				(dst->element[row])[col] += (src1->element[row])[i] * (src2->element[i])[col];
+			}	
 		}
 	}
 
 	return dst;
 }
+////2.1 子矩阵乘法 C=A'*B
+//void SMblock_MultCAOB(Mat *rawCAOB, Mat rawA, Mat rawB, int si, int sj, int sk, int subm, int subn, int subp, int T, int S) {
+//	int i, j, k;
+//	for (j = 0; j < subn; j++) { //列号
+//		for (i = 0; i < subm; i++) { //行号
+//			for (k = 0; k < subp; k++) { //并行
+//										 //printf("子块乘：C[%d][%d]+=A[%d][%d]*B[%d][%d] \n",sj * T + j,sk * S + k,si*S + i,sj * T + j,si * T + i,sk*S + k);
+//										 //C[j * p + k]+= A[i*m + j] * B[i * p + k];  //参考
+//				(rawCAOB->element[sj * T + j])[sk * T + k] += (rawA.element[si*S + i])[sj * T + j] * (rawB.element[si*S + i])[sk * T + k];
+//
+//			}
+//		}
+//	}
+//}
+//
+//
+///* dst = src1 x src2 缓存优化*/
+//Mat* MatMul2(Mat* src1, Mat* src2, Mat* dst)
+//{
+//
+//#ifdef MAT_LEGAL_CHECKING
+//	if (src1->col != src2->row || src1->row != dst->row || src2->col != dst->col) {
+//		printf("\t\terr check, unmatch matrix for MatMul\n");
+//		printf("\t\tsrcMatShape:\n\t\t\t");
+//		MatShape(src1);
+//		printf("\t\t\t");
+//		MatShape(src2);
+//		printf("\t\tdstMatShape:\n\t\t\t");
+//		MatShape(dst);
+//		return NULL;
+//	}
+//#endif
+//
+//	int rawm = src1->row;
+//	int rawn = src2->col;
+//	int rawp = src2->col;
+//
+//	// 稍后计算
+//	int S = 1;  //块矩阵的行
+//	int T = 2;  //块矩阵的列
+//
+//	//分块后子矩阵的个数h*l,A矩阵分为S*T的子矩阵，B矩阵分为T*S的子矩阵
+//	static int col_M = 1;
+//	static int row_N = 1;
+//
+//	//矩阵A、B分块后，不能全分块时，最后一行和最后一列的子矩阵的大小
+//	static int col_last = 1;
+//	static int row_last = 1;
+//
+//	//====================================================================================
+//	//将矩阵rawA[rawm][rawn]分为C_M*R_N个大小为S*T的子块，ceil(x)函数返回不小于x的最小整数
+//	if (rawm % S == 0) {
+//		col_M = rawm / S;
+//	}
+//	else {
+//		col_M = rawm / S + 1;
+//	}
+//	//AC_M = ceil((double) rawm / (double) S); //矩阵A分块后的行数
+//	row_N = ceil((double)rawn / (double)T); //矩阵A分块后的列数，即矩阵B分块后的行数
+//	col_last = rawm - (col_M - 1) * S;//最后一行
+//	row_last = rawn - (row_N - 1) * T;//最后一列
+//	printf("%d\n", row_N);
+//	printf("%d\n", col_M);
+//	printf("%d\n", row_last);
+//	printf("%d\n", col_last);
+//	//====================================================================================
+//	//MatDump(dst);
+//	int i, j, k;
+//	int count = 0;//循环计数
+//				  //循环 的顺序可根据需要更换，不会影响计算的结果
+//	for (j = 0; j < row_N; j++) {
+//		for (i = 0; i < col_M; i++) {
+//			for (k = 0; k < row_N; k++) {
+//								printf("\t 第%d层循环：  ",++count);
+//				//				printf(" 分块乘法：C[%d][%d]+=A[%d][%d]*B[%d][%d] \n",j,k,i,j,i,k);
+//				int mblk = S, nblk = T, pblk = T;//默认当前参与运算的两个子矩阵块的大小，必须每次循环重新赋初值
+//												 //计算当前子块的大小为mblk*nblk
+//				if ((i == col_M - 1)) {
+//					mblk = col_last;
+//				}
+//				if (j == row_N - 1) {
+//					nblk = row_last;
+//				}
+//				if (k == row_N - 1) {
+//					pblk = row_last;
+//				}
+//				
+//				//分块矩阵乘法C=A'*B
+//				//SMblock_MultCAOB(i, j, k, mblk, nblk, mblk);
+//				SMblock_MultCAOB(dst, *src1, *src2, i, j, k, mblk, nblk, pblk, T, S);
+//			}
+//		}
+//	}
+//	
+//	return dst;
+//}
 
 
 /* dst = src1 * src2 */   // Hadamard product
@@ -3043,8 +3142,9 @@ void MinstHWDataLoading() {
 
 
 int main() {
-	// adam
-
+	clock_t start, finish; // 定义变量
+	double time;
+	start = clock();
 	/*数据集导入*/
 	char buf3[20];
 	char buf4[20];
@@ -3114,7 +3214,7 @@ int main() {
 	/*训练*/
 	float loss = 0.f;
 	float losstest = 0.f;
-	int trainOperationNum = 20;
+	int trainOperationNum = 1;
 
 	for (int i = 0; i < trainOperationNum; ++i) {
 		for (int j = 0; j < dataSet.BatchNum; ++j) {
@@ -3137,10 +3237,18 @@ int main() {
 		//break;
 	}
 
-	//MatDump(&fcnn.Layer[fcnn.HiddenLayerNum + 1].ActiMat);
-	//losstest = NNforward(dataSet.TestFeature, dataSet.TestLabelOneHot, &fcnn);
-	//MatDump(&fcnn.Layer[fcnn.HiddenLayerNum + 1].ActiMat);
+	/*MatDump(&fcnn.Layer[fcnn.HiddenLayerNum + 1].ActiMat);
+	losstest = NNforward(dataSet.TestFeature, dataSet.TestLabelOneHot, &fcnn);
+	MatDump(&fcnn.Layer[fcnn.HiddenLayerNum + 1].ActiMat);*/
 
+	finish = clock();
+	time = (double)(finish - start) / CLOCKS_PER_SEC;
+	printf("time :%f seconds\n", time);
+
+
+// 普通 446s
+// 稀疏单判断 177s
+// 稀疏两判断 1511s
 }
 
 
@@ -3529,9 +3637,32 @@ int main() {
 
 
 
-///************************************************************************/
-///*                        二维矩阵测试主函数                            */
-///************************************************************************/
+/************************************************************************/
+/*                        二维矩阵测试主函数                            */
+/************************************************************************/
+//int main(void)
+//{
+//	Mat a;
+//	Mat a1;
+//	float val[] = { 3, 2, 2, 3, 3, 1, 3, 3, 4, 4, 3, 3, 2, 3, 3, 4 ,3, 4, 3, 3 };
+//	Mat b;
+//	float val2[] = { 1, 2, 3, 1, 1, 2, 4, 1, 1, 2, 4, 3, 1, 4, 4, 1, 1, 2, 4, 3, 1, 4, 4, 1,  4, 3, 1, 4, 4, 1 };
+//	Mat c;
+//
+//
+//	MatCreate(&a, 4, 5);
+//	printf("a= ");
+//	MatDump(MatSetVal(&a, val));
+//	MatCreate(&b, 5, 6);
+//	printf("b= ");
+//	MatDump(MatSetVal(&b, val2));
+//	MatCreate(&c, 4, 6);
+//	MatZeros(&c);
+//
+//	printf("矩阵 c = bxa:\n");
+//	MatDump(MatMul(&a, &b, &c));
+//
+//}
 //int main(void)
 //{
 //	Mat a;
@@ -3569,43 +3700,31 @@ int main() {
 //	printf("d= ");
 //	MatDump(MatSetVal(&d, val3));
 //
-//	printf("矩阵 a1 = a+a:\n");
-//	MatDump(MatAdd(&a, &a, &a1));
-//	printf("矩阵 b1 = b-b:\n");
-//	MatDump(MatSub(&b, &b, &b1));
+//	//printf("矩阵 a1 = a+a:\n");
+//	//MatDump(MatAdd(&a, &a, &a1));
+//	//printf("矩阵 b1 = b-b:\n");
+//	//MatDump(MatSub(&b, &b, &b1));
 //	printf("矩阵 c = bxa:\n");
 //	MatDump(MatMul(&b, &a, &c));
 //
-//	printf("矩阵 b = a转置:\n");
-//	MatDump(MatTrans(&a, &b));
+//	printf("矩阵 c = bxa:\n");
+//	MatDump(MatMul2(&b, &a, &c));
 //
-//	printf("矩阵复制 a1 = a.\n");
-//	MatCopy(&a, &a1);
-//	MatDump(&a1);
+//	//printf("矩阵 b = a转置:\n");
+//	//MatDump(MatTrans(&a, &b));
+//
+//	//printf("矩阵复制 a1 = a.\n");
+//	//MatCopy(&a, &a1);
+//	//MatDump(&a1);
 //
 //
-//	Mat x;
+//	/*Mat x;
 //	Mat y;
 //	Mat z;
 //	MatCreate(&x, 2, 3);
 //	MatCreate(&y, 2, 4);
 //	MatCreate(&z, 2, 2);
 //	MatDump(MatSetVal(&x, val2));
-//	printf("y = x^+\n");
-//	MatPlus(&x, &y);
-//	MatDump(&y);
-//
-//	printf("z = x^-\n");
-//	MatMinus(&x, &z);
-//	MatDump(&z);
-//
-//
-//	MatCreate(&e, 2, 1);
-//	printf("每一行元素求和 e = sum(a)\n");
-//	MatDump(MatSum(&a, &e));
-//
-//	printf("每一行元素求最大值 e = MatMax(a)\n");
-//	MatDump(MatMax(&a, &e));
 //
 //	printf("MatExp a1 = Matexp(a)\n");
 //	MatDump(MatExp(&a, &a1));
@@ -3630,7 +3749,7 @@ int main() {
 //	printf("MatVectorSub \n");
 //	MatDump(&d);
 //	MatDump(MatVectorSub(&d, &f, &d));
-//	MatDump(&d);
+//	MatDump(&d);*/
 //
 //
 //	return 0;
