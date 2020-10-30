@@ -3142,9 +3142,9 @@ void MinstHWDataLoading() {
 
 
 int main() {
-	clock_t start, finish; // 定义变量
-	double time;
-	start = clock();
+	//clock_t start, finish; // 定义变量
+	//double time;
+	//start = clock();
 	/*数据集导入*/
 	char buf3[20];
 	char buf4[20];
@@ -3241,9 +3241,9 @@ int main() {
 	losstest = NNforward(dataSet.TestFeature, dataSet.TestLabelOneHot, &fcnn);
 	MatDump(&fcnn.Layer[fcnn.HiddenLayerNum + 1].ActiMat);*/
 
-	finish = clock();
-	time = (double)(finish - start) / CLOCKS_PER_SEC;
-	printf("time :%f seconds\n", time);
+	//finish = clock();
+	//time = (double)(finish - start) / CLOCKS_PER_SEC;
+	//printf("time :%f seconds\n", time);
 
 
 // 普通 446s

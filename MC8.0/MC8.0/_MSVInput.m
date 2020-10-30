@@ -450,12 +450,13 @@ int remainder
      }; 
   function MatMul ( Mat *src1,Mat *src2,Mat *dst,Mat* RValue )
  {
-     frame(MatMul_row,MatMul_col,MatMul_i,MatMul_temp,MatMul_1_temp$_1,return) and ( 
+     frame(MatMul_row,MatMul_col,MatMul_i,MatMul_temp1,MatMul_temp2,MatMul_1_temp$_1,MatMul_1_2_temp$_2,return) and ( 
      int return<==0 and skip;
      int MatMul_row,MatMul_col and skip;
      int MatMul_i and skip;
      MatZeros(dst,RValue);
-     float MatMul_temp<==0.0 and skip;
+     float MatMul_temp1<==0.0 and skip;
+     float MatMul_temp2<==0.0 and skip;
      MatMul_row:=0;
      
      while( (MatMul_row<src1->row) )
@@ -464,16 +465,27 @@ int remainder
          
          while( (MatMul_col<src1->col) )
          {
-             MatMul_temp:=(src1->element[MatMul_row])[MatMul_col];
+             MatMul_temp1:=(src1->element[MatMul_row])[MatMul_col];
              int MatMul_1_temp$_1 and skip;
-             MatMul_1_temp$_1:=equal(MatMul_temp,0,RValue);
+             MatMul_1_temp$_1:=equal(MatMul_temp1,0,RValue);
              if(MatMul_1_temp$_1=0) then 
              {
                  MatMul_i:=0;
                  
                  while( (MatMul_i<src2->col) )
                  {
-                     (dst->element[MatMul_row])[MatMul_i]:=(dst->element[MatMul_row])[MatMul_i]+MatMul_temp*(src2->element[MatMul_col])[MatMul_i];
+                     MatMul_temp2:=(src2->element[MatMul_col])[MatMul_i];
+                     int MatMul_1_2_temp$_2 and skip;
+                     MatMul_1_2_temp$_2:=equal(MatMul_temp2,0,RValue);
+                     if(MatMul_1_2_temp$_2=0) then 
+                     {
+                         (dst->element[MatMul_row])[MatMul_i]:=(dst->element[MatMul_row])[MatMul_i]+MatMul_temp1*MatMul_temp2
+                         
+                     }
+                     else 
+                     {
+                          skip 
+                     };
                      MatMul_i:=MatMul_i+1
                      
                  }
@@ -493,35 +505,33 @@ int remainder
      skip
      )
      }; 
-  function MatMul1 ( Mat *src1,Mat *src2,Mat *dst,Mat* RValue )
+  function MatMul2 ( Mat *src1,Mat *src2,Mat *dst,Mat* RValue )
  {
-     frame(MatMul1_row,MatMul1_col,MatMul1_i,MatMul1_temp,return) and ( 
+     frame(MatMul2_row,MatMul2_col,MatMul2_i,MatMul2_temp,return) and ( 
      int return<==0 and skip;
-     int MatMul1_row,MatMul1_col and skip;
-     int MatMul1_i and skip;
-     float MatMul1_temp and skip;
-     MatMul1_row:=0;
+     int MatMul2_row,MatMul2_col and skip;
+     int MatMul2_i and skip;
+     float MatMul2_temp and skip;
+     MatMul2_row:=0;
      
-     while( (MatMul1_row<dst->row) )
+     while( (MatMul2_row<dst->row) )
      {
-         MatMul1_col:=0;
+         MatMul2_col:=0;
          
-         while( (MatMul1_col<dst->col) )
+         while( (MatMul2_col<dst->col) )
          {
-             MatMul1_temp:=0.0;
-             MatMul1_i:=0;
+             MatMul2_i:=0;
              
-             while( (MatMul1_i<src1->col) )
+             while( (MatMul2_i<src1->col) )
              {
-                 MatMul1_temp:=MatMul1_temp+(src1->element[MatMul1_row])[MatMul1_i]*(src2->element[MatMul1_i])[MatMul1_col];
-                 MatMul1_i:=MatMul1_i+1
+                 (dst->element[MatMul2_row])[MatMul2_col]:=(dst->element[MatMul2_row])[MatMul2_col]+(src1->element[MatMul2_row])[MatMul2_i]*(src2->element[MatMul2_i])[MatMul2_col];
+                 MatMul2_i:=MatMul2_i+1
                  
              };
-             (dst->element[MatMul1_row])[MatMul1_col]:=MatMul1_temp;
-             MatMul1_col:=MatMul1_col+1
+             MatMul2_col:=MatMul2_col+1
              
          };
-         MatMul1_row:=MatMul1_row+1
+         MatMul2_row:=MatMul2_row+1
          
      };
      return<==1 and RValue:=dst;
@@ -2823,7 +2833,7 @@ int remainder
      initAdam(main_fcnn,&main_adamPara);
      float main_loss<==0.0 and skip;
      float main_losstest<==0.0 and skip;
-     int main_trainOperationNum<==40 and skip;
+     int main_trainOperationNum<==1 and skip;
      int main_i<==0 and skip;
      
      while( (main_i<main_trainOperationNum) )
